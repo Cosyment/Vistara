@@ -1,20 +1,32 @@
 package com.vistara.aestheticwalls.data.model
 
 /**
- * 用户设置数据模型
+ * 用户设置数据类
+ * 包含用户的所有偏好设置
  */
 data class UserSettings(
-    val isPremiumUser: Boolean = false,
-    val premiumExpiryDate: Long? = null,
+    // 通用设置
+    val darkTheme: Boolean = false,
+    val dynamicColors: Boolean = true,
+    
+    // 自动更换壁纸设置
     val autoChangeEnabled: Boolean = false,
     val autoChangeFrequency: AutoChangeFrequency = AutoChangeFrequency.DAILY,
+    val autoChangeWifiOnly: Boolean = true,
     val autoChangeSource: AutoChangeSource = AutoChangeSource.FAVORITES,
     val autoChangeCategory: String? = null,
-    val autoChangeWifiOnly: Boolean = true,
+    
+    // 通知设置
     val showDownloadNotification: Boolean = true,
-    val language: String = "zh", // 默认中文
-    val theme: AppTheme = AppTheme.SYSTEM,
-    val lastUpdatedTime: Long = System.currentTimeMillis()
+    val showWallpaperChangeNotification: Boolean = true,
+    
+    // 下载设置
+    val downloadOriginalQuality: Boolean = true,
+    val downloadLocation: String? = null,
+    
+    // 高级用户状态
+    val isPremiumUser: Boolean = false,
+    val premiumExpiryDate: Long = 0L
 )
 
 /**
@@ -76,6 +88,7 @@ data class DownloadedWallpaper(
  * 自动更换壁纸历史
  */
 data class AutoChangeHistory(
+    val id: String = System.currentTimeMillis().toString(),
     val wallpaperId: String,
     val timestamp: Long = System.currentTimeMillis(),
     val targetScreen: WallpaperTarget = WallpaperTarget.BOTH

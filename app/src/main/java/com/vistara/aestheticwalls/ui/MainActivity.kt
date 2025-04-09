@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls
+package com.vistara.aestheticwalls.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

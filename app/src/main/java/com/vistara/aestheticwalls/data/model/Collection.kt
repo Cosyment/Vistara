@@ -55,8 +55,11 @@ enum class BannerActionType {
 data class Category(
     val id: String,
     val name: String,
+    val description: String? = null,
     val iconUrl: String? = null,
     val coverUrl: String? = null,
     val wallpaperCount: Int = 0,
-    val isPremium: Boolean = false
+    val isPremium: Boolean = false,
+    val isHidden: Boolean = false,
+    val sortOrder: Int = 0
 ) 

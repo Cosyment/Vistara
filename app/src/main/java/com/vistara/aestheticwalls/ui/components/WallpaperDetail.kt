@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vistara.aestheticwalls.R
-import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
 
 @Composable

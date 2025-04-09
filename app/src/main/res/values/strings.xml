@@ -1,3 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
+    
+    <!-- 通知相关字符串 -->
+    <string name="notification_channel_wallpaper">壁纸更换通知</string>
+    <string name="notification_channel_wallpaper_desc">显示壁纸自动更换状态的通知</string>
+    <string name="notification_channel_download">下载通知</string>
+    <string name="notification_channel_download_desc">显示壁纸下载进度和完成状态的通知</string>
+    
+    <string name="notification_wallpaper_changed_title">壁纸已更换</string>
+    <string name="notification_wallpaper_changed_text">您的壁纸已成功更换</string>
+    
+    <string name="notification_download_progress_title">正在下载壁纸</string>
+    <string name="notification_download_progress_text">壁纸正在下载中</string>
+    
+    <string name="notification_download_complete_title">壁纸下载完成</string>
+    <string name="notification_download_complete_text">壁纸已成功下载到您的设备</string>
 </resources>
