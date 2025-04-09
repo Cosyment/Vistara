@@ -1,0 +1,351 @@
+---
+description: Vistara壁纸应用原型规范
+globs: 
+alwaysApply: true
+---
+---
+description: Vistara
+globs: 
+alwaysApply: true
+---
+
+# 壁纸 App 原型: Vistara
+
+**版本:** 1.2
+**日期:** 2023-10-27
+**更新:** 合并技术实现细节并补充功能点
+
+## 1. 简介
+
+Vistara 旨在为用户提供一个高质量、内容丰富的壁纸平台，包含精美的静态壁纸和炫酷的动态壁纸。应用内置基础图片编辑功能，允许用户对静态壁纸进行个性化调整。采用 Freemium 模式，基础功能免费，通过可选的高级订阅或买断解锁全部内容和高级功能。
+
+## 2. 核心理念
+
+*   **内容为王:** 提供海量、高质量、多样化的静态与动态壁纸。
+*   **个性编辑:** 提供简单易用的编辑工具，满足用户微调需求。
+*   **流畅体验:** 简洁直观的 UI 设计，流畅的浏览与设置体验。
+*   **价值付费:** 免费提供基础体验，通过有吸引力的高级内容和功能引导付费。
+*   **合规优先:** 严格遵守 API 来源的版权和使用条款，符合 Google Play 政策。
+
+## 3. 主要功能模块
+
+*   **核心浏览与发现 (Home, Static, Live)**
+*   **搜索模块**
+*   **壁纸详情与操作**
+*   **图片编辑 (静态)**
+*   **用户中心与设置**
+*   **Premium 与支付模块**
+*   **核心/后台/支撑模块**
+
+## 4. 屏幕流程与描述
+
+### 4.1 首页 (Home Screen)
+
+*   **目标:** 聚合展示各类壁纸，引导用户发现内容和高级功能。
+*   **布局:**
+    *   **顶部:**
+        *   `[搜索框]` `[Component: SearchInput]`
+            *   点击跳转至 **搜索结果页 (4.5)**
+    *   **中部:**
+        *   `[轮播 Banner]` `[Component: Carousel]`
+            *   显示编辑推荐专题 -> 跳转至**专题详情页 (4.4)**或**壁纸库**
+            *   显示动态壁纸精选 -> 跳转至**壁纸详情页**
+            *   显示高级版推广入口 -> 跳转至**付费引导页**
+        *   `[分类入口]` `[Component: CategoryRail]`
+            *   横向滚动的图标或文字按钮 (例如: 自然, 城市, AMOLED等)
+            *   点击跳转至对应的**壁纸库**
+        *   `[信息流 Feeds]` `[Component: FeedList]`
+            *   **"今日推荐"模块** `[Item: WallpaperThumbnail]`
+                *   混合展示静态/动态壁纸，标记高级壁纸 **(Premium 👑)**
+            *   **"热门静态"模块** `[Component: WallpaperGrid]`
+                *   2-3列网格瀑布流，标记高级壁纸 **(Premium 👑)**
+            *   **"炫酷动态"模块** `[Component: WallpaperGrid]`
+                *   2列网格瀑布流，**大部分或全部带👑标记**
+            *   **"最新上传"模块** `[Component: WallpaperGrid]`
+                *   2-3列网格瀑布流，标记高级壁纸 **(Premium 👑)**
+            *   实现无限滚动加载 `[Feature: InfiniteScroll]`
+
+### 4.2 壁纸库 (静态 Static Library)
+
+*   **目标:** 分类别、可筛选地展示大量壁纸。
+*   **布局:**
+    *   **顶部:**
+        *   `[返回按钮]`
+        *   `[页面标题]` (如分类名)
+        *   `[筛选器按钮 ⚙️]` `[Component: FilterButton]`
+            *   展开筛选选项 (按颜色, 最新, 最热等)
+            *   应用筛选条件 `[Action: ApplyFilters]` -> 刷新壁纸列表
+    *   **主体:**
+        *   `[壁纸网格]` `[Component: WallpaperGrid]`
+            *   加载并显示静态壁纸项 `[Item: WallpaperThumbnail]`
+            *   标记高级壁纸 **(Premium 👑)**
+            *   点击跳转至**壁纸详情页**
+            *   实现无限滚动加载 `[Feature: InfiniteScroll]`
+
+### 4.3 壁纸库 (动态 Live Library)
+
+*   **布局:**
+    *   **顶部:**
+        *   `[返回按钮]`
+        *   `[页面标题]`
+        *   `[筛选器按钮 ⚙️]` `[Component: FilterButton]` (可包含动态壁纸特定分类)
+    *   **主体:**
+        *   `[壁纸网格]` `[Component: WallpaperGrid]`
+            *   加载并显示动态壁纸项 `[Item: WallpaperThumbnail]` (带播放指示符 `▶️`)
+            *   **大部分或全部带 👑 标记**
+            *   点击跳转至**壁纸详情页**
+            *   实现无限滚动加载 `[Feature: InfiniteScroll]`
+
+### 4.4 专题详情页 (Collection/Topic Detail)
+
+*   **布局:**
+    *   **顶部:**
+        *   `[返回按钮]`
+        *   `[专题标题]`
+    *   **内容:**
+        *   `[专题介绍/描述]` - 显示专题的背景介绍
+        *   `[壁纸网格]` `[Component: WallpaperGrid]`
+            *   显示该专题下的壁纸列表/网格
+            *   标记高级壁纸 **(Premium 👑)**
+            *   点击跳转至**壁纸详情页**
+
+### 4.5 搜索结果页 (Search Results)
+
+*   **布局:**
+    *   `[搜索输入框]` `[Component: SearchInput]` (带传入关键词)
+    *   执行搜索请求 `[Action: PerformSearch]` (基于关键词)
+    *   显示搜索结果网格 `[Component: WallpaperGrid]` (混合静态/动态)
+        *   标记高级壁纸 **(Premium 👑)**
+        *   点击跳转至**壁纸详情页**
+    *   显示相关搜索建议或标签
+    *   实现搜索结果分页/无限滚动
+
+### 4.6 壁纸详情页 (Wallpaper Detail)
+
+*   **目标:** 全屏预览壁纸，提供设置、编辑、收藏等操作。
+*   **内容显示:**
+    *   加载并显示全屏壁纸 `[Component: WallpaperView]`
+        *   静态: 显示图片
+        *   动态: 循环播放 (带控制)
+    *   显示版权/署名信息 `[Component: AttributionText]` **(强制要求!)**
+        *   包含作者和来源平台链接
+    *   显示壁纸标题 (若有)
+    *   显示标签/分类链接 -> 跳转至**对应分类/标签的壁纸库**
+    *   显示分辨率/大小等元数据
+*   **用户操作:**
+    *   `[Button: Favorite ❤️]` (功能免费)
+        *   切换收藏状态 `[Action: ToggleFavorite]`
+        *   保存收藏状态至用户数据
+    *   `[Button: Edit 📝]` (仅静态壁纸)
+        *   -> 跳转至**图片编辑页**
+        *   **(若壁纸为 Premium 👑 且用户非高级 -> 触发付费引导)**
+    *   `[Button: Set Wallpaper ✨]` **核心交互**
+        *   **IF** 壁纸为免费 **OR** 用户为高级会员:
+            *   -> 调用系统API设置壁纸 `[Action: SetWallpaper]` (主屏/锁屏/两者)
+            *   **IF** 使用需跟踪下载的API (如Unsplash):
+                *   -> 触发下载跟踪请求 `[Action: TriggerDownloadTrack]` **(强制要求!)**
+        *   **ELSE** (壁纸为 Premium 👑 且用户非高级):
+            *   -> **触发付费引导**
+    *   `[Button: Download 💾]` (可选功能)
+        *   **IF** (功能启用) **AND** (壁纸免费 **OR** 用户为高级会员):
+            *   请求存储权限 (若需要) `[Action: RequestPermission]`
+            *   执行下载操作 `[Action: DownloadWallpaper]` (处理 Scoped Storage)
+            *   触发下载跟踪请求 (若需要) `[Action: TriggerDownloadTrack]`
+        *   **ELSE** (未启用下载 / 壁纸为 Premium 👑 且用户非高级):
+            *   -> **触发付费引导** (或按钮禁用/隐藏)
+    *   `[Button: Share 🔗]` (功能免费)
+        *   -> 调用系统分享 `[Action: ShareWallpaper]`
+
+### 4.7 用户中心页 (Profile / My)
+
+*   **布局:**
+    *   **顶部:**
+        *   `[用户头像/昵称]` (若支持登录)
+        *   **`[升级高级版入口]`** `[Component: UpgradeBanner]` (若用户非高级)
+            *   彩色横幅 "解锁全部特权，畅享高清视界 ✨"
+            *   -> 跳转至**付费引导页**
+        *   显示"高级会员"状态 (若用户是高级) `[Component: PremiumStatusView]`
+    *   **导航列表:**
+        *   `[My Favorites]` -> 跳转至**收藏列表页**
+            *   加载并显示用户收藏的壁纸列表 `[Component: WallpaperList/Grid]`
+            *   可分页签显示静态/动态
+            *   提供取消收藏操作
+        *   `[Downloads]` (若启用) -> 跳转至**下载管理页**
+        *   `[Auto Wallpaper Changer]` -> 跳转至**自动更换设置页**
+            *   `[总开关]` (免费)
+            *   **更换频率设置:**
+                *   "每天" (免费)
+                *   "每12/6/1小时", "每次解锁" **(Premium 👑)**
+                *   **IF** 选择 **Premium 👑** 选项 **AND** 用户非高级 -> **触发付费引导**
+            *   **更换来源设置:**
+                *   "我的收藏" (免费)
+                *   "按分类 [选择分类]" **(Premium 👑)**
+            *   `[仅Wi-Fi下更换]` (免费)
+            *   保存设置 `[Action: SaveAutoChangeSettings]`
+            *   实现自动更换逻辑 `[Service: AutoChangeWorker]` (使用 WorkManager)
+        *   `[Settings]` -> 跳转至**通用设置页**
+            *   `[清理缓存]` -> 执行清理缓存操作 `[Action: ClearCache]`
+            *   `[通知设置]` (若有)
+            *   `[评分与反馈]` -> 跳转至 Google Play 评分
+            *   `[关于我们]` -> 显示App信息、版本号
+            *   **`[许可与致谢]`** -> 显示开源库许可和API来源致谢信息
+
+## 5. 图片编辑模块 (静态壁纸)
+
+*   **目标:** 提供基础且实用的编辑工具，部分高级效果作为付费点。
+*   **入口:** 从静态壁纸详情页点击 `[编辑 📝]` 按钮。
+*   **功能流程:**
+    *   加载传入的静态壁纸 `[Action: LoadImageForEditing]`
+    *   显示可交互预览画布 `[Component: EditingCanvas]`
+    *   **工具栏:** `[Component: ToolBar]`
+        *   **滤镜 `[Tool: Filters]`**
+            *   显示滤镜列表 (部分带 **👑** 标记，如电影感, LOMO等)
+            *   应用滤镜效果 `[Action: ApplyFilter]`
+            *   **IF** 选择 **Premium 👑** 滤镜 **AND** 用户非高级 -> **触发付费引导**
+        *   **调整 `[Tool: Adjustments]`**
+            *   亮度, 对比度 (免费)
+            *   饱和度, 色温, 锐化, 晕影 **(Premium 👑)**
+            *   **IF** 使用 **Premium 👑** 调整 **AND** 用户非高级 -> **触发付费引导**
+        *   **模糊 `[Tool: Blur]`**
+            *   整体模糊 (强度可调, 免费)
+            *   径向/高斯模糊 **(Premium 👑)**
+            *   **IF** 使用 **Premium 👑** 模糊 **AND** 用户非高级 -> **触发付费引导**
+        *   **裁剪 `[Tool: Crop]`** (功能免费)
+            *   自由裁剪, 常见比例裁剪 (例如 16:9, 1:1)
+            *   提供裁剪操作 `[Action: CropImage]`
+        *   **文字/贴纸 `[Tool: TextStickers]`** (可选)
+            *   基础文字/贴纸添加功能
+            *   更多高级字体/贴纸包 **(Premium 👑)**
+            *   **IF** 使用 **Premium 👑** 资源 **AND** 用户非高级 -> **触发付费引导**
+    *   **顶部操作:**
+        *   `[Button: Reset]` - 撤销所有编辑 `[Action: ResetChanges]`
+        *   `[Button: Apply/Save]` - 应用编辑结果
+            *   **IF** 应用了 **Premium 👑** 效果 **AND** 用户非高级:
+                *   -> **触发付费引导**
+            *   **ELSE:**
+                *   保存编辑后的图片 `[Action: SaveEditedImage]`
+
+## 6. Premium 模型与付费功能
+
+### 6.1 高级版权益定义 (Premium Features)
+
+*   解锁所有带 **👑** 标记的壁纸 (静态 & 动态)
+*   解锁所有带 **👑** 标记的编辑功能/效果
+*   解锁所有带 **👑** 标记的自动更换壁纸选项
+*   (可选) 高分辨率下载
+*   移除广告 (若免费版有)
+*   (可选) 优先体验
+
+### 6.2 付费引导页/弹窗 (Paywall Screen)
+
+*   **触发条件:**
+    *   **内容触发:** 
+        *   在浏览页点击带 **👑** 标记的壁纸缩略图
+        *   在详情页点击 **👑** 壁纸的 `[设为壁纸]` 或 `[下载]` 按钮
+    *   **功能触发:**
+        *   在编辑界面尝试使用带 **👑** 标记的工具或效果
+        *   在设置中尝试启用带 **👑** 标记的自动更换选项
+    *   **主动入口:**
+        *   点击首页 Banner 或 "我的" 页面的 "升级高级版" 入口
+    *   (可选) 适时弹窗: 在用户连续使用N天或收藏了M张壁纸后
+*   **内容显示:**
+    *   标题: 例如 "升级到 Vistara 高级版"
+    *   价值陈述: 清晰列出高级版的核心好处 (图标 + 简短文字)
+        *   👑 解锁全部高清壁纸 (静态 & 动态)
+        *   🎨 解锁所有高级编辑工具
+        *   ⏰ 解锁高级自动更换选项
+        *   🚫 移除所有广告 (若有)
+        *   ✨ 更多特权持续加入...
+    *   套餐选项: `[Component: SubscriptionOptions]`
+        *   `[按月订阅 ¥X.XX]`
+        *   `[按年订阅 ¥XX.XX (立省 Y% - 推荐)]` - 高亮显示
+        *   `[终身解锁 ¥XXX.XX]` `[Component: LifetimeOption]`
+    *   行动按钮: 醒目的 `[立即解锁]` 或 `[开始免费试用]` (如果提供试用)
+        *   启动支付流程 `[Action: LaunchBillingFlow]`
+        *   -> 调用 **Google Play Billing**
+    *   辅助链接:
+        *   `[恢复购买]` -> 调用 **Google Play Billing** 恢复购买状态
+        *   `[服务条款]`, `[隐私政策]`
+
+### 6.3 用户状态管理 (Premium Status)
+
+*   获取当前用户的 Premium 状态 (本地缓存/服务器同步) `[Data: UserPremiumState]`
+*   根据状态控制 **👑** 内容/功能的解锁 `[Logic: PremiumCheck]`
+*   处理订阅/购买状态变更事件
+
+## 7. 核心/后台/支撑模块
+
+### 7.1 Google Play Billing 集成
+
+*   初始化 Billing Client
+*   查询商品详情 (订阅/买断) `[Action: QuerySkuDetails]`
+*   发起购买流程 `[Action: LaunchBillingFlow]`
+*   处理购买结果 (成功/失败/取消) `[Callback: PurchasesUpdatedListener]`
+*   验证购买有效性 (服务器端验证推荐) `[Action: VerifyPurchase]`
+*   查询用户当前有效的订阅/购买 `[Action: QueryPurchases]`
+*   实现恢复购买逻辑 `[Action: RestorePurchases]`
+
+### 7.2 API 集成模块
+
+*   实现各 API (Unsplash, Pexels 等) 的请求逻辑 `[Service: ApiClient]`
+*   处理 API Key 安全存储/获取 `[Security: ApiKeyManagement]`
+*   处理 API 错误和重试 `[Logic: ErrorHandling]`
+*   实现 API 速率限制应对策略 (如退避)
+*   **强制:** 实现特定 API 的署名信息提取
+*   **强制:** 实现特定 API 的下载跟踪请求
+
+### 7.3 缓存模块
+
+*   图片缓存 (内存 + 磁盘) `[Cache: ImageCache]` (使用 Glide/Coil 内建或自定义)
+*   API 响应缓存 (可选, 减少重复请求) `[Cache: ApiResponseCache]`
+*   实现缓存清理机制
+
+### 7.4 权限管理模块
+
+*   处理运行时权限请求 (存储 - 若需下载, 通知 - Android 13+) `[Util: PermissionManager]`
+*   实现 Scoped Storage 适配 (Android 10+)
+*   处理权限拒绝的优雅降级
+
+### 7.5 后端服务 (可选)
+
+*   用户认证/账户系统 (若需要跨设备同步)
+*   服务器端购买验证
+*   代理 API 请求 (隐藏 API Key, 统一管理速率限制)
+*   推送通知服务
+
+### 7.6 数据分析 (可选)
+
+*   集成分析 SDK (Firebase Analytics 等)
+*   跟踪关键事件 (如: 壁纸设置次数, 付费转化, 功能使用频率等)
+
+### 7.7 自动更换壁纸服务
+
+*   使用 WorkManager 实现定时更换 `[Service: AutoChangeWorker]`
+*   根据用户设置的频率调度任务
+*   处理网络条件限制 (仅WiFi)
+*   处理电池优化和休眠状态
+*   记录更换历史
+
+## 8. 技术实现注意事项
+
+*   **API 使用:**
+    *   **强制署名:** 严格按照 API 提供方要求显示作者和平台信息及链接
+    *   **下载跟踪:** 如使用 Unsplash，务必在用户下载/设置壁纸时触发 `download_location` URL
+    *   **速率限制:** 实现客户端缓存，合理管理 API 请求，避免超限
+    *   **内容过滤:** 如使用 Wallhaven，**必须**使用 `purity` 参数过滤非 SFW 内容
+*   **性能优化:**
+    *   图片加载库 (Glide/Coil) 高效加载和缓存
+    *   动态壁纸渲染优化，控制资源消耗
+    *   编辑操作的性能
+*   **权限处理:**
+    *   使用 Scoped Storage 适配
+    *   处理通知权限 (Android 13+)
+*   **自动更换壁纸:**
+    *   使用 WorkManager 实现自动更换逻辑
+    *   控制系统资源消耗
+*   **UI/UX:**
+    *   实现响应式 UI 设计
+    *   适配不同屏幕尺寸和密度
+*   **合规:**
+    *   Google Play 政策遵循 (内容、订阅、广告政策等)
+    *   数据隐私合规

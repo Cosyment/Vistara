@@ -1,0 +1,698 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Android Wallpaper App Project Rules
+globs: Jetpack Compose + Material Design 3
+alwaysApply: true
+---
+
+# Vistara - Android Wallpaper App Project Rules
+
+## 目录
+1. [项目概述](mdc:#1-项目概述)
+2. [项目结构规范](mdc:#2-项目结构规范)
+3. [UI 组件规范](mdc:#3-ui-组件规范)
+4. [主题与设计规范](mdc:#4-主题与设计规范)
+5. [动画规范](mdc:#5-动画规范)
+6. [多语言支持规范](mdc:#6-多语言支持规范)
+7. [数据模型规范](mdc:#7-数据模型规范)
+8. [功能实现规范](mdc:#8-功能实现规范)
+9. [应用更新规范](mdc:#9-应用更新规范)
+10. [监控与分析规范](mdc:#10-监控与分析规范)
+11. [性能规范](mdc:#11-性能规范)
+12. [测试规范](mdc:#12-测试规范)
+13. [文档规范](mdc:#13-文档规范)
+14. [第三方平台集成规范](mdc:#14-第三方平台集成规范)
+15. [CI/CD 规范](mdc:#15-cicd-规范)
+
+## 1. 项目概述
+
+### 1.1 技术栈规范
+- UI: Jetpack Compose + Material Design 3
+- 架构: MVVM + Clean Architecture
+- 语言: 100% Kotlin
+- 最低 SDK: Android 24 (Android 7.0)
+- 目标 SDK: 最新版本 (34)
+
+### 1.2 代码规范
+- 使用 ktlint 进行代码格式化
+- 遵循 Android 官方架构组件最佳实践
+- 所有 UI 必须使用 Compose 实现，禁止使用 XML
+- 使用 Kotlin 协程处理异步操作，禁止使用 RxJava
+- 强制使用依赖注入 (Hilt)
+
+## 2. 项目结构规范
+
+### 2.1 包结构 
+app/
+├── data/                    # 统一的数据处理层
+│   ├── remote/              # 远程数据源(API)
+│   ├── local/               # 本地数据源(数据库/偏好设置)
+│   ├── model/               # 统一的数据模型
+│   └── repository/          # 统一的仓库实现
+│
+├── di/                      # 依赖注入
+│
+├── ui/                      # 表现层
+│   ├── theme/               # 主题相关
+│   ├── components/          # 可复用组件
+│   └── screens/             # 各个页面
+│       └── [screen_name]/   # 具体页面
+│           ├── components/  # 页面特有组件
+│           └── viewmodel/   # 页面ViewModel
+│
+└── utils/                   # 通用工具和扩展方法
+
+
+### 2.2 命名规范
+- Activity: `*Activity`
+- ViewModel: `*ViewModel`
+- Repository: `*Repository`
+- UseCase: `*UseCase`
+- Composable: 使用 PascalCase
+- 数据模型: `*Model` 
+- 工具类: `*Utils` 
+
+## 3. UI 组件规范
+
+### 3.1 基础组件
+```kotlin
+// 所有自定义组件必须遵循此格式
+@Composable
+fun ComponentName(
+    // 必要参数
+    required: Type,
+    // 可选参数
+    modifier: Modifier = Modifier,
+    // 事件回调
+    onEvent: () -> Unit = {},
+) {
+    // 实现
+}
+```
+
+### 3.2 必要的基础组件
+```kotlin
+// 壁纸网格项
+@Composable
+fun WallpaperItem(
+    wallpaper: Wallpaper,
+    isPremium: Boolean,
+    onClick: () -> Unit
+)
+
+// 壁纸网格
+@Composable
+fun WallpaperGrid(
+    wallpapers: LazyPagingItems<Wallpaper>,
+    onWallpaperClick: (Wallpaper) -> Unit
+)
+
+// 通用加载状态
+@Composable
+fun LoadingState()
+
+// 通用错误状态
+@Composable
+fun ErrorState(
+    message: String,
+    onRetry: () -> Unit
+)
+```
+
+## 4. 主题与设计规范
+
+### 4.1 颜色系统
+```kotlin
+object AppColors {
+    val Primary = Color(0xFF6200EE)
+    val PrimaryVariant = Color(0xFF3700B3)
+    val Secondary = Color(0xFF03DAC6)
+    val Background = Color(0xFF121212)
+    val Surface = Color(0xFF1E1E1E)
+    val Error = Color(0xFFCF6679)
+}
+```
+
+### 4.2 字体规范
+```kotlin
+object AppTypography {
+    val h1 = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Light,
+        fontSize = 96.sp
+    )
+    // ... 其他文字样式
+}
+```
+
+### 4.3 间距规范
+```kotlin
+object Spacing {
+    val xs = 4.dp
+    val sm = 8.dp
+    val md = 16.dp
+    val lg = 24.dp
+    val xl = 32.dp
+}
+```
+
+## 5. 动画规范
+
+### 5.1 过渡动画
+```kotlin
+object Transitions {
+    val DEFAULT_DURATION = 300
+    
+    fun fadeIn() = fadeIn(
+        animationSpec = tween(DEFAULT_DURATION)
+    )
+    
+    fun slideIn() = slideInVertically(
+        animationSpec = tween(DEFAULT_DURATION)
+    )
+}
+```
+
+### 5.2 列表动画
+```kotlin
+object ListAnimations {
+    val enterTransition = fadeIn() + expandVertically()
+    val exitTransition = fadeOut() + shrinkVertically()
+}
+```
+
+### 5.3 点击动画
+```kotlin
+object ClickAnimations {
+    val scale = scaleIn() + fadeIn()
+}
+```
+
+## 6. 多语言支持规范
+
+### 6.1 字符串资源
+```kotlin
+// 必须支持的语言
+// res/values/strings.xml (默认英语)
+// res/values-zh/strings.xml (简体中文)
+// res/values-zh-rTW/strings.xml (繁体中文)
+// res/values-ja/strings.xml (日语)
+// res/values-ko/strings.xml (韩语)
+
+object StringRes {
+    const val APP_NAME = "app_name"
+    const val WALLPAPER_SET_SUCCESS = "wallpaper_set_success"
+    const val WALLPAPER_SET_FAILED = "wallpaper_set_failed"
+}
+```
+
+### 6.2 多语言切换
+```kotlin
+@Composable
+fun LanguageSelector(
+    currentLanguage: String,
+    onLanguageSelected: (String) -> Unit
+)
+```
+
+## 7. 数据模型规范
+
+### 7.1 壁纸模型
+```kotlin
+data class Wallpaper(
+    val id: String,
+    val title: String?,
+    val url: String,
+    val thumbnailUrl: String,
+    val author: String,
+    val source: String,
+    val isPremium: Boolean,
+    val isLive: Boolean,
+    val tags: List<String>,
+    val resolution: Resolution,
+    val aspectRatio: Float
+)
+```
+
+### 7.2 UI 状态模型
+```kotlin
+sealed class UiState<out T> {
+    object Loading : UiState<Nothing>()
+    data class Success<T>(val data: T) : UiState<T>()
+    data class Error(val message: String) : UiState<Nothing>()
+}
+```
+
+## 8. 功能实现规范
+
+### 8.1 浏览与发现功能
+- 实现首页、壁纸库(静态/动态)界面
+- 支持轮播Banner、分类入口、信息流瀑布流
+- 实现专题详情页
+- 必须支持无限滚动加载
+
+### 8.2 搜索功能
+- 支持关键词搜索
+- 支持筛选条件(颜色、热门、最新等)
+- 提供搜索建议/热门标签
+- 必须优雅处理空结果状态
+
+### 8.3 壁纸详情与预览
+- 支持全屏预览
+- 提供元数据显示(分辨率、作者等)
+- 显示版权/署名信息
+- 支持标签/分类导航
+
+### 8.4 壁纸详情与预览
+- 支持全屏预览
+- 提供元数据显示(分辨率、作者等)
+- 显示版权/署名信息
+- 支持标签/分类导航
+
+### 8.4 图片加载
+- 必须使用 Coil-compose
+- 必须实现错误占位图
+- 必须实现加载占位图
+- 必须处理图片加载失败情况
+
+```kotlin
+@Composable
+fun AsyncImage(
+    model: Any,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop,
+)
+```
+
+### 8.5 权限处理
+- 使用 Accompanist permissions API
+- 必须优雅处理权限拒绝情况
+- 必须提供权限说明
+
+### 8.6 壁纸设置
+- 必须处理设置失败情况
+- 必须显示设置进度
+- 必须支持预览
+- 支持选择主屏/锁屏/两者
+
+### 8.7 图片编辑功能
+- 支持基础编辑工具(滤镜、调整、模糊、裁剪)
+- 实现高级编辑功能(付费)
+- 保存编辑结果
+
+### 8.8 收藏与用户中心
+- 支持收藏功能
+- 管理已下载壁纸
+- 用户设置管理
+
+### 8.9 付费功能与内购
+- 实现Premium功能标记
+- 实现付费引导界面
+- 集成Google Play Billing
+
+### 8.10 自动更换壁纸服务
+- 使用WorkManager实现定时更换
+- 支持多种更换频率
+- 支持网络条件限制
+
+## 9. 应用更新规范
+
+### 9.1 应用内更新
+```kotlin
+class AppUpdateManager @Inject constructor(
+    private val context: Context
+) {
+    fun checkForUpdate() {
+        // 使用 Google Play In-App Updates API
+    }
+}
+```
+
+### 9.2 更新提示
+```kotlin
+@Composable
+fun UpdateDialog(
+    updateInfo: UpdateInfo,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+)
+```
+
+## 10. 监控与分析规范
+
+### 10.1 崩溃报告
+```kotlin
+class CrashReporter @Inject constructor() {
+    fun logException(throwable: Throwable)
+    fun logError(message: String)
+}
+```
+
+### 10.2 性能监控
+```kotlin
+class PerformanceMonitor @Inject constructor() {
+    fun trackPageLoadTime(pageName: String, duration: Long)
+    fun trackImageLoadTime(imageUrl: String, duration: Long)
+}
+```
+
+## 11. 性能规范
+
+### 11.1 图片处理
+- 必须进行图片尺寸优化
+- 必须实现图片缓存
+- 大图必须进行压缩处理
+
+### 11.2 列表性能
+- 必须使用 LazyColumn/LazyGrid
+- 必须实现分页加载
+- 必须实现预加载
+
+### 11.3 内存管理
+- 大图必须及时释放
+- 必须处理配置更改
+- 必须避免内存泄漏
+
+## 12. 测试规范
+
+### 12.1 单元测试
+- ViewModel 测试覆盖率 > 80%
+- Repository 测试覆盖率 > 80%
+- UseCase 测试覆盖率 > 90%
+
+### 12.2 UI 测试
+- 关键页面必须有 UI 测试
+- 必须测试页面间导航
+- 必须测试错误状态
+
+## 13. 文档规范
+
+### 13.1 代码注释
+- 所有 public API 必须有 KDoc 注释
+- 复杂业务逻辑必须有详细注释
+- 必须注明 API 来源和版权信息
+
+### 13.2 README
+- 必须包含项目描述
+- 必须包含环境要求
+- 必须包含构建说明
+- 必须包含第三方库清单
+
+## 14. 第三方平台集成规范
+
+### 14.1 API Keys 管理
+```kotlin
+// 在 local.properties 中配置（不提交到 Git）
+UNSPLASH_API_KEY=your_api_key
+PEXELS_API_KEY=your_api_key
+PIXABAY_API_KEY=your_api_key
+WALLHAVEN_API_KEY=your_api_key
+
+// 在 build.gradle.kts 中读取
+buildConfigField("String", "UNSPLASH_API_KEY", getApiKey("UNSPLASH_API_KEY"))
+buildConfigField("String", "PEXELS_API_KEY", getApiKey("PEXELS_API_KEY"))
+buildConfigField("String", "PIXABAY_API_KEY", getApiKey("PIXABAY_API_KEY"))
+buildConfigField("String", "WALLHAVEN_API_KEY", getApiKey("WALLHAVEN_API_KEY"))
+```
+
+### 14.2 API 客户端规范
+
+```kotlin
+// API 服务接口定义
+interface UnsplashService {
+    @GET("photos")
+    suspend fun getPhotos(
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int,
+        @Query("order_by") orderBy: String
+    ): List<UnsplashPhoto>
+}
+
+interface PexelsService {
+    @GET("v1/curated")
+    suspend fun getCuratedPhotos(
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int
+    ): PexelsResponse
+}
+
+interface PixabayService {
+    @GET("api/")
+    suspend fun searchImages(
+        @Query("q") query: String,
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int
+    ): PixabayResponse
+}
+
+interface WallhavenService {
+    @GET("v1/search")
+    suspend fun search(
+        @Query("q") query: String,
+        @Query("page") page: Int,
+        @Query("purity") purity: String = "1" // SFW only
+    ): WallhavenResponse
+}
+```
+
+### 14.3 API 响应模型
+```kotlin
+// 统一的壁纸数据模型转换接口
+interface WallpaperMapper<T> {
+    fun toWallpaper(source: T): Wallpaper
+}
+
+// 各平台特定响应模型
+data class UnsplashPhoto(
+    val id: String,
+    val urls: UnsplashUrls,
+    val user: UnsplashUser,
+    val width: Int,
+    val height: Int
+)
+
+data class PexelsPhoto(
+    val id: Int,
+    val src: PhotoSources,
+    val photographer: String,
+    val width: Int,
+    val height: Int
+)
+
+data class PixabayImage(
+    val id: Int,
+    val webformatURL: String,
+    val largeImageURL: String,
+    val user: String,
+    val imageWidth: Int,
+    val imageHeight: Int
+)
+
+data class WallhavenWallpaper(
+    val id: String,
+    val url: String,
+    val thumbs: Thumbnails,
+    val resolution: String,
+    val category: String
+)
+```
+
+### 14.4 API 使用规范
+
+#### 14.4.1 Unsplash API
+- 必须遵循 [Unsplash API 指南](mdc:https:/unsplash.com/documentation)
+- 必须在图片下载时触发 download 事件
+- 必须显示摄影师署名
+- 每小时请求限制：50 次
+```kotlin
+// 下载跟踪示例
+fun trackDownload(photoId: String) {
+    unsplashService.trackDownload(photoId)
+}
+```
+
+#### 14.4.2 Pexels API
+- 必须遵循 [Pexels API 指南](mdc:https:/www.pexels.com/api/documentation)
+- 必须显示 Pexels logo
+- 必须显示摄影师署名
+- 每小时请求限制：200 次
+```kotlin
+// 图片引用示例
+@Composable
+fun PexelsAttribution(photographer: String) {
+    Text("Photo by $photographer on Pexels")
+}
+```
+
+#### 14.4.3 Pixabay API
+- 必须遵循 [Pixabay API 指南](mdc:https:/pixabay.com/api/docs)
+- 必须显示 Pixabay logo
+- 必须显示作者署名
+- 每小时请求限制：100 次
+```kotlin
+// 安全搜索示例
+fun searchPixabay(query: String) {
+    pixabayService.searchImages(
+        query = query,
+        safeSearch = true
+    )
+}
+```
+
+#### 14.4.4 Wallhaven API
+- 必须遵循 [Wallhaven API 指南](mdc:https:/wallhaven.cc/help/api)
+- 必须只请求 SFW 内容
+- 必须显示壁纸来源
+- 每天请求限制：45 次
+```kotlin
+// SFW 内容过滤示例
+fun searchWallhaven(query: String) {
+    wallhavenService.search(
+        query = query,
+        purity = "1" // SFW only
+    )
+}
+```
+
+### 14.5 错误处理规范
+```kotlin
+sealed class ApiResult<out T> {
+    data class Success<T>(val data: T) : ApiResult<T>()
+    data class Error(
+        val code: Int? = null,
+        val message: String,
+        val source: ApiSource
+    ) : ApiResult<Nothing>()
+}
+
+enum class ApiSource {
+    UNSPLASH,
+    PEXELS,
+    PIXABAY,
+    WALLHAVEN
+}
+
+// 统一错误处理
+suspend fun <T> safeApiCall(
+    source: ApiSource,
+    call: suspend () -> T
+): ApiResult<T> = try {
+    ApiResult.Success(call())
+} catch (e: Exception) {
+    ApiResult.Error(
+        message = e.message ?: "Unknown error",
+        source = source
+    )
+}
+```
+
+### 14.6 缓存策略
+```kotlin
+// API 响应缓存配置
+val cacheSize = 10L * 1024L * 1024L // 10 MB
+val cache = Cache(context.cacheDir, cacheSize)
+
+val okHttpClient = OkHttpClient.Builder()
+    .cache(cache)
+    .addInterceptor { chain ->
+        val request = chain.request()
+        val response = chain.proceed(request)
+        
+        // 缓存控制
+        response.newBuilder()
+            .header("Cache-Control", "public, max-age=600")
+            .build()
+    }
+    .build()
+```
+
+### 14.7 速率限制处理
+```kotlin
+class RateLimitInterceptor(
+    private val requestsPerHour: Int,
+    private val source: ApiSource
+) : Interceptor {
+    private val requests = mutableListOf<Long>()
+    
+    override fun intercept(chain: Interceptor.Chain): Response {
+        synchronized(requests) {
+            cleanOldRequests()
+            if (requests.size >= requestsPerHour) {
+                throw RateLimitException(source)
+            }
+            requests.add(System.currentTimeMillis())
+        }
+        return chain.proceed(chain.request())
+    }
+}
+```
+
+### 14.8 API 监控
+```kotlin
+// API 调用统计
+object ApiMonitor {
+    private val _stats = MutableStateFlow<Map<ApiSource, ApiStats>>(emptyMap())
+    val stats: StateFlow<Map<ApiSource, ApiStats>> = _stats.asStateFlow()
+    
+    fun recordApiCall(source: ApiSource, success: Boolean) {
+        // 记录 API 调用统计
+    }
+}
+
+data class ApiStats(
+    val totalCalls: Int,
+    val successCalls: Int,
+    val failureCalls: Int,
+    val averageResponseTime: Long
+)
+```
+
+## 15. CI/CD 规范
+
+### 15.1 持续集成
+```yaml
+# .github/workflows/android.yml
+name: Android CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          
+      - name: Run Tests
+        run: ./gradlew test
+        
+      - name: Build Debug
+        run: ./gradlew assembleDebug
+```
+
+### 15.2 版本管理
+```kotlin
+android {
+    defaultConfig {
+        versionCode = getBuildVersionCode()
+        versionName = getVersionName()
+    }
+}
+
+// 版本号格式：major.minor.patch
+// 例如：1.0.0
+```
