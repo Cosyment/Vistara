@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Vistara App 原型 (高级黑) v1.4 - 布局和子页面</title>
+    <title>Vistara App 原型 (高级黑) v1.5 - 布局和子页面</title> <!-- Version Bump -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -176,14 +176,13 @@
         .category-item:hover { background-color: rgba(68, 68, 68, 0.9); border-color: #666; }
         .category-item.active { background-color: #555; color: #fff; border-color: #777; }
 
-        /* Profile Screen Specific Styles - Enhanced */
+        /* Profile Screen Specific Styles - Final Fix */
         .profile-header {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 25px 0;
-            /* Removed negative margin and border - use screen padding and separators */
-            margin-bottom: 15px; /* Added space before banner */
+            margin-bottom: 15px;
         }
         .profile-avatar {
             width: 70px;
@@ -204,71 +203,70 @@
             padding: 12px 15px;
             border-radius: 12px;
             text-align: center;
-            margin: 0 0 20px 0; /* Use screen padding, add bottom margin */
+            margin: 0 0 20px 0;
             cursor: pointer;
             font-weight: 600;
             font-size: 0.9rem;
             box-shadow: 0 4px 10px rgba(142, 45, 226, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease; /* Add subtle hover effect */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .upgrade-banner:hover {
             transform: scale(1.02);
              box-shadow: 0 6px 15px rgba(142, 45, 226, 0.4);
         }
         .profile-list-container {
-            /* Removed padding: 0 5px; Use list-item padding */
-            margin-top: 0; /* Reduced top margin as banner has margin */
+            margin-top: 0;
         }
-        .list-item {
+        .feature-item {
             display: flex;
-            align-items: center; /* Vertically center content */
-            justify-content: space-between; /* Push arrow to the right */
-            padding: 16px 5px; /* Vertical padding, minimal horizontal (container provides main) */
-            margin: 0 -5px; /* Counteract container padding slightly for hover effect width */
+            align-items: center; /* Ensures vertical centering */
+            justify-content: space-between; /* Pushes arrow to right */
+            padding: 16px 10px; /* Added more horizontal padding */
             border-bottom: 1px solid #2c2c2c;
             cursor: pointer;
             transition: background-color 0.15s ease-in-out;
-            border-radius: 8px; /* Add slight rounding for hover */
+            border-radius: 8px;
+            min-height: 56px; /* Ensure minimum height for consistent look */
         }
-        .list-item:hover {
-            background-color: #282828; /* Slightly lighter hover */
+        .feature-item:hover {
+            background-color: #282828;
         }
-        .list-item:last-child {
+        .feature-item:last-child {
             border-bottom: none;
         }
-        .list-item .content-wrapper {
+        .feature-item .content-wrapper {
             display: flex;
-            align-items: center; /* Align icon and text */
-            flex-grow: 1; /* Take available space */
-            /* Removed margin-right: 10px; */
-            overflow: hidden; /* Prevent text overflow issues */
+            align-items: center;
+            flex-grow: 1;
+            overflow: hidden;
+            margin-right: 8px; /* Add slight margin to prevent text touching arrow if long */
         }
-        .list-item i.icon {
-            margin-right: 18px; /* Slightly increased space */
-            color: #999; /* Slightly lighter icon color */
+        .feature-item i.icon {
+            margin-right: 18px;
+            color: #999;
             width: 20px;
             text-align: center;
             flex-shrink: 0;
-            font-size: 1.1rem; /* Slightly larger icon */
+            font-size: 1.1rem;
         }
-        .list-item span {
+        .feature-item span {
             font-size: 0.95rem;
             color: #e0e0e0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .list-item i.arrow {
+        .feature-item i.arrow {
             color: #666;
             font-size: 0.8rem;
             flex-shrink: 0;
-            margin-left: 8px; /* Add small gap before arrow */
+            /* Removed margin-left, space-between handles positioning */
         }
         .list-group-separator {
-            height: 15px; /* Increased separator height */
-            background-color: transparent; /* Make separator invisible, just space */
-            /* Removed negative margin and border */
-            margin: 5px 0; /* Adjust spacing */
+            height: 15px;
+            background-color: transparent;
+            margin: 5px 0;
+            border-bottom: none; /* Ensure no residual border */
         }
 
 
@@ -307,16 +305,17 @@
          .attribution-text { position: absolute; bottom: 15px; left: 15px; right: 15px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.8); text-align: center; background-color: rgba(0, 0, 0, 0.5); padding: 4px 8px; border-radius: 6px; z-index: 5; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
          .attribution-text a { color: rgba(255, 255, 255, 0.95); text-decoration: underline; }
 
-         /* Auto Change Settings Specific - Refined */
+         /* Auto Change Settings Specific - Final Fix */
          .setting-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 5px; /* Consistent padding with list items */
-            margin: 0 -5px; /* Match list item hover width */
+            padding: 16px 10px; /* Consistent padding */
+            /* Removed negative margin */
             border-bottom: 1px solid #2c2c2c;
             transition: background-color 0.15s ease-in-out;
             border-radius: 8px;
+            min-height: 56px; /* Consistent height */
          }
           .setting-item:not(:has(.toggle-switch)):hover { /* Only apply hover bg if not a toggle row */
              background-color: #282828;
@@ -327,6 +326,7 @@
             color: #e0e0e0;
             display: flex; /* Align premium icon */
             align-items: center;
+            margin-right: 8px; /* Space before value/toggle */
          }
          .setting-item .label .premium-icon { font-size: 0.7em; margin-left: 6px; } /* Adjusted margin */
          .setting-item .value {
@@ -335,6 +335,7 @@
              cursor: pointer;
              display: flex; /* Align text and icon */
              align-items: center;
+             flex-shrink: 0; /* Prevent shrinking */
          }
          .setting-item .value i.fa-chevron-right { margin-left: 8px; color: #666; } /* Consistent with profile arrow */
          .setting-item .toggle-switch {
@@ -343,7 +344,7 @@
             width: 44px; /* Width of the switch */
             height: 24px; /* Height of the switch */
             flex-shrink: 0; /* Prevent switch shrinking */
-            margin-left: 10px; /* Ensure space */
+            /* margin-left: 10px; - Handled by justify-content */
          }
          .setting-item .toggle-switch input {
             opacity: 0;
@@ -569,40 +570,36 @@
         </div>
     </div>
 
-    <!-- Profile Screen (Enhanced Layout) -->
+    <!-- Profile Screen (Final Fix Layout) -->
     <div class="screen no-standard-top-bar" id="profile-screen">
-        <!-- Removed top-bar as it's no-standard -->
         <div class="profile-header">
             <div class="profile-avatar"><i class="fas fa-user"></i></div>
             <div class="text-lg font-medium mt-1">Vistara 用户</div>
         </div>
         <div class="upgrade-banner" onclick="showScreen('paywall-screen')"> ✨ 解锁全部特权，畅享高清视界 ✨ </div>
         <div class="profile-list-container flex-grow">
-            <!-- List items using updated styles -->
-            <div class="list-item" onclick="showScreen('favorites-screen')">
+            <!-- List items with final corrected styles -->
+            <div class="feature-item" onclick="showScreen('favorites-screen')">
                 <div class="content-wrapper"> <i class="fas fa-heart icon"></i> <span>我的收藏</span> </div>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
-            <div class="list-item" onclick="showScreen('downloads-screen')">
+            <div class="feature-item" onclick="showScreen('downloads-screen')">
                 <div class="content-wrapper"> <i class="fas fa-download icon"></i> <span>我的下载</span> </div>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
-            <div class="list-item" onclick="showScreen('auto-change-screen')">
+            <div class="feature-item" onclick="showScreen('auto-change-screen')">
                 <div class="content-wrapper"> <i class="fas fa-sync-alt icon"></i> <span>自动更换壁纸</span> </div>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
-
-            <div class="list-group-separator"></div> {/* Invisible spacer */}
-
-            <div class="list-item" onclick="alert('打开设置')">
+            <div class="feature-item" onclick="alert('打开设置')">
                 <div class="content-wrapper"> <i class="fas fa-cog icon"></i> <span>设置</span> </div>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
-            <div class="list-item" onclick="alert('打开评分与反馈')">
+            <div class="feature-item" onclick="alert('打开评分与反馈')">
                 <div class="content-wrapper"> <i class="fas fa-star icon"></i> <span>评分与反馈</span> </div>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
-            <div class="list-item" onclick="alert('打开关于与致谢')">
+            <div class="feature-item" onclick="alert('打开关于与致谢')">
                 <div class="content-wrapper"> <i class="fas fa-info-circle icon"></i> <span>关于与致谢</span> </div>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
@@ -660,14 +657,14 @@
         </div>
     </div>
 
-    <!-- Auto Change Screen (Enhanced Layout) -->
+    <!-- Auto Change Screen (Final Fix Layout) -->
     <div class="screen" id="auto-change-screen">
         <div class="top-bar">
             <i class="fas fa-arrow-left back-icon" onclick="showScreen('profile-screen')"></i>
             <span class="title">自动更换壁纸</span>
             <div class="spacer"></div> </div>
-        <div class="flex-grow mt-4 space-y-0"> <!-- Reduced space-y, handled by items -->
-            <!-- Setting items using updated styles -->
+        <div class="flex-grow mt-4 space-y-0">
+            <!-- Setting items with final corrected styles -->
             <div class="setting-item">
                 <span class="label">启用自动更换</span>
                 <label class="toggle-switch">
@@ -839,9 +836,7 @@
 
         // Fallback if somehow no active tab is determined (shouldn't happen with the logic above)
         if (!activeItemFound && navItems.length > 0) {
-            // Activate the first nav item (Home) as a last resort
-            // navItems[0].classList.add('active');
-            // Or better: activate the one corresponding to the *current* base screen in the stack
+            // Activate the one corresponding to the *current* base screen in the stack
              const currentBase = navigationStack.length > 0 ? navigationStack[0] : 'home-screen';
              const fallbackItem = document.querySelector(`.nav-item[data-screen="${currentBase}"]`);
              if (fallbackItem) fallbackItem.classList.add('active');
@@ -880,18 +875,52 @@
           // Add event listeners for toggle switches (example)
          document.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(toggle => {
             toggle.addEventListener('change', (event) => {
-                 const label = event.target.closest('.setting-item')?.querySelector('.label')?.textContent.trim();
-                 console.log(`${label} toggled: ${event.target.checked}`);
-                 // Add logic here if needed, like showing paywall for premium toggles
-                 const isPremiumToggle = event.target.closest('.setting-item')?.querySelector('.label .premium-icon');
+                 const settingItem = event.target.closest('.setting-item');
+                 if (!settingItem) return;
+                 const labelElement = settingItem.querySelector('.label');
+                 const label = labelElement ? labelElement.cloneNode(true) : null; // Clone to exclude premium icon text if needed
+                 let labelText = "Toggle"; // Default text
+                 if (label) {
+                     const premiumIcon = label.querySelector('.premium-icon');
+                     if(premiumIcon) label.removeChild(premiumIcon); // Remove icon before getting text
+                     labelText = label.textContent.trim();
+                 }
+
+                 console.log(`${labelText} toggled: ${event.target.checked}`);
+
+                 const isPremiumToggle = settingItem.querySelector('.label .premium-icon');
                  const isChecked = event.target.checked;
-                 // Example: If a premium toggle is turned ON by a non-premium user
-                 // if (isPremiumToggle && isChecked /* && !userIsPremium */) {
-                 //     event.target.checked = false; // Prevent toggle visually
-                 //     showScreen('paywall-screen');
-                 // }
+                 // Example: If a premium toggle is turned ON by a non-premium user (add your premium check logic)
+                 const userIsPremium = false; // Placeholder: Replace with actual premium status check
+                 if (isPremiumToggle && isChecked && !userIsPremium) {
+                     console.log("Premium feature toggle attempted without premium status.");
+                     event.target.checked = false; // Prevent toggle visually
+                     // Optionally add a slight visual indication of failure
+                     settingItem.classList.add('shake-animation'); // Needs a CSS animation defined
+                     setTimeout(() => settingItem.classList.remove('shake-animation'), 500);
+                     // Show paywall
+                     showScreen('paywall-screen');
+                 }
             });
          });
+
+         // Optional: Add a simple shake animation for failed premium toggle
+         const styleSheet = document.createElement("style");
+         styleSheet.type = "text/css";
+         styleSheet.innerText = `
+            .shake-animation {
+                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                transform: translate3d(0, 0, 0);
+                backface-visibility: hidden;
+                perspective: 1000px;
+            }
+            @keyframes shake {
+                10%, 90% { transform: translate3d(-1px, 0, 0); }
+                20%, 80% { transform: translate3d(2px, 0, 0); }
+                30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+                40%, 60% { transform: translate3d(4px, 0, 0); }
+            }`;
+         document.head.appendChild(styleSheet);
      });
 </script>
 
