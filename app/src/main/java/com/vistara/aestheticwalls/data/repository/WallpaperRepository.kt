@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * 壁纸仓库接口
- * 处理壁纸数据的存储和检索
+ * 定义所有与壁纸相关的数据操作
  */
 interface WallpaperRepository {
 

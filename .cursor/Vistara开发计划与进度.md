@@ -27,11 +27,11 @@
 - ✅ 集成Retrofit和OkHttp
 - ✅ 设置API密钥安全管理
 - ✅ 实现统一错误处理机制
-- ⏳ 实现API客户端接口
-  - ⏳ Unsplash API
-  - ⏳ Pexels API
-  - ⏳ Pixabay API
-  - ⏳ Wallhaven API
+- ✅ 实现API客户端接口
+  - ✅ Unsplash API
+  - ✅ Pexels API
+  - ✅ Pixabay API
+  - ✅ Wallhaven API
 - ⏳ 建立API响应模型和转换器
 - 🔲 实现速率限制处理
 
@@ -391,7 +391,12 @@
   - 处理错误情况并提供优雅降级
 - 设计了API密钥管理类ApiKeyManager，提供安全的密钥获取方式
 - 优化了NetworkModule，使用ApiKeyManager替代直接引用BuildConfig
-- 下一步：实现具体API服务接口并集成网络数据层架构
+- 实现了四个主要壁纸API的服务接口：
+  - UnsplashApiService：提供精选照片、搜索、随机图片等功能，支持下载追踪
+  - PexelsApiService：支持精选照片、搜索、集合等功能
+  - PixabayApiService：提供图片搜索和详情获取功能
+  - WallhavenApiService：实现壁纸搜索、过滤和详情获取功能
+- 下一步：完善API响应模型并实现Repository层
 
 ### [2023-04-09] - 自动壁纸更换服务开发
 - 实现了AutoWallpaperWorker类，基于WorkManager实现自动壁纸更换功能：
