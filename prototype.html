@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Vistara App 原型 (高级黑) v1.5 - 布局和子页面</title> <!-- Version Bump -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Custom Premium Black Theme */
+        body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #101010; /* Slightly deeper black */
+    color: #e5e5e5; /* Slightly brighter default text */
+    overscroll-behavior: none;
+}
+        .app-container {
+            max-width: 420px;
+            margin: 20px auto;
+            background-color: #1a1a1a;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            border: 1px solid #383838;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+            max-height: 850px;
+            position: relative;
+        }
+        /* iOS Style Status Bar */
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            padding: 0 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(26, 26, 26, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 100;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+        }
+        .status-bar .time {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .status-bar .right-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+         .status-bar .right-icons i { font-size: 1rem; }
+         .status-bar .fa-signal, .status-bar .fa-wifi { font-size: 0.9rem; }
+         .status-bar .fa-battery-full { transform: rotate(90deg); }
+
+        /* Updated Top Bar with Frosted Glass */
+         .top-bar {
+             position: absolute;
+             top: 44px; /* Position below status bar */
+             left: 0;
+             right: 0;
+             display: flex;
+             align-items: center;
+             padding: 0 15px;
+             height: 50px; /* Standard height */
+             background-color: rgba(26, 26, 26, 0.5); /* Adjusted transparency */
+             backdrop-filter: blur(10px); /* Adjusted blur */
+             -webkit-backdrop-filter: blur(10px);
+             z-index: 60; /* Below status bar */
+             border-bottom: 1px solid rgba(56, 56, 56, 0.6); /* Adjusted border */
+         }
+         /* Top bar specific for detail pages (no title, only back button) */
+         .top-bar.detail-bar {
+             background-color: rgba(26, 26, 26, 0.4); /* More transparent */
+             border-bottom: none; /* No border for detail */
+         }
+         .top-bar .back-icon {
+             font-size: 1.5rem;
+             cursor: pointer;
+             padding: 5px;
+             color: #e0e0e0;
+             width: 40px;
+             text-align: left;
+             z-index: 61; /* Ensure clickable */
+         }
+         .top-bar .title {
+             font-size: 1.1rem;
+             font-weight: 600;
+             text-align: center;
+             flex-grow: 1;
+             margin: 0 10px;
+             white-space: nowrap;
+             overflow: hidden;
+             text-overflow: ellipsis;
+             color: #ffffff;
+         }
+         .top-bar .action-icon {
+             font-size: 1.3rem;
+             cursor: pointer;
+             padding: 5px;
+             color: #e0e0e0;
+             width: 40px;
+             text-align: right;
+             z-index: 61; /* Ensure clickable */
+         }
+         /* Spacer for top bar icons */
+         .top-bar .spacer {
+             width: 40px;
+             flex-shrink: 0;
+         }
+
+        .screen {
+            padding: 20px;
+            /* Correct padding-top: status bar (44px) + top bar (50px) */
+            padding-top: 104px;
+            display: none;
+            flex-direction: column;
+            background-color: #1a1a1a;
+            flex-grow: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #555 #2a2a2a;
+        }
+         /* Screens with only status bar (no standard top bar below it) */
+         .screen.no-standard-top-bar {
+             padding-top: 54px; /* Status bar height + small gap */
+         }
+         /* Detail screen specific padding (has its own transparent top bar) */
+         .screen.detail-screen {
+              padding-top: 54px; /* Status bar height + small gap, content flows under transparent bar */
+         }
+
+        .screen.active { display: flex; }
+        .screen::-webkit-scrollbar { width: 5px; }
+        .screen::-webkit-scrollbar-track { background: #2a2a2a; border-radius: 3px; }
+        .screen::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+        .screen::-webkit-scrollbar-thumb:hover { background: #777; }
+
+        /* Common Styles adjusted */
+        .search-input { background-color: #2c2c2c; border: 1px solid #444; color: #e0e0e0; border-radius: 10px; padding: 10px 16px; font-size: 0.9rem; box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); }
+        .search-input::placeholder { color: #888; }
+        .premium-icon { color: #ffd700; margin-left: 4px; font-size: 0.8em; vertical-align: middle; }
+        .section-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #ffffff; }
+        .wallpaper-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .wallpaper-thumbnail { position: relative; overflow: hidden; border-radius: 12px; aspect-ratio: 9 / 16; background-color: #333; cursor: pointer; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3); }
+        .wallpaper-thumbnail:hover { transform: scale(1.03); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); }
+        .wallpaper-thumbnail img { width: 100%; height: 100%; object-fit: cover; display: block; } /* Added display: block */
+        .wallpaper-thumbnail .premium-badge { position: absolute; top: 8px; right: 8px; background-color: rgba(0, 0, 0, 0.7); padding: 3px 7px; border-radius: 6px; display: flex; align-items: center; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+        .wallpaper-thumbnail .play-indicator { position: absolute; bottom: 8px; left: 8px; background-color: rgba(0, 0, 0, 0.7); padding: 4px; border-radius: 50%; color: white; font-size: 0.6rem; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+
+        .bottom-nav { display: flex; justify-content: space-around; padding: 10px 0; background-color: rgba(37, 37, 37, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(56, 56, 56, 0.7); z-index: 50; margin-top: auto; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #aaa; font-size: 0.75rem; cursor: pointer; transition: color 0.2s; padding: 5px; }
+        .nav-item.active, .nav-item:hover { color: #ffffff; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+
+        .action-button, .tool-button, .paywall-button { background: linear-gradient(145deg, #3a3a3a, #252525); color: #e0e0e0; padding: 10px 18px; border-radius: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; border: 1px solid #4a4a4a; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); display: inline-flex; align-items: center; justify-content: center; }
+        .action-button:hover, .tool-button:hover, .paywall-button:hover { background: linear-gradient(145deg, #454545, #303030); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); transform: translateY(-1px); }
+        .paywall-button.primary { background: linear-gradient(145deg, #8e2de2, #4a00e0); color: white; border: none; box-shadow: 0 4px 15px rgba(142, 45, 226, 0.4); }
+        .paywall-button.primary:hover { background: linear-gradient(145deg, #9f3ef3, #5b11f1); box-shadow: 0 6px 20px rgba(142, 45, 226, 0.5); }
+
+        .carousel-item { border-radius: 15px; overflow: hidden; aspect-ratio: 16 / 7; background-color: #444; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); }
+        .category-rail-label { font-size: 0.8rem; color: #aaa; margin-bottom: 4px; padding-left: 5px; }
+        .category-rail { display: flex; overflow-x: auto; padding: 8px 0; gap: 12px; scrollbar-width: none; -ms-overflow-style: none; }
+        .category-rail::-webkit-scrollbar { display: none; }
+        .category-item { background-color: rgba(51, 51, 51, 0.8); padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; white-space: nowrap; cursor: pointer; transition: background-color 0.2s, color 0.2s, border-color 0.2s; border: 1px solid #484848; }
+        .category-item:hover { background-color: rgba(68, 68, 68, 0.9); border-color: #666; }
+        .category-item.active { background-color: #555; color: #fff; border-color: #777; }
+
+        /* Profile Screen Specific Styles - Final Fix */
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 0;
+            margin-bottom: 15px;
+        }
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: #555;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #ccc;
+            border: 2px solid #666;
+        }
+        .upgrade-banner {
+            background: linear-gradient(90deg, #8e2de2, #4a00e0);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 0 0 20px 0;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 10px rgba(142, 45, 226, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .upgrade-banner:hover {
+            transform: scale(1.02);
+             box-shadow: 0 6px 15px rgba(142, 45, 226, 0.4);
+        }
+        .profile-list-container {
+            margin-top: 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center; /* Ensures vertical centering */
+            justify-content: space-between; /* Pushes arrow to right */
+            padding: 16px 10px; /* Added more horizontal padding */
+            border-bottom: 1px solid #2c2c2c;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+            border-radius: 8px;
+            min-height: 56px; /* Ensure minimum height for consistent look */
+        }
+        .feature-item:hover {
+            background-color: #282828;
+        }
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+        .feature-item .content-wrapper {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            overflow: hidden;
+            margin-right: 8px; /* Add slight margin to prevent text touching arrow if long */
+        }
+        .feature-item i.icon {
+            margin-right: 18px;
+            color: #999;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+        .feature-item span {
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .feature-item i.arrow {
+            color: #666;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            /* Removed margin-left, space-between handles positioning */
+        }
+        .list-group-separator {
+            height: 15px;
+            background-color: transparent;
+            margin: 5px 0;
+            border-bottom: none; /* Ensure no residual border */
+        }
+
+
+        /* Editor Screen */
+        .editor-canvas { width: 100%; aspect-ratio: 9 / 16; background-color: #444; margin-bottom: 20px; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 1.1rem; overflow: hidden; }
+        .editor-toolbar { display: flex; justify-content: space-around; padding: 10px 0; background-color: rgba(37, 37, 37, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 10px; margin-top: auto; border-top: 1px solid rgba(56, 56, 56, 0.7); }
+        .tool-item { display: flex; flex-direction: column; align-items: center; color: #aaa; font-size: 0.75rem; cursor: pointer; padding: 5px; transition: color 0.2s; }
+         .tool-item:hover { color: #fff; }
+         .tool-item i { font-size: 1.5rem; margin-bottom: 4px; }
+         .tool-item.premium i { position: relative; }
+         .tool-item.premium i::after { content: '👑'; position: absolute; top: -5px; right: -8px; font-size: 0.7em; color: #ffd700; }
+
+        /* Paywall Screen */
+        .paywall-features li { margin-bottom: 10px; display: flex; align-items: center; font-size: 0.95rem; }
+        .paywall-features i { color: #8e2de2; margin-right: 10px; width: 20px; text-align: center; }
+        .subscription-option { background-color: #2c2c2c; border: 2px solid #444; border-radius: 12px; padding: 15px; margin-bottom: 15px; cursor: pointer; transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s; text-align: center; box-shadow: 0 3px 8px rgba(0,0,0,0.2); }
+         .subscription-option:hover { background-color: #353535; border-color: #666; box-shadow: 0 5px 12px rgba(0,0,0,0.3); }
+        .subscription-option.recommended { border-color: #8e2de2; position: relative; box-shadow: 0 5px 15px rgba(142, 45, 226, 0.2); }
+         .subscription-option.recommended:hover { border-color: #a052e8; box-shadow: 0 7px 20px rgba(142, 45, 226, 0.3); }
+        .subscription-option.recommended::before { content: '推荐'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background-color: #8e2de2; color: white; padding: 2px 8px; font-size: 0.7rem; border-radius: 6px; }
+        .subscription-option h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; }
+        .subscription-option p { font-size: 0.9rem; color: #aaa; }
+        .subscription-option .price { font-size: 1.3rem; font-weight: bold; color: #fff; margin-top: 8px; }
+         .subscription-option .save { font-size: 0.8rem; color: #00ff00; }
+        .text-link { color: #aab; text-decoration: underline; font-size: 0.8rem; cursor: pointer; }
+
+        /* Detail View Specific */
+        .detail-actions { display: flex; justify-content: space-around; padding: 10px 0 15px 0; background-color: rgba(26, 26, 26, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(56, 56, 56, 0.7); margin-top: auto; }
+        .action-item { display: flex; flex-direction: column; align-items: center; color: #ccc; font-size: 0.75rem; cursor: pointer; padding: 0 5px; transition: color 0.2s; }
+        .action-item i { font-size: 1.5rem; margin-bottom: 4px; }
+        .action-item:hover { color: #fff; }
+        .wallpaper-view-container { display: flex; flex-direction: column; flex-grow: 1; position: relative; margin: 0; overflow: hidden; }
+        .wallpaper-view { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; background-color: #000; }
+        .wallpaper-view img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+         .wallpaper-view .live-indicator { position: absolute; top: 60px; left: 15px; background-color: rgba(0, 0, 0, 0.6); color: white; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; z-index: 5; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+         .attribution-text { position: absolute; bottom: 15px; left: 15px; right: 15px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.8); text-align: center; background-color: rgba(0, 0, 0, 0.5); padding: 4px 8px; border-radius: 6px; z-index: 5; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+         .attribution-text a { color: rgba(255, 255, 255, 0.95); text-decoration: underline; }
+
+         /* Auto Change Settings Specific - Final Fix */
+         .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 10px; /* Consistent padding */
+            /* Removed negative margin */
+            border-bottom: 1px solid #2c2c2c;
+            transition: background-color 0.15s ease-in-out;
+            border-radius: 8px;
+            min-height: 56px; /* Consistent height */
+         }
+          .setting-item:not(:has(.toggle-switch)):hover { /* Only apply hover bg if not a toggle row */
+             background-color: #282828;
+          }
+         .setting-item:last-child { border-bottom: none; }
+         .setting-item .label {
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            display: flex; /* Align premium icon */
+            align-items: center;
+            margin-right: 8px; /* Space before value/toggle */
+         }
+         .setting-item .label .premium-icon { font-size: 0.7em; margin-left: 6px; } /* Adjusted margin */
+         .setting-item .value {
+             font-size: 0.9rem;
+             color: #aaa;
+             cursor: pointer;
+             display: flex; /* Align text and icon */
+             align-items: center;
+             flex-shrink: 0; /* Prevent shrinking */
+         }
+         .setting-item .value i.fa-chevron-right { margin-left: 8px; color: #666; } /* Consistent with profile arrow */
+         .setting-item .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px; /* Width of the switch */
+            height: 24px; /* Height of the switch */
+            flex-shrink: 0; /* Prevent switch shrinking */
+            /* margin-left: 10px; - Handled by justify-content */
+         }
+         .setting-item .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+         }
+         .setting-item .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #444; /* Off state background */
+            transition: .4s;
+            border-radius: 24px; /* Fully rounded */
+         }
+         .setting-item .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; /* Height of the knob */
+            width: 20px; /* Width of the knob */
+            left: 2px; /* Position from left */
+            bottom: 2px; /* Position from bottom */
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3); /* Add subtle shadow to knob */
+         }
+         .setting-item input:checked + .slider {
+            background-color: #8e2de2; /* On state background (purple) */
+         }
+         .setting-item input:checked + .slider:before {
+            transform: translateX(20px); /* Move knob to the right */
+         }
+
+         /* Daily Pick Card Example Style (Add to Home Screen) */
+        .daily-pick-card {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            cursor: pointer;
+            background-color: #333;
+            aspect-ratio: 380 / 456; /* Match placeholder aspect ratio */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+         .daily-pick-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+         }
+         .daily-pick-card img {
+             width: 100%;
+             height: 100%;
+             object-fit: cover;
+             display: block;
+         }
+         .daily-pick-overlay {
+             position: absolute;
+             bottom: 0;
+             left: 0;
+             right: 0;
+             padding: 15px;
+             background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+             color: white;
+         }
+         .daily-pick-title {
+             font-size: 1.1rem;
+             font-weight: 600;
+             margin-bottom: 2px;
+             text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+         }
+         .daily-pick-author {
+             font-size: 0.8rem;
+             color: #ccc;
+             text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+         }
+
+    </style>
+</head>
+<body>
+<div class="app-container">
+
+    <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="right-icons">
+            <i class="fas fa-signal"></i>
+            <i class="fas fa-wifi"></i>
+            <i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- Home Screen -->
+    <div class="screen active" id="home-screen">
+        <div class="top-bar">
+            <div class="spacer"></div> <span class="title">首页</span>
+            <div class="spacer"></div>
+        </div>
+        <div class="mb-4">
+            <input type="text" placeholder="搜索高清壁纸、动态效果..." class="search-input w-full">
+        </div>
+        <div class="mb-5">
+            <div class="carousel-item shadow-lg">
+                <img src="https://placehold.co/380x160/8e2de2/ffffff?text=编辑推荐专题" alt="轮播图" class="w-full h-full object-cover">
+            </div>
+        </div>
+        <!-- Daily Pick - Using New Style -->
+        <div class="mb-5">
+            <h2 class="section-title">每日精选</h2>
+            <div class="daily-pick-card" onclick="showScreen('wallpaper-detail-static-screen')">
+                <img src="https://placehold.co/380x456/e76f51/fff?text=每日精选壁纸" alt="每日精选" loading="lazy">
+                <div class="daily-pick-overlay">
+                    <div class="daily-pick-title">宁静山谷</div>
+                    <div class="daily-pick-author">来自：艺术家A</div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-5">
+            <h2 class="section-title">探索分类</h2>
+            <div class="category-rail-label">常用分类:</div>
+            <div class="category-rail"> <span class="category-item active">推荐</span> <span class="category-item">自然</span> <span class="category-item">城市</span> <span class="category-item">AMOLED</span> <span class="category-item">抽象</span> <span class="category-item">动漫</span> <span class="category-item">游戏</span> <span class="category-item">汽车</span> </div>
+        </div>
+        <div class="space-y-5 flex-grow">
+            <div>
+                <h2 class="section-title">热门静态</h2>
+                <div class="wallpaper-grid">
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/777/eee?text=热门1" alt="热门1" loading="lazy"> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/888/eee?text=热门2" alt="热门2" loading="lazy"> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/999/eee?text=热门3" alt="热门3" loading="lazy"> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/aaa/eee?text=热门4" alt="热门4" loading="lazy"> </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="section-title">炫酷动态</h2>
+                <div class="wallpaper-grid">
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/4a00e0/fff?text=动态1" alt="动态1" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/8e2de2/fff?text=动态2" alt="动态2" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/5b11f1/fff?text=动态3" alt="动态3" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/9f3ef3/fff?text=动态4" alt="动态4" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="section-title">最新上传</h2>
+                <div class="wallpaper-grid">
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/bbb/eee?text=最新1" alt="最新1" loading="lazy"> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/ccc/eee?text=最新2" alt="最新2" loading="lazy"> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/ddd/eee?text=最新3" alt="最新3" loading="lazy"> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+                    <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/eee/333?text=最新4" alt="最新4" loading="lazy"> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Static Library Screen -->
+    <div class="screen" id="static-library-screen">
+        <div class="top-bar">
+            <div class="spacer"></div> <span class="title">静态壁纸</span>
+            <i class="fas fa-search action-icon" onclick="alert('打开搜索')"></i>
+        </div>
+        <div class="mb-4">
+            <div class="category-rail-label">分类筛选:</div>
+            <div class="category-rail">
+                <span class="category-item active">全部</span> <span class="category-item">自然</span> <span class="category-item">城市</span> <span class="category-item">抽象</span> <span class="category-item">插画</span> <span class="category-item">科技</span> <span class="category-item">简约</span> <span class="category-item">动物</span> <span class="category-item">食物</span>
+            </div>
+        </div>
+        <div class="wallpaper-grid flex-grow">
+            <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/2a9d8f/fff?text=静态1" alt="静态1" loading="lazy"> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/e9c46a/fff?text=静态2" alt="静态2" loading="lazy"> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/f4a261/fff?text=静态3" alt="静态3" loading="lazy"> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/e76f51/fff?text=静态4" alt="静态4" loading="lazy"> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/264653/fff?text=静态5" alt="静态5" loading="lazy"> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/e76f51/fff?text=静态6" alt="静态6" loading="lazy"> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+        </div>
+    </div>
+
+    <!-- Live Library Screen -->
+    <div class="screen" id="live-library-screen">
+        <div class="top-bar">
+            <div class="spacer"></div> <span class="title">动态壁纸</span>
+            <i class="fas fa-search action-icon" onclick="alert('打开搜索')"></i>
+        </div>
+        <div class="mb-4">
+            <div class="category-rail-label">分类筛选:</div>
+            <div class="category-rail">
+                <span class="category-item active">全部</span> <span class="category-item">抽象</span> <span class="category-item">科技感</span> <span class="category-item">自然</span> <span class="category-item">赛博朋克</span> <span class="category-item">粒子</span> <span class="category-item">流体</span> <span class="category-item">简约</span> <span class="category-item">卡通</span>
+            </div>
+        </div>
+        <div class="wallpaper-grid flex-grow">
+            <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/4a00e0/fff?text=动态A" alt="动态A" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/8e2de2/fff?text=动态B" alt="动态B" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/5b11f1/fff?text=动态C" alt="动态C" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/9f3ef3/fff?text=动态D" alt="动态D" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/7b2cbf/fff?text=动态E" alt="动态E" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+        </div>
+    </div>
+
+    <!-- Wallpaper Detail (Static) -->
+    <div class="screen detail-screen" id="wallpaper-detail-static-screen">
+        <div class="top-bar detail-bar">
+            <i class="fas fa-arrow-left back-icon" onclick="goBack()"></i> <div class="spacer flex-grow"></div> <div class="spacer"></div> </div>
+        <div class="wallpaper-view-container">
+            <div class="wallpaper-view">
+                <img src="https://placehold.co/420x800/e9c46a/fff?text=静态壁纸预览" alt="壁纸详情">
+                <div class="attribution-text"> 由 <a href="#" target="_blank">艺术家名称</a> 发布在 <a href="#" target="_blank">Unsplash</a> </div>
+            </div>
+            <div class="detail-actions">
+                <div class="action-item" onclick="toggleFavorite(this)"> <i class="far fa-heart"></i> <span>收藏</span> </div>
+                <div class="action-item" onclick="showScreen('editor-screen')"> <i class="fas fa-edit"></i> <span>编辑</span> </div>
+                <div class="action-item" onclick="alert('正在设为壁纸...')"> <i class="fas fa-magic"></i> <span>设壁纸</span> </div>
+                <div class="action-item" onclick="alert('开始下载...')"> <i class="fas fa-download"></i> <span>下载</span> </div>
+                <div class="action-item" onclick="alert('分享...')"> <i class="fas fa-share-alt"></i> <span>分享</span> </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallpaper Detail (Live) -->
+    <div class="screen detail-screen" id="wallpaper-detail-live-screen">
+        <div class="top-bar detail-bar">
+            <i class="fas fa-arrow-left back-icon" onclick="goBack()"></i> <div class="spacer flex-grow"></div> <div class="spacer"></div> </div>
+        <div class="wallpaper-view-container">
+            <div class="wallpaper-view">
+                <img src="https://placehold.co/420x800/8e2de2/fff?text=动态壁纸播放中..." alt="动态壁纸详情">
+                <div class="live-indicator"><i class="fas fa-video mr-1"></i> 动态效果预览</div>
+                <div class="attribution-text"> 由 <a href="#" target="_blank">动画师名称</a> 提供 | Premium <i class="fas fa-crown premium-icon"></i> </div>
+            </div>
+            <div class="detail-actions">
+                <div class="action-item" onclick="toggleFavorite(this)"> <i class="far fa-heart"></i> <span>收藏</span> </div>
+                <div class="action-item premium-action" onclick="showScreen('paywall-screen')"> <i class="fas fa-magic"></i> <span>设壁纸<i class="fas fa-crown premium-icon text-xs"></i></span> </div>
+                <div class="action-item premium-action" onclick="showScreen('paywall-screen')"> <i class="fas fa-download"></i> <span>下载<i class="fas fa-crown premium-icon text-xs"></i></span> </div>
+                <div class="action-item" onclick="alert('分享...')"> <i class="fas fa-share-alt"></i> <span>分享</span> </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen (Final Fix Layout) -->
+    <div class="screen no-standard-top-bar" id="profile-screen">
+        <div class="profile-header">
+            <div class="profile-avatar"><i class="fas fa-user"></i></div>
+            <div class="text-lg font-medium mt-1">Vistara 用户</div>
+        </div>
+        <div class="upgrade-banner" onclick="showScreen('paywall-screen')"> ✨ 解锁全部特权，畅享高清视界 ✨ </div>
+        <div class="profile-list-container flex-grow">
+            <!-- List items with final corrected styles -->
+            <div class="feature-item" onclick="showScreen('favorites-screen')">
+                <div class="content-wrapper"> <i class="fas fa-heart icon"></i> <span>我的收藏</span> </div>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="feature-item" onclick="showScreen('downloads-screen')">
+                <div class="content-wrapper"> <i class="fas fa-download icon"></i> <span>我的下载</span> </div>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="feature-item" onclick="showScreen('auto-change-screen')">
+                <div class="content-wrapper"> <i class="fas fa-sync-alt icon"></i> <span>自动更换壁纸</span> </div>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="feature-item" onclick="alert('打开设置')">
+                <div class="content-wrapper"> <i class="fas fa-cog icon"></i> <span>设置</span> </div>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="feature-item" onclick="alert('打开评分与反馈')">
+                <div class="content-wrapper"> <i class="fas fa-star icon"></i> <span>评分与反馈</span> </div>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+            <div class="feature-item" onclick="alert('打开关于与致谢')">
+                <div class="content-wrapper"> <i class="fas fa-info-circle icon"></i> <span>关于与致谢</span> </div>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Editor Screen -->
+    <div class="screen" id="editor-screen">
+        <div class="top-bar">
+            <i class="fas fa-times back-icon" onclick="showScreen('wallpaper-detail-static-screen')"></i>
+            <span class="title">编辑壁纸</span>
+            <button class="action-button text-sm py-1 px-3 mr-1" onclick="alert('应用更改')">应用</button>
+        </div>
+        <div class="editor-canvas"> <img src="https://placehold.co/380x600/e9c46a/fff?text=编辑预览" alt="编辑预览" class="max-w-full max-h-full object-contain"> </div>
+        <div class="editor-toolbar"> <div class="tool-item" onclick="alert('打开滤镜')"> <i class="fas fa-magic"></i> <span>滤镜<i class="fas fa-crown premium-icon text-xs"></i></span> </div> <div class="tool-item" onclick="alert('打开调整')"> <i class="fas fa-sliders-h"></i> <span>调整<i class="fas fa-crown premium-icon text-xs"></i></span> </div> <div class="tool-item" onclick="alert('打开模糊')"> <i class="fas fa-eraser"></i> <span>模糊<i class="fas fa-crown premium-icon text-xs"></i></span> </div> <div class="tool-item" onclick="alert('打开裁剪')"> <i class="fas fa-crop-alt"></i> <span>裁剪</span> </div> <div class="tool-item" onclick="alert('打开文字/贴纸')"> <i class="fas fa-pencil-alt"></i> <span>文字<i class="fas fa-crown premium-icon text-xs"></i></span> </div> <div class="tool-item" onclick="alert('重置更改')"> <i class="fas fa-undo"></i> <span>重置</span> </div> </div>
+    </div>
+
+    <!-- Paywall Screen -->
+    <div class="screen no-standard-top-bar" id="paywall-screen">
+        <div class="absolute top-12 right-5 z-50"> <i class="fas fa-times text-xl text-gray-400 cursor-pointer p-2" onclick="goBack()"></i> </div>
+        <div class="text-center mb-6 pt-8"> <i class="fas fa-gem text-5xl mb-3" style="color: #8e2de2;"></i> <h2 class="text-2xl font-bold mb-2 text-white">升级到 Vistara 高级版</h2> <p class="text-gray-400">解锁全部潜能，享受极致体验</p> </div>
+        <ul class="paywall-features mb-8 px-4"> <li><i class="fas fa-check-circle"></i> 解锁全部高清壁纸 (静态 & 动态)</li> <li><i class="fas fa-check-circle"></i> 解锁所有高级编辑工具</li> <li><i class="fas fa-check-circle"></i> 解锁高级自动更换选项</li> <li><i class="fas fa-check-circle"></i> 移除所有广告 (若有)</li> <li><i class="fas fa-check-circle"></i> 更多特权持续加入...</li> </ul>
+        <div class="px-4 space-y-4 mb-6"> <div class="subscription-option recommended" onclick="alert('选择按年订阅')"> <h3>按年订阅</h3> <p class="price">¥128.00 / 年</p> <p class="save">(立省 50%)</p> </div> <div class="subscription-option" onclick="alert('选择按月订阅')"> <h3>按月订阅</h3> <p class="price">¥20.00 / 月</p> </div> <div class="subscription-option" onclick="alert('选择终身解锁')"> <h3>终身解锁</h3> <p class="price">¥388.00</p> <p class="text-sm text-gray-500">一次购买，永久有效</p> </div> </div>
+        <button class="paywall-button primary w-full mb-4 mx-auto max-w-xs" onclick="alert('启动支付流程')"> 立即解锁全部特权 </button>
+        <div class="text-center space-x-4 mb-2"> <span class="text-link" onclick="alert('恢复购买')">恢复购买</span> <span class="text-link" onclick="alert('查看服务条款')">服务条款</span> <span class="text-link" onclick="alert('查看隐私政策')">隐私政策</span> </div>
+    </div>
+
+    <!-- Favorites Screen -->
+    <div class="screen" id="favorites-screen">
+        <div class="top-bar">
+            <i class="fas fa-arrow-left back-icon" onclick="showScreen('profile-screen')"></i>
+            <span class="title">我的收藏</span>
+            <div class="spacer"></div> </div>
+        <div class="flex justify-center my-4 border-b border-gray-700">
+            <button class="py-2 px-6 text-white border-b-2 border-purple-500">静态</button>
+            <button class="py-2 px-6 text-gray-400">动态</button>
+        </div>
+        <div class="wallpaper-grid flex-grow">
+            <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/e9c46a/fff?text=收藏1" alt="收藏1" loading="lazy"> </div>
+            <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/f4a261/fff?text=收藏2" alt="收藏2" loading="lazy"> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+            <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/e76f51/fff?text=收藏3" alt="收藏3" loading="lazy"> </div>
+            <p class="col-span-2 text-center text-gray-500 mt-6">暂无更多收藏</p>
+        </div>
+    </div>
+
+    <!-- Downloads Screen -->
+    <div class="screen" id="downloads-screen">
+        <div class="top-bar">
+            <i class="fas fa-arrow-left back-icon" onclick="showScreen('profile-screen')"></i>
+            <span class="title">我的下载</span>
+            <div class="spacer"></div> </div>
+        <div class="wallpaper-grid flex-grow mt-4"> <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-static-screen')"> <img src="https://placehold.co/180x320/2a9d8f/fff?text=下载1" alt="下载1" loading="lazy"> </div>
+            <div class="wallpaper-thumbnail" onclick="showScreen('wallpaper-detail-live-screen')"> <img src="https://placehold.co/180x320/8e2de2/fff?text=下载2" alt="下载2" loading="lazy"> <div class="play-indicator"><i class="fas fa-play"></i></div> <div class="premium-badge"><i class="fas fa-crown premium-icon"></i></div> </div>
+            <p class="col-span-2 text-center text-gray-500 mt-6">暂无下载记录</p>
+        </div>
+    </div>
+
+    <!-- Auto Change Screen (Final Fix Layout) -->
+    <div class="screen" id="auto-change-screen">
+        <div class="top-bar">
+            <i class="fas fa-arrow-left back-icon" onclick="showScreen('profile-screen')"></i>
+            <span class="title">自动更换壁纸</span>
+            <div class="spacer"></div> </div>
+        <div class="flex-grow mt-4 space-y-0">
+            <!-- Setting items with final corrected styles -->
+            <div class="setting-item">
+                <span class="label">启用自动更换</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span class="label">更换频率</span>
+                <span class="value" onclick="alert('选择频率')">每天 <i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="setting-item">
+                <span class="label">更换频率 <i class="fas fa-crown premium-icon"></i></span>
+                <span class="value text-gray-600" onclick="showScreen('paywall-screen')">每小时 <i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="setting-item">
+                <span class="label">更换来源</span>
+                <span class="value" onclick="alert('选择来源')">我的收藏 <i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="setting-item">
+                <span class="label">更换来源 <i class="fas fa-crown premium-icon"></i></span>
+                <span class="value text-gray-600" onclick="showScreen('paywall-screen')">按分类: 自然 <i class="fas fa-chevron-right"></i></span>
+            </div>
+            <div class="setting-item">
+                <span class="label">仅在Wi-Fi下更换</span>
+                <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button class="action-button w-full mt-8" onclick="alert('设置已保存')">保存设置</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" data-screen="home-screen" onclick="handleNavClick(this)"> <i class="fas fa-home"></i> <span>首页</span> </div>
+        <div class="nav-item" data-screen="static-library-screen" onclick="handleNavClick(this)"> <i class="fas fa-image"></i> <span>静态</span> </div>
+        <div class="nav-item" data-screen="live-library-screen" onclick="handleNavClick(this)"> <i class="fas fa-film"></i> <span>动态</span> </div>
+        <div class="nav-item" data-screen="profile-screen" onclick="handleNavClick(this)"> <i class="fas fa-user"></i> <span>我的</span> </div>
+    </div>
+
+</div>
+
+<script>
+    let navigationStack = ['home-screen']; // Basic navigation history
+
+    function showScreen(screenId) {
+        const currentActive = document.querySelector('.screen.active');
+        const currentScreenId = currentActive ? currentActive.id : null;
+
+        if (currentScreenId === screenId) return; // Do nothing if already on the screen
+
+        if (currentActive) {
+            currentActive.classList.remove('active');
+        }
+
+        const nextScreen = document.getElementById(screenId);
+        if (nextScreen) {
+            nextScreen.classList.add('active');
+            nextScreen.scrollTop = 0; // Scroll to top when screen changes
+            updateNav(screenId);
+
+            // Manage navigation stack (simple version)
+            const isMainTab = ['home-screen', 'static-library-screen', 'live-library-screen', 'profile-screen'].includes(screenId);
+
+             if (isMainTab) {
+                 // If navigating to a main tab, reset stack to just that item
+                 navigationStack = [screenId];
+             } else {
+                 // Check if navigating back
+                 const previousScreenIndex = navigationStack.indexOf(screenId);
+                 if (previousScreenIndex !== -1) {
+                     // If navigating back to a screen already in the stack, pop until that screen
+                     navigationStack = navigationStack.slice(0, previousScreenIndex + 1);
+                 } else {
+                     // Otherwise, push the new subpage onto the stack
+                     navigationStack.push(screenId);
+                 }
+             }
+             console.log("Nav Stack:", navigationStack.join(' -> ')); // For debugging
+
+        } else {
+            console.error("Screen not found:", screenId);
+             // Fallback to home screen if the target screen doesn't exist
+             if (navigationStack.length > 0 && navigationStack[0] !== 'home-screen') {
+                 showScreen('home-screen');
+             } else if (navigationStack.length === 0) {
+                  showScreen('home-screen'); // Absolute fallback
+             }
+        }
+    }
+
+    function goBack() {
+        // Pop the current screen from the stack
+        if (navigationStack.length > 1) {
+            navigationStack.pop();
+            const previousScreenId = navigationStack[navigationStack.length - 1];
+            // Directly show the previous screen without modifying stack further here
+            const currentActive = document.querySelector('.screen.active');
+            if (currentActive) currentActive.classList.remove('active');
+            const prevScreenElement = document.getElementById(previousScreenId);
+             if(prevScreenElement) {
+                 prevScreenElement.classList.add('active');
+                 prevScreenElement.scrollTop = 0;
+                 updateNav(previousScreenId);
+                 console.log("Nav Stack (back):", navigationStack.join(' -> '));
+             } else {
+                 console.error("Previous screen not found during goBack:", previousScreenId);
+                 showScreen('home-screen'); // Fallback if previous screen missing
+             }
+        } else {
+            // If only one screen (usually a main tab) is left, do nothing or handle app exit
+            console.log("Already at the root screen or main tab.");
+        }
+    }
+
+
+     function handleNavClick(navElement) {
+         const targetScreenId = navElement.getAttribute('data-screen');
+         if (targetScreenId) {
+             // Clicking a main nav item always resets stack and shows the screen
+             navigationStack = [targetScreenId]; // Reset stack
+             showScreen(targetScreenId); // Show the screen (will handle active state)
+         }
+     }
+
+    function updateNav(screenId) {
+        const navItems = document.querySelectorAll('.nav-item');
+        let activeItemFound = false;
+
+        // Determine the root tab for the current screen
+        let rootTabScreenId = screenId;
+        if (navigationStack.length > 0) {
+            // Find the *first* item in the stack that is a main tab screen
+            const mainTabInStack = navigationStack.find(id =>
+                ['home-screen', 'static-library-screen', 'live-library-screen', 'profile-screen'].includes(id)
+            );
+             if (mainTabInStack) {
+                 rootTabScreenId = mainTabInStack;
+             } else if (['editor-screen', 'wallpaper-detail-static-screen'].includes(screenId)) {
+                 rootTabScreenId = 'static-library-screen'; // Map related screens
+             } else if (['wallpaper-detail-live-screen'].includes(screenId)) {
+                 rootTabScreenId = 'live-library-screen';
+             } else if (['favorites-screen', 'downloads-screen', 'auto-change-screen', 'paywall-screen'].includes(screenId)) {
+                 // For these, try to find the *last* main tab before them in the stack
+                 let foundTab = 'profile-screen'; // Default to profile if triggered from there
+                 for (let i = navigationStack.length - 2; i >= 0; i--) {
+                     if (['home-screen', 'static-library-screen', 'live-library-screen', 'profile-screen'].includes(navigationStack[i])) {
+                         foundTab = navigationStack[i];
+                         break;
+                     }
+                 }
+                 rootTabScreenId = foundTab;
+             }
+        }
+
+
+        navItems.forEach(item => {
+            const itemScreen = item.getAttribute('data-screen');
+            if (itemScreen === rootTabScreenId) {
+                item.classList.add('active');
+                activeItemFound = true;
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // Fallback if somehow no active tab is determined (shouldn't happen with the logic above)
+        if (!activeItemFound && navItems.length > 0) {
+            // Activate the one corresponding to the *current* base screen in the stack
+             const currentBase = navigationStack.length > 0 ? navigationStack[0] : 'home-screen';
+             const fallbackItem = document.querySelector(`.nav-item[data-screen="${currentBase}"]`);
+             if (fallbackItem) fallbackItem.classList.add('active');
+        }
+    }
+
+    // --- Helper Functions ---
+    function toggleFavorite(element) {
+        const icon = element.querySelector('i');
+        if (icon) {
+            const isFavorited = icon.classList.contains('fas');
+            icon.classList.toggle('far', isFavorited); // Add far if it was fas
+            icon.classList.toggle('fas', !isFavorited); // Add fas if it was far
+            icon.classList.toggle('text-red-500', !isFavorited); // Add red if becoming fas
+            alert(isFavorited ? '已取消收藏！' : '已添加到收藏！');
+        }
+    }
+
+    function activateCategory(element) {
+         const rail = element.closest('.category-rail');
+         if (rail) { rail.querySelectorAll('.category-item.active').forEach(activeEl => activeEl.classList.remove('active')); }
+         element.classList.add('active');
+         alert(`筛选分类: ${element.textContent.trim()}`); // Use textContent.trim()
+    }
+
+     document.addEventListener('DOMContentLoaded', () => {
+         // Initial setup
+         const initialScreenId = navigationStack[0];
+         showScreen(initialScreenId);
+
+         // Attach category click listeners
+         document.querySelectorAll('.category-rail .category-item').forEach(item => {
+            item.addEventListener('click', () => activateCategory(item));
+         });
+
+          // Add event listeners for toggle switches (example)
+         document.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', (event) => {
+                 const settingItem = event.target.closest('.setting-item');
+                 if (!settingItem) return;
+                 const labelElement = settingItem.querySelector('.label');
+                 const label = labelElement ? labelElement.cloneNode(true) : null; // Clone to exclude premium icon text if needed
+                 let labelText = "Toggle"; // Default text
+                 if (label) {
+                     const premiumIcon = label.querySelector('.premium-icon');
+                     if(premiumIcon) label.removeChild(premiumIcon); // Remove icon before getting text
+                     labelText = label.textContent.trim();
+                 }
+
+                 console.log(`${labelText} toggled: ${event.target.checked}`);
+
+                 const isPremiumToggle = settingItem.querySelector('.label .premium-icon');
+                 const isChecked = event.target.checked;
+                 // Example: If a premium toggle is turned ON by a non-premium user (add your premium check logic)
+                 const userIsPremium = false; // Placeholder: Replace with actual premium status check
+                 if (isPremiumToggle && isChecked && !userIsPremium) {
+                     console.log("Premium feature toggle attempted without premium status.");
+                     event.target.checked = false; // Prevent toggle visually
+                     // Optionally add a slight visual indication of failure
+                     settingItem.classList.add('shake-animation'); // Needs a CSS animation defined
+                     setTimeout(() => settingItem.classList.remove('shake-animation'), 500);
+                     // Show paywall
+                     showScreen('paywall-screen');
+                 }
+            });
+         });
+
+         // Optional: Add a simple shake animation for failed premium toggle
+         const styleSheet = document.createElement("style");
+         styleSheet.type = "text/css";
+         styleSheet.innerText = `
+            .shake-animation {
+                animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                transform: translate3d(0, 0, 0);
+                backface-visibility: hidden;
+                perspective: 1000px;
+            }
+            @keyframes shake {
+                10%, 90% { transform: translate3d(-1px, 0, 0); }
+                20%, 80% { transform: translate3d(2px, 0, 0); }
+                30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+                40%, 60% { transform: translate3d(4px, 0, 0); }
+            }`;
+         document.head.appendChild(styleSheet);
+     });
+</script>
+
+</body>
+</html>
