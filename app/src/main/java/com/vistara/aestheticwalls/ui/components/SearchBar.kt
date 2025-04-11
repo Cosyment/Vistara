@@ -30,7 +30,7 @@ fun SearchBar(
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier,
-    hint: String = "搜索壁纸...",
+    placeholder: String = "搜索壁纸...",
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     elevation: Int = 4
@@ -72,7 +72,7 @@ fun SearchBar(
                         .fillMaxHeight(),
                     placeholder = {
                         Text(
-                            text = hint,
+                            text = placeholder,
                             style = MaterialTheme.typography.bodyMedium,
                             color = contentColor.copy(alpha = 0.5f)
                         )

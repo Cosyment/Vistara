@@ -1,13 +1,24 @@
 package com.vistara.aestheticwalls.ui.screens.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -16,16 +27,26 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.Carousel
-import com.vistara.aestheticwalls.ui.components.SearchBarWithSuggestions
-import com.vistara.aestheticwalls.ui.components.WallpaperGrid
+import com.vistara.aestheticwalls.ui.components.CategoryChip
+import com.vistara.aestheticwalls.ui.components.SearchBar
+import com.vistara.aestheticwalls.ui.components.WallpaperItem
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -115,9 +136,22 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Vistara壁纸") }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                title = {
+                    Text(
+                        "首页", style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                ), modifier = Modifier.background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
+                        )
+                    )
                 )
             )
         }, modifier = modifier
@@ -125,19 +159,30 @@ fun HomeScreen(
         LazyColumn(
             state = rememberLazyListState(),
             contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
             // 搜索栏
             item {
-                SearchBarWithSuggestions(
+                SearchBar(
                     query = "",
                     onQueryChange = {},
                     onSearch = onSearch,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = "搜索高清壁纸、动态效果...",
+//                    colors = SearchBarDefaults.colors(
+//                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+//                        inputFieldColors = TextFieldDefaults.colors(
+//                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+//                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+//                            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+//                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                    )
                 )
             }
 
@@ -148,77 +193,58 @@ fun HomeScreen(
                     onBannerClick = onBannerClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
+                        .height(160.dp)
+                        .padding(horizontal = 16.dp)
+                        .clip(RoundedCornerShape(15.dp))
+                )
+            }
+
+            // 每日精选
+            item {
+                DailyPickSection(
+                    onWallpaperClick = { onWallpaperClick(it) },
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            // 分类导航
+            item {
+                CategorySection(
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // 今日推荐模块
+            // 热门静态
             item {
-                Text(
-                    text = "今日推荐",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            // 壁纸网格为独立的item
-            item {
-                WallpaperGrid(
-                    wallpapers = demoWallpapers,
-                    onWallpaperClick = onWallpaperClick,
-                    columns = 2,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // 热门静态壁纸标题
-            item {
-                Text(
-                    text = "热门静态",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            // 静态壁纸网格
-            item {
-                WallpaperGrid(
+                WallpaperSection(
+                    title = "热门静态",
                     wallpapers = staticWallpapers,
                     onWallpaperClick = onWallpaperClick,
-                    columns = 2,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // 只有在有动态壁纸时才显示动态壁纸部分
-            if (liveWallpapers.isNotEmpty()) {
-                // 动态壁纸标题
-                item {
-                    Text(
-                        text = "炫酷动态",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
+            // 炫酷动态
+            item {
+                WallpaperSection(
+                    title = "炫酷动态",
+                    wallpapers = liveWallpapers,
+                    onWallpaperClick = onWallpaperClick,
+                    showPlayIndicator = true,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
 
-                // 动态壁纸网格
-                item {
-                    WallpaperGrid(
-                        wallpapers = liveWallpapers,
-                        onWallpaperClick = onWallpaperClick,
-                        columns = 2,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
+            // 最新上传
+            item {
+                WallpaperSection(
+                    title = "最新上传",
+                    wallpapers = demoWallpapers,
+                    onWallpaperClick = onWallpaperClick,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
         }
     }
@@ -230,6 +256,135 @@ fun HomeScreenPreview() {
     VistaraTheme {
         Surface {
             HomeScreen()
+        }
+    }
+}
+
+@Composable
+private fun DailyPickSection(
+    onWallpaperClick: (Wallpaper) -> Unit, modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "每日精选", style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.SemiBold
+            ), modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(380f / 456f)
+                .clickable { onWallpaperClick(demoWallpapers.first()) },
+            shape = RoundedCornerShape(15.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = demoWallpapers.first().thumbnailUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent, Color.Black.copy(alpha = 0.8f)
+                                )
+                            )
+                        )
+                        .padding(15.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "宁静山谷", style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold, shadow = Shadow(
+                                    color = Color.Black.copy(alpha = 0.5f),
+                                    offset = Offset(1f, 1f),
+                                    blurRadius = 3f
+                                )
+                            ), color = Color.White
+                        )
+                        Text(
+                            text = "来自：艺术家A", style = MaterialTheme.typography.bodySmall.copy(
+                                shadow = Shadow(
+                                    color = Color.Black.copy(alpha = 0.5f),
+                                    offset = Offset(1f, 1f),
+                                    blurRadius = 3f
+                                )
+                            ), color = Color.White.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategorySection(
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "探索分类", style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.SemiBold
+            ), modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Text(
+            text = "常用分类:",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(categories) { category ->
+                CategoryChip(
+                    text = category.name,
+                    selected = category.isSelected,
+                    onClick = { /* 处理点击 */ })
+            }
+        }
+    }
+}
+
+@Composable
+private fun WallpaperSection(
+    title: String,
+    wallpapers: List<Wallpaper>,
+    onWallpaperClick: (Wallpaper) -> Unit,
+    showPlayIndicator: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = title, style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.SemiBold
+            ), modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(wallpapers) { wallpaper ->
+                WallpaperItem(
+                    wallpaper = wallpaper,
+                    onClick = { onWallpaperClick(wallpaper) },
+                    showPlayIndicator = showPlayIndicator && wallpaper.isLive
+                )
+            }
         }
     }
 }
