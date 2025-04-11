@@ -32,11 +32,11 @@ data class Collection(
  */
 data class Banner(
     val id: String,
-    val imageUrl: String,
-    val title: String,
+    val imageUrl: String? = null,
+    val title: String? = null,
     val subtitle: String? = null,
     val actionType: BannerActionType,
-    val actionTarget: String
+    val actionTarget: String? = null
 )
 
 /**

@@ -142,7 +142,7 @@ fun WallpaperDetail(
                         )
                         
                         Text(
-                            text = "${wallpaper.resolution.width} x ${wallpaper.resolution.height}",
+                            text = "${wallpaper.resolution?.width} x ${wallpaper.resolution?.height}",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.7f)
                         )

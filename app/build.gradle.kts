@@ -23,13 +23,19 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "UNSPLASH_API_KEY", "")
-            buildConfigField("String", "PEXELS_API_KEY", "")
-            buildConfigField("String", "PIXABAY_API_KEY", "")
-            buildConfigField("String", "WALLHAVEN_API_KEY", "")
+            buildConfigField("String", "UNSPLASH_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PEXELS_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PIXABAY_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
+        }
+        debug {
+            buildConfigField("String", "UNSPLASH_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PEXELS_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PIXABAY_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
         }
     }
     compileOptions {

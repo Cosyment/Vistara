@@ -1,5 +1,8 @@
 package com.vistara.aestheticwalls.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * 壁纸分辨率数据类
  */
@@ -10,39 +13,35 @@ data class Resolution(
 }
 
 /**
- * 壁纸数据模型
- * @param id 壁纸唯一标识
- * @param title 壁纸标题（可选）
- * @param url 壁纸完整URL
- * @param thumbnailUrl 缩略图URL
- * @param author 作者
- * @param source 来源平台（如Unsplash, Pexels等）
- * @param isPremium 是否为高级壁纸（需要付费解锁）
- * @param isLive 是否为动态壁纸
- * @param tags 标签列表
- * @param resolution 分辨率
- * @param aspectRatio 宽高比
+ * 壁纸实体类
+ * 用于表示单个壁纸的所有信息
  */
+@Entity(tableName = "wallpapers")
 data class Wallpaper(
-    val id: String,
-    val title: String? = null,
+    @PrimaryKey val id: String, // 格式: "{source}_{originalId}" 例如: "unsplash_123"
+    val title: String?,
     val description: String? = null,
-    val url: String,
-    val thumbnailUrl: String,
-    val previewUrl: String? = null,
-    val width: Int = 0,
-    val height: Int = 0,
-    val aspectRatio: Float = width.toFloat() / height.toFloat(),
+    val url: String? = null,
+    val thumbnailUrl: String? = null,
     val author: String? = null,
     val authorUrl: String? = null,
-    val source: String,
-    val sourceUrl: String? = null,
-    val attributionRequired: Boolean = false,
+    val source: String? = null, // "unsplash", "pexels", "pixabay", "wallhaven"
+    val sourceUrl: String? = null, // 原始图片页面URL
+    val width: Int = 0,
+    val height: Int = 0,
+    val color: String? = null, // 主色调
+    val blurHash: String? = null, // 用于生成模糊预览
     val isPremium: Boolean = false,
     val isLive: Boolean = false,
-    val tags: List<String> = emptyList(),
-    val categoryIds: List<String> = emptyList(),
-    val createdAt: Long = System.currentTimeMillis(),
+    val isFavorite: Boolean = false,
+    val isDownloaded: Boolean = false,
+    val downloadUrl: String? = null, // 高清下载链接
     val downloadCount: Int = 0,
-    val resolution: Resolution = Resolution(width, height)
+    val resolution: Resolution? = null,
+    val tags: List<String> = emptyList(),
+    val categoryId: String? = null,
+    val previewUrl: String? = null,
+    val attributionRequired: Boolean? = true,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )

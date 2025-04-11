@@ -5,6 +5,7 @@ import com.vistara.aestheticwalls.data.model.Category
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import java.io.File
 import kotlinx.coroutines.flow.Flow
+import com.vistara.aestheticwalls.data.util.Resource
 
 /**
  * 壁纸仓库接口
@@ -13,9 +14,15 @@ import kotlinx.coroutines.flow.Flow
 interface WallpaperRepository {
 
     /**
-     * 获取推荐壁纸
+     * 获取精选壁纸
      */
-    suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): List<Wallpaper>
+    suspend fun getFeaturedWallpapers(page: Int = 1, pageSize: Int = 10): Resource<List<Wallpaper>>
+
+    /**
+     * 获取壁纸列表
+     * @param type 壁纸类型："static" 或 "live"
+     */
+    suspend fun getWallpapers(type: String, page: Int = 1, pageSize: Int = 10): Resource<List<Wallpaper>>
     
     /**
      * 获取热门壁纸

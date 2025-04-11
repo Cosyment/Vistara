@@ -19,11 +19,11 @@ data class PexelsPhoto(
     val photographerId: Int,
     
     @SerializedName("avg_color")
-    val avgColor: String,
+    val avgColor: String?,
     
     val src: PexelsPhotoSources,
     val liked: Boolean,
-    val alt: String
+    val alt: String?
 )
 
 /**

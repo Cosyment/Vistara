@@ -263,19 +263,24 @@ class AutoWallpaperWorker @Inject constructor(
                     return@withContext Result.failure()
                 }
 
-                // 下载和设置壁纸
-                val result = downloadAndSetWallpaper(wallpaper, targetScreen)
-                if (!result) {
-                    return@withContext Result.failure()
-                }
-
                 // 记录历史
                 val history = AutoChangeHistory(
                     wallpaperId = wallpaper.id,
+                    wallpaperUrl = wallpaper.url ?: "",
                     timestamp = System.currentTimeMillis(),
-                    targetScreen = targetScreen
+                    targetScreen = when (targetScreen) {
+                        WallpaperTarget.HOME -> "home"
+                        WallpaperTarget.LOCK -> "lock"
+                        WallpaperTarget.BOTH -> "both"
+                    }
                 )
                 wallpaperRepository.recordAutoChangeHistory(history)
+
+                // 下载并设置壁纸
+                val success = downloadAndSetWallpaper(wallpaper, targetScreen)
+                if (!success) {
+                    return@withContext Result.failure()
+                }
 
                 // 发送通知（如果启用）
                 if (userSettings.showDownloadNotification) {
@@ -317,20 +322,7 @@ class AutoWallpaperWorker @Inject constructor(
                 BitmapFactory.decodeFile(localFile.absolutePath)
             } else {
                 // 从URL下载
-                val url = URL(wallpaper.url)
-                val connection = url.openConnection()
-                connection.connectTimeout = 10000
-                connection.readTimeout = 15000
-                val inputStream = connection.getInputStream()
-                val bitmap = BitmapFactory.decodeStream(inputStream)
-                inputStream.close()
-
-                // 保存到本地（可选）
-                bitmap?.let {
-                    wallpaperUtils.saveBitmapToFile(it, wallpaper.id)
-                }
-
-                bitmap
+                downloadWallpaper(wallpaper.url)
             }
 
             if (bitmap == null) {
@@ -387,23 +379,34 @@ class AutoWallpaperWorker @Inject constructor(
     /**
      * 下载壁纸图片
      */
-    private suspend fun downloadWallpaper(url: String): Bitmap = withContext(Dispatchers.IO) {
-        val client = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
+    private suspend fun downloadWallpaper(wallpaperUrl: String?): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            if (wallpaperUrl.isNullOrBlank()) {
+                Log.e(TAG, "Invalid wallpaper URL")
+                return@withContext null
+            }
+
+            val client = OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .build()
+                
+            val request = Request.Builder()
+                .url(wallpaperUrl)
+                .build()
+                
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) {
+                throw IOException("Failed to download wallpaper: ${response.code}")
+            }
             
-        val request = Request.Builder()
-            .url(url)
-            .build()
-            
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) throw IOException("下载壁纸失败：${response.code}")
-        
-        val inputStream = response.body?.byteStream()
-            ?: throw IOException("下载壁纸失败：无法获取响应内容")
-            
-        BitmapFactory.decodeStream(inputStream)
+            response.body?.bytes()?.let { bytes ->
+                BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error downloading wallpaper", e)
+            null
+        }
     }
 
     /**

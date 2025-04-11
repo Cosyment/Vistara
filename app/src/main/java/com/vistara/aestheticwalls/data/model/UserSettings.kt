@@ -1,5 +1,8 @@
 package com.vistara.aestheticwalls.data.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * 用户设置数据类
  * 包含用户的所有偏好设置
@@ -87,11 +90,16 @@ data class DownloadedWallpaper(
 /**
  * 自动更换壁纸历史
  */
+@Entity(tableName = "auto_change_history")
 data class AutoChangeHistory(
-    val id: String = System.currentTimeMillis().toString(),
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
     val wallpaperId: String,
+    val wallpaperUrl: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val targetScreen: WallpaperTarget = WallpaperTarget.BOTH
+    val success: Boolean = true,
+    val errorMessage: String? = null,
+    val targetScreen: String?=null // "home", "lock", "both"
 )
 
 /**

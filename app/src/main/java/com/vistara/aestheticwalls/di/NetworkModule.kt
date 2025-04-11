@@ -3,7 +3,7 @@ package com.vistara.aestheticwalls.di
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.vistara.aestheticwalls.data.remote.ApiKeyManager
+import com.vistara.aestheticwalls.BuildConfig
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
@@ -57,9 +57,9 @@ object NetworkModule {
      */
     @Provides
     @Singleton
-    fun provideLoggingInterceptor(apiKeyManager: ApiKeyManager): HttpLoggingInterceptor {
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = if (apiKeyManager.isDebugMode()) {
+            level = if (BuildConfig.DEBUG) {
                 HttpLoggingInterceptor.Level.BODY
             } else {
                 HttpLoggingInterceptor.Level.NONE
@@ -112,10 +112,10 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("unsplashAuthInterceptor")
-    fun provideUnsplashAuthInterceptor(apiKeyManager: ApiKeyManager): Interceptor {
+    fun provideUnsplashAuthInterceptor(): Interceptor {
         return Interceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Client-ID ${apiKeyManager.getUnsplashApiKey()}")
+                .addHeader("Authorization", "Client-ID ${BuildConfig.UNSPLASH_API_KEY}")
                 .build()
             chain.proceed(request)
         }
@@ -165,10 +165,10 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("pexelsAuthInterceptor")
-    fun providePexelsAuthInterceptor(apiKeyManager: ApiKeyManager): Interceptor {
+    fun providePexelsAuthInterceptor(): Interceptor {
         return Interceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", apiKeyManager.getPexelsApiKey())
+                .addHeader("Authorization", BuildConfig.PEXELS_API_KEY)
                 .build()
             chain.proceed(request)
         }
@@ -218,14 +218,14 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("pixabayAuthInterceptor")
-    fun providePixabayAuthInterceptor(apiKeyManager: ApiKeyManager): Interceptor {
+    fun providePixabayAuthInterceptor(): Interceptor {
         return Interceptor { chain ->
             val originalRequest = chain.request()
             val originalUrl = originalRequest.url
             
             // 添加API密钥作为查询参数
             val url = originalUrl.newBuilder()
-                .addQueryParameter("key", apiKeyManager.getPixabayApiKey())
+                .addQueryParameter("key", BuildConfig.PIXABAY_API_KEY)
                 .build()
             
             val request = originalRequest.newBuilder()
@@ -280,14 +280,14 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("wallhavenAuthInterceptor")
-    fun provideWallhavenAuthInterceptor(apiKeyManager: ApiKeyManager): Interceptor {
+    fun provideWallhavenAuthInterceptor(): Interceptor {
         return Interceptor { chain ->
             val originalRequest = chain.request()
             val originalUrl = originalRequest.url
             
             // 添加API密钥作为查询参数
             val url = originalUrl.newBuilder()
-                .addQueryParameter("apikey", apiKeyManager.getWallhavenApiKey())
+                .addQueryParameter("apikey", BuildConfig.WALLHAVEN_API_KEY)
                 .build()
             
             val request = originalRequest.newBuilder()

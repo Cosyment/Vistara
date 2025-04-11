@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
+    <string name="search_hint">搜索壁纸...</string>
     
     <!-- 通知相关字符串 -->
     <string name="notification_channel_wallpaper">壁纸更换通知</string>

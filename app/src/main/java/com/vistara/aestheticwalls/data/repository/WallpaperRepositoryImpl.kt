@@ -8,18 +8,16 @@ import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.Category
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import com.vistara.aestheticwalls.data.remote.NetworkBoundResource
+import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.ApiSource
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
-import com.vistara.aestheticwalls.data.remote.model.ApiResult
-import com.vistara.aestheticwalls.data.remote.model.ApiSource
 import com.vistara.aestheticwalls.data.remote.safeApiCall
+import com.vistara.aestheticwalls.data.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
@@ -46,60 +44,106 @@ class WallpaperRepositoryImpl @Inject constructor(
     /**
      * 获取推荐壁纸，混合不同来源的内容
      */
-    override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): List<Wallpaper> {
-        // 根据页码决定使用哪个API源
-        return when (page % 4) {
-            0 -> {
-                // 使用Unsplash API
-                val response = safeApiCall(ApiSource.UNSPLASH) {
-                    unsplashApiService.getPhotos(page = page, perPage = pageSize)
+    override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): Resource<List<Wallpaper>> = withContext(Dispatchers.IO) {
+        try {
+            val wallpapers = when (page % 4) {
+                0 -> {
+                    // 使用Unsplash API
+                    val response = safeApiCall(ApiSource.UNSPLASH) {
+                        unsplashApiService.getPhotos(page = page, perPage = pageSize)
+                    }
+                    
+                    when (response) {
+                        is ApiResult.Success -> unsplashMapper.toWallpapers(response.data)
+                        else -> emptyList()
+                    }
                 }
-                
-                when (response) {
-                    is ApiResult.Success -> unsplashMapper.toWallpapers(response.data)
-                    else -> emptyList()
+                1 -> {
+                    // 使用Pexels API
+                    val response = safeApiCall(ApiSource.PEXELS) {
+                        pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize)
+                    }
+                    
+                    when (response) {
+                        is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
+                        else -> emptyList()
+                    }
+                }
+                2 -> {
+                    // 使用Pixabay API
+                    val response = safeApiCall(ApiSource.PIXABAY) {
+                        pixabayApiService.searchImages(query = "nature", page = page, perPage = pageSize)
+                    }
+                    
+                    when (response) {
+                        is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
+                        else -> emptyList()
+                    }
+                }
+                else -> {
+                    // 使用Wallhaven API
+                    val response = safeApiCall(ApiSource.WALLHAVEN) {
+                        wallhavenApiService.search(
+                            query = "",
+                            sorting = WallhavenApiService.SORTING_TOPLIST,
+                            page = page
+                        )
+                    }
+                    
+                    when (response) {
+                        is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
+                        else -> emptyList()
+                    }
                 }
             }
-            1 -> {
-                // 使用Pexels API
-                val response = safeApiCall(ApiSource.PEXELS) {
-                    pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize)
-                }
-                
-                when (response) {
-                    is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
-                    else -> emptyList()
-                }
-            }
-            2 -> {
-                // 使用Pixabay API
-                val response = safeApiCall(ApiSource.PIXABAY) {
-                    pixabayApiService.searchImages(query = "nature", page = page, perPage = pageSize)
-                }
-                
-                when (response) {
-                    is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
-                    else -> emptyList()
-                }
-            }
-            else -> {
-                // 使用Wallhaven API
-                val response = safeApiCall(ApiSource.WALLHAVEN) {
-                    wallhavenApiService.search(
-                        query = "",
-                        sorting = WallhavenApiService.SORTING_TOPLIST,
-                        page = page
-                    )
-                }
-                
-                when (response) {
-                    is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
-                    else -> emptyList()
-                }
-            }
+            Resource.Success(wallpapers)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "获取推荐壁纸失败")
         }
     }
-    
+
+    override suspend fun getWallpapers(
+        type: String,
+        page: Int,
+        pageSize: Int
+    ): Resource<List<Wallpaper>> = withContext(Dispatchers.IO) {
+        try {
+            val wallpapers = when (type.lowercase()) {
+                "static" -> {
+                    // 获取静态壁纸，使用 Unsplash 和 Pexels 的组合
+                    val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
+                        unsplashApiService.getPhotos(page = page, perPage = pageSize / 2)
+                    }
+                    
+                    val pexelsResponse = safeApiCall(ApiSource.PEXELS) {
+                        pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize / 2)
+                    }
+                    
+                    val unsplashWallpapers = when (unsplashResponse) {
+                        is ApiResult.Success -> unsplashMapper.toWallpapers(unsplashResponse.data)
+                        else -> emptyList()
+                    }
+                    
+                    val pexelsWallpapers = when (pexelsResponse) {
+                        is ApiResult.Success -> pexelsMapper.toWallpapers(pexelsResponse.data.photos)
+                        else -> emptyList()
+                    }
+                    
+                    unsplashWallpapers + pexelsWallpapers
+                }
+                "live" -> {
+                    // 暂时不支持动态壁纸，返回空列表
+                    emptyList()
+                }
+                else -> emptyList()
+            }
+            
+            Resource.Success(wallpapers)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "获取壁纸失败")
+        }
+    }
+
     /**
      * 获取热门壁纸，综合多个来源
      */

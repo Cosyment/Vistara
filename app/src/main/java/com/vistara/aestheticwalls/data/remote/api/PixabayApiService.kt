@@ -1,6 +1,6 @@
 package com.vistara.aestheticwalls.data.remote.api
 
-import com.vistara.aestheticwalls.data.model.pixabay.PixabaySearchResponse
+import com.vistara.aestheticwalls.data.model.pixabay.PixabayResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -26,24 +26,21 @@ interface PixabayApiService {
      * @param colors 过滤颜色，如red、orange、yellow、green、blue...
      * @param safeSearch 是否开启安全搜索，默认开启
      */
-    @GET(".")
+    @GET("api/")
     suspend fun searchImages(
         @Query("q") query: String,
-        @Query("page") page: Int = 1,
-        @Query("per_page") perPage: Int = 20,
-        @Query("image_type") imageType: String? = null,
-        @Query("orientation") orientation: String? = null,
-        @Query("category") category: String? = null,
-        @Query("min_width") minWidth: Int? = null,
-        @Query("min_height") minHeight: Int? = null,
-        @Query("colors") colors: String? = null,
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int = 30,
         @Query("safesearch") safeSearch: Boolean = true
-    ): PixabaySearchResponse
+    ): PixabayResponse
     
     /**
      * 根据ID获取图片详情
      * @param id 图片ID
      */
-    @GET(".")
-    suspend fun getImageById(@Query("id") id: Int): PixabaySearchResponse
+    @GET("api/")
+    suspend fun getImageById(
+        @Query("id") id: Int,
+        @Query("safesearch") safeSearch: Boolean = true
+    ): PixabayResponse
 } 
