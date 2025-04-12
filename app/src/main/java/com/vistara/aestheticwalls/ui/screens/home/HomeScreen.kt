@@ -183,7 +183,7 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp)
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 10.dp)
                         .clip(RoundedCornerShape(15.dp))
                 )
             }

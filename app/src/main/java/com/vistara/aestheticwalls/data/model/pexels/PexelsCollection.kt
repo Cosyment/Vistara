@@ -9,16 +9,19 @@ data class PexelsCollection(
     val id: String,
     val title: String,
     val description: String? = null,
-    
+
     @SerializedName("private")
     val isPrivate: Boolean,
-    
+
     @SerializedName("media_count")
     val mediaCount: Int,
-    
+
     @SerializedName("photos_count")
-    val photosCount: Int,
-    
+    val photos_count: Int?,
+
     @SerializedName("videos_count")
-    val videosCount: Int
-) 
+    val videosCount: Int,
+
+    // 集合封面图片
+    val media: List<PexelsPhoto>?
+)

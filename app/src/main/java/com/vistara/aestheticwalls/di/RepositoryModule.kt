@@ -13,6 +13,7 @@ import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
+import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import com.vistara.aestheticwalls.utils.NetworkMonitor
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepositoryImpl
@@ -42,7 +43,8 @@ object RepositoryModule {
         wallpaperDao: WallpaperDao,
         apiLoadBalancer: ApiLoadBalancer,
         apiUsageTracker: ApiUsageTracker,
-        networkMonitor: NetworkMonitor
+        networkMonitor: NetworkMonitor,
+        wallpaperApiAdapter: WallpaperApiAdapter
     ): WallpaperRepository {
         return WallpaperRepositoryImpl(
             unsplashApiService = unsplashApiService,
@@ -56,7 +58,8 @@ object RepositoryModule {
             wallpaperDao = wallpaperDao,
             apiLoadBalancer = apiLoadBalancer,
             apiUsageTracker = apiUsageTracker,
-            networkMonitor = networkMonitor
+            networkMonitor = networkMonitor,
+            wallpaperApiAdapter = wallpaperApiAdapter
         )
     }
 

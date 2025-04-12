@@ -1,13 +1,32 @@
 package com.vistara.aestheticwalls.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +64,7 @@ fun CollectionDetail(
 ) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-    
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -71,7 +90,7 @@ fun CollectionDetail(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                
+
                 // 渐变叠加层
                 Box(
                     modifier = Modifier
@@ -85,7 +104,7 @@ fun CollectionDetail(
                             )
                         )
                 )
-                
+
                 // 标题和壁纸数量
                 Column(
                     modifier = Modifier
@@ -98,9 +117,9 @@ fun CollectionDetail(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
-                    
+
                     Spacer(modifier = Modifier.height(4.dp))
-                    
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -109,10 +128,10 @@ fun CollectionDetail(
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.8f)
                         )
-                        
+
                         if (collection.isPremium && !isPremiumUser) {
                             Spacer(modifier = Modifier.width(8.dp))
-                            
+
                             Surface(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(16.dp)
@@ -127,7 +146,7 @@ fun CollectionDetail(
                         }
                     }
                 }
-                
+
                 // 返回按钮
                 IconButton(
                     onClick = onBackPressed,
@@ -145,7 +164,7 @@ fun CollectionDetail(
                     )
                 }
             }
-            
+
             // 专题描述
             Card(
                 modifier = Modifier
@@ -164,17 +183,17 @@ fun CollectionDetail(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Text(
-                        text = collection.description,
+                        text = collection.description ?: "",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                     )
                 }
             }
-            
+
             // 标签显示（如果有）
             if (collection.tags.isNotEmpty()) {
                 Card(
@@ -194,9 +213,9 @@ fun CollectionDetail(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -210,7 +229,10 @@ fun CollectionDetail(
                                         text = tag,
                                         style = MaterialTheme.typography.labelMedium,
                                         color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                        modifier = Modifier.padding(
+                                            horizontal = 12.dp,
+                                            vertical = 6.dp
+                                        )
                                     )
                                 }
                             }
@@ -218,7 +240,7 @@ fun CollectionDetail(
                     }
                 }
             }
-            
+
             // 溢价内容提示（如果需要）
             if (collection.isPremium && !isPremiumUser) {
                 Card(
@@ -245,14 +267,14 @@ fun CollectionDetail(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
-                            
+
                             Text(
                                 text = "升级到高级版解锁所有壁纸",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
                         }
-                        
+
                         Button(
                             onClick = onUpgradeClick,
                             colors = ButtonDefaults.buttonColors(
@@ -267,10 +289,10 @@ fun CollectionDetail(
                     }
                 }
             }
-            
+
             // 壁纸网格
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -289,7 +311,7 @@ fun CollectionDetail(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        
+
                         if (collection.wallpaperCount > 0) {
                             Text(
                                 text = "${wallpapers.size}/${collection.wallpaperCount}",
@@ -298,16 +320,16 @@ fun CollectionDetail(
                             )
                         }
                     }
-                    
+
                     // 使用网格显示壁纸
                     WallpaperGrid(
-                        wallpapers = wallpapers, 
+                        wallpapers = wallpapers,
                         onWallpaperClick = onWallpaperClick,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
@@ -325,7 +347,7 @@ fun CollectionItem(
     isPremiumUser: Boolean = false
 ) {
     val context = LocalContext.current
-    
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -349,7 +371,7 @@ fun CollectionItem(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            
+
             // 渐变叠加层
             Box(
                 modifier = Modifier
@@ -363,7 +385,7 @@ fun CollectionItem(
                         )
                     )
             )
-            
+
             // Premium标记
             if (collection.isPremium && !isPremiumUser) {
                 Surface(
@@ -379,7 +401,7 @@ fun CollectionItem(
                     )
                 }
             }
-            
+
             // 标题和描述
             Column(
                 modifier = Modifier
@@ -394,7 +416,7 @@ fun CollectionItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 Text(
                     text = "${collection.wallpaperCount}张壁纸",
                     style = MaterialTheme.typography.bodySmall,

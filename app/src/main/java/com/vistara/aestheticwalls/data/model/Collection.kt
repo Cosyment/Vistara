@@ -2,23 +2,30 @@ package com.vistara.aestheticwalls.data.model
 
 /**
  * 壁纸专题/集合数据模型
- * @param id 专题唯一标识
+ * @param id 专题唯一标识，格式为"平台_原始ID"，如"pexels_123"
  * @param title 专题标题
  * @param description 专题描述
  * @param coverUrl 专题封面图URL
  * @param wallpaperCount 专题中壁纸数量
  * @param isPremium 是否为高级专题（需要付费解锁）
  * @param wallpapers 专题中的壁纸（可选，初始可能为空，需要进一步获取）
+ * @param source 来源平台，如"pexels", "unsplash"
+ * @param sourceUrl 原始集合页面URL
+ * @param isFeatured 是否为精选集合
  */
 data class Collection(
     val id: String,
     val title: String,
-    val description: String,
-    val coverUrl: String,
-    val wallpaperCount: Int,
+    val description: String? = null,
+    val coverUrl: String? = null,
+    val wallpaperCount: Int = 0,
     val isPremium: Boolean = false,
     val wallpapers: List<Wallpaper> = emptyList(),
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val source: String? = null,
+    val sourceUrl: String? = null,
+    val isFeatured: Boolean = false,
+    val creator: String? = null
 )
 
 /**
@@ -62,4 +69,4 @@ data class Category(
     val isPremium: Boolean = false,
     val isHidden: Boolean = false,
     val sortOrder: Int = 0
-) 
+)

@@ -16,6 +16,7 @@ import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
+import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import com.vistara.aestheticwalls.data.remote.safeApiCall
 import com.vistara.aestheticwalls.utils.NetworkMonitor
 
@@ -44,12 +45,13 @@ class WallpaperRepositoryImpl @Inject constructor(
     private val wallpaperDao: WallpaperDao,
     private val apiLoadBalancer: ApiLoadBalancer,
     private val apiUsageTracker: ApiUsageTracker,
-    private val networkMonitor: NetworkMonitor
+    private val networkMonitor: NetworkMonitor,
+    private val wallpaperApiAdapter: WallpaperApiAdapter // 新增的壁纸API适配器
 ) : WallpaperRepository {
 
     /**
-     * 获取推荐壁纸，混合不同来源的内容
-     * 使用API负载均衡器选择最合适的API来源
+     * 获取推荐壁纸
+     * 使用壁纸API适配器获取数据
      */
     override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
         try {
@@ -63,66 +65,17 @@ class WallpaperRepositoryImpl @Inject constructor(
                 // 如果本地没有数据，返回错误
                 return@withContext ApiResult.Error(
                     message = "无网络连接，无法获取壁纸",
-                    source = ApiSource.UNSPLASH
+                    source = wallpaperApiAdapter.getApiSource()
                 )
             }
 
-            // 使用API负载均衡器选择最合适的API来源
-            val apiSource = apiLoadBalancer.getNextApiSource()
-
-            val wallpapers = when (apiSource) {
-                ApiSource.UNSPLASH -> {
-                    // 使用Unsplash API
-                    val response = safeApiCall(ApiSource.UNSPLASH) {
-                        unsplashApiService.getPhotos(page = page, perPage = pageSize)
-                    }
-
-                    when (response) {
-                        is ApiResult.Success -> unsplashMapper.toWallpapers(response.data)
-                        else -> emptyList()
-                    }
-                }
-                ApiSource.PEXELS -> {
-                    // 使用Pexels API
-                    val response = safeApiCall(ApiSource.PEXELS) {
-                        pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize)
-                    }
-
-                    when (response) {
-                        is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
-                        else -> emptyList()
-                    }
-                }
-                ApiSource.PIXABAY -> {
-                    // 使用Pixabay API
-                    val response = safeApiCall(ApiSource.PIXABAY) {
-                        pixabayApiService.searchImages(query = "nature", page = page, perPage = pageSize)
-                    }
-
-                    when (response) {
-                        is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
-                        else -> emptyList()
-                    }
-                }
-                ApiSource.WALLHAVEN -> {
-                    // 使用Wallhaven API
-                    val response = safeApiCall(ApiSource.WALLHAVEN) {
-                        wallhavenApiService.search(
-                            query = "",
-                            sorting = WallhavenApiService.SORTING_TOPLIST,
-                            page = page
-                        )
-                    }
-
-                    when (response) {
-                        is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
-                        else -> emptyList()
-                    }
-                }
-            }
-            ApiResult.Success(wallpapers)
+            // 直接使用壁纸API适配器获取精选壁纸
+            return@withContext wallpaperApiAdapter.getFeaturedWallpapers(page, pageSize)
         } catch (e: Exception) {
-            ApiResult.Error(message = e.message ?: "获取推荐壁纸失败", source = ApiSource.UNSPLASH)
+            ApiResult.Error(
+                message = e.message ?: "获取推荐壁纸失败",
+                source = wallpaperApiAdapter.getApiSource()
+            )
         }
     }
 
@@ -259,62 +212,44 @@ class WallpaperRepositoryImpl @Inject constructor(
     }
 
     /**
-     * 搜索壁纸，综合多个来源
+     * 搜索壁纸
+     * 使用壁纸API适配器搜索壁纸
      */
     override suspend fun searchWallpapers(query: String, page: Int, pageSize: Int): List<Wallpaper> {
-        // 根据页码决定使用哪个API源
-        return when (page % 4) {
-            0 -> {
-                // 使用Unsplash API
-                val response = safeApiCall(ApiSource.UNSPLASH) {
-                    unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
-                    else -> emptyList()
-                }
+        // 检查网络连接
+        if (!networkMonitor.isNetworkAvailable()) {
+            // 如果无网络连接，尝试从本地获取数据
+            val localWallpapers = wallpaperDao.searchFavorites("%$query%")
+            if (localWallpapers.isNotEmpty()) {
+                return localWallpapers
             }
-            1 -> {
-                // 使用Pexels API
-                val response = safeApiCall(ApiSource.PEXELS) {
-                    pexelsApiService.searchPhotos(query = query, page = page, perPage = pageSize)
-                }
+            return emptyList()
+        }
 
-                when (response) {
-                    is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
-                    else -> emptyList()
-                }
-            }
-            2 -> {
-                // 使用Pixabay API
-                val response = safeApiCall(ApiSource.PIXABAY) {
-                    pixabayApiService.searchImages(query = query, page = page, perPage = pageSize)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
-                    else -> emptyList()
-                }
-            }
-            else -> {
-                // 使用Wallhaven API
-                val response = safeApiCall(ApiSource.WALLHAVEN) {
-                    wallhavenApiService.search(query = query, page = page)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
-                    else -> emptyList()
-                }
-            }
+        // 使用壁纸API适配器搜索壁纸
+        val result = wallpaperApiAdapter.searchWallpapers(query, page, pageSize)
+        return when (result) {
+            is ApiResult.Success -> result.data
+            else -> emptyList()
         }
     }
 
     /**
      * 获取壁纸详情
+     * 使用壁纸API适配器获取壁纸详情
      */
     override suspend fun getWallpaperById(id: String): Wallpaper? {
+        // 从本地数据库先查询
+        val localWallpaper = wallpaperDao.getWallpaperById(id)
+        if (localWallpaper != null) {
+            return localWallpaper
+        }
+
+        // 检查网络连接
+        if (!networkMonitor.isNetworkAvailable()) {
+            return null
+        }
+
         // 从ID解析来源和原始ID
         val parts = id.split("_")
         if (parts.size < 2) return null
@@ -322,6 +257,16 @@ class WallpaperRepositoryImpl @Inject constructor(
         val source = parts[0]
         val originalId = parts[1]
 
+        // 如果是Pexels来源，使用壁纸API适配器
+        if (source == "pexels") {
+            val result = wallpaperApiAdapter.getWallpaperById(originalId)
+            return when (result) {
+                is ApiResult.Success -> result.data
+                else -> null
+            }
+        }
+
+        // 其他来源仍然使用原来的方式
         return when (source) {
             "unsplash" -> {
                 val response = safeApiCall(ApiSource.UNSPLASH) {
@@ -330,16 +275,6 @@ class WallpaperRepositoryImpl @Inject constructor(
 
                 when (response) {
                     is ApiResult.Success -> unsplashMapper.toWallpaper(response.data)
-                    else -> null
-                }
-            }
-            "pexels" -> {
-                val response = safeApiCall(ApiSource.PEXELS) {
-                    pexelsApiService.getPhoto(originalId)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> pexelsMapper.toWallpaper(response.data)
                     else -> null
                 }
             }
@@ -373,19 +308,22 @@ class WallpaperRepositoryImpl @Inject constructor(
 
     /**
      * 获取随机壁纸
+     * 使用壁纸API适配器获取随机壁纸
      */
     override suspend fun getRandomWallpaper(): Wallpaper? {
-        // 使用Unsplash的随机API
-        val response = safeApiCall(ApiSource.UNSPLASH) {
-            unsplashApiService.getRandomPhotos(count = 1)
+        // 检查网络连接
+        if (!networkMonitor.isNetworkAvailable()) {
+            // 如果无网络连接，尝试从本地获取随机收藏壁纸
+            val favorites = wallpaperDao.getFavoritesList()
+            return if (favorites.isNotEmpty()) {
+                favorites.random()
+            } else null
         }
 
-        return when (response) {
-            is ApiResult.Success -> {
-                if (response.data.isNotEmpty()) {
-                    unsplashMapper.toWallpaper(response.data[0])
-                } else null
-            }
+        // 使用壁纸API适配器获取随机壁纸
+        val result = wallpaperApiAdapter.getRandomWallpapers(count = 1)
+        return when (result) {
+            is ApiResult.Success -> result.data.firstOrNull()
             else -> null
         }
     }

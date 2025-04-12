@@ -19,7 +19,11 @@ class Converters {
     @TypeConverter
     fun toStringList(value: String): List<String> {
         val listType = object : TypeToken<List<String>>() {}.type
-        return gson.fromJson(value, listType)
+        return try {
+            gson.fromJson(value, listType) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     @TypeConverter
@@ -31,4 +35,4 @@ class Converters {
     fun toResolution(value: String?): Resolution? {
         return value?.let { gson.fromJson(it, Resolution::class.java) }
     }
-} 
+}
