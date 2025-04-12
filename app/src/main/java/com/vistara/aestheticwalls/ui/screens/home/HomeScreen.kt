@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,9 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,7 +56,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onWallpaperClick: (Wallpaper) -> Unit = {},
+    onWallpaperClick: (Wallpaper) -> Unit,
     onSearch: (String) -> Unit = {},
     onBannerClick: (Banner) -> Unit = {},
 ) {
@@ -173,15 +172,6 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     placeholder = "搜索高清壁纸、动态效果...",
-//                    colors = SearchBarDefaults.colors(
-//                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
-//                        inputFieldColors = TextFieldDefaults.colors(
-//                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-//                            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-//                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
-//                        )
-//                    )
                 )
             }
 
@@ -215,35 +205,63 @@ fun HomeScreen(
                 )
             }
 
-            // 热门静态
+            // 热门静态标题
             item {
-                WallpaperSection(
-                    title = "热门静态",
-                    wallpapers = staticWallpapers,
-                    onWallpaperClick = onWallpaperClick,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                WallpaperSectionTitle(
+                    title = "热门静态", modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
 
-            // 炫酷动态
+            // 热门静态壁纸行
+            for (i in 0 until staticWallpapers.size step 2) {
+                item {
+                    WallpaperItem2Columns(
+                        wallpaper1 = staticWallpapers[i],
+                        wallpaper2 = if (i + 1 < staticWallpapers.size) staticWallpapers[i + 1] else null,
+                        onWallpaperClick = onWallpaperClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
+            // 炫酷动态标题
             item {
-                WallpaperSection(
+                WallpaperSectionTitle(
                     title = "炫酷动态",
-                    wallpapers = liveWallpapers,
-                    onWallpaperClick = onWallpaperClick,
-                    showPlayIndicator = true,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
 
-            // 最新上传
+            // 炫酷动态壁纸行
+            for (i in 0 until liveWallpapers.size step 2) {
+                item {
+                    WallpaperItem2Columns(
+                        wallpaper1 = liveWallpapers[i],
+                        wallpaper2 = if (i + 1 < liveWallpapers.size) liveWallpapers[i + 1] else null,
+                        onWallpaperClick = onWallpaperClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
+            // 最新上传标题
             item {
-                WallpaperSection(
+                WallpaperSectionTitle(
                     title = "最新上传",
-                    wallpapers = demoWallpapers,
-                    onWallpaperClick = onWallpaperClick,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
+            }
+
+            // 最新上传壁纸行
+            for (i in 0 until demoWallpapers.size step 2) {
+                item {
+                    WallpaperItem2Columns(
+                        wallpaper1 = demoWallpapers[i],
+                        wallpaper2 = if (i + 1 < demoWallpapers.size) demoWallpapers[i + 1] else null,
+                        onWallpaperClick = onWallpaperClick,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
             }
         }
     }
@@ -254,7 +272,8 @@ fun HomeScreen(
 fun HomeScreenPreview() {
     VistaraTheme {
         Surface {
-            HomeScreen()
+            HomeScreen(
+                onWallpaperClick = {})
         }
     }
 }
@@ -355,13 +374,6 @@ private fun CategorySection(
             ), modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Text(
-            text = "常用分类:",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp)
@@ -384,38 +396,47 @@ private fun CategorySection(
 }
 
 @Composable
-private fun WallpaperSection(
-    title: String,
-    wallpapers: List<Wallpaper>,
+private fun WallpaperSectionTitle(
+    title: String, modifier: Modifier = Modifier
+) {
+    Text(
+        text = title, style = MaterialTheme.typography.titleLarge.copy(
+            fontWeight = FontWeight.SemiBold
+        ), modifier = modifier.padding(bottom = 12.dp)
+    )
+}
+
+@Composable
+private fun WallpaperItem2Columns(
+    wallpaper1: Wallpaper,
+    wallpaper2: Wallpaper?,
     onWallpaperClick: (Wallpaper) -> Unit,
-    showPlayIndicator: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = title, style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.SemiBold
-            ), modifier = Modifier.padding(bottom = 12.dp)
+    Row(
+        modifier = modifier, horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // 第一个壁纸
+        WallpaperItem(
+            wallpaper = wallpaper1,
+            onClick = { onWallpaperClick(wallpaper1) },
+            modifier = Modifier
+                .weight(1f)
+                .aspectRatio(0.75f) // 设置宽高比为3:4
         )
 
-        // 计算网格高度：每行高度约为240dp，根据壁纸数量和列数计算行数
-        val rows = (wallpapers.size + 1) / 2 // 向上取整，确保有足够空间
-        val gridHeight = (rows * 240).dp // 增加每行高度为240dp
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            // 设置固定高度，避免无限高度约束
-            modifier = Modifier.height(gridHeight.coerceAtMost(720.dp)) // 最多显示3行，增加最大高度
-        ) {
-            items(wallpapers) { wallpaper ->
-                WallpaperItem(
-                    wallpaper = wallpaper,
-                    onClick = { onWallpaperClick(wallpaper) },
-                    modifier = Modifier.aspectRatio(0.75f) // 设置宽高比为3:4，使壁纸显示更高
-                )
-            }
+        // 第二个壁纸（如果有）
+        if (wallpaper2 != null) {
+            WallpaperItem(
+                wallpaper = wallpaper2,
+                onClick = { onWallpaperClick(wallpaper2) },
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(0.75f) // 设置宽高比为3:4
+            )
+        } else {
+            // 如果没有第二个壁纸，添加一个空的占位空间
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
