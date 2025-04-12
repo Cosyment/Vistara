@@ -1,12 +1,15 @@
 package com.vistara.aestheticwalls.data.repository
 
+import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
+import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.UserSettings
 
 /**
  * 用户偏好设置仓库接口
- * 处理用户设置的存储和检索
+ * 负责存储和检索用户设置
  */
-interface UserPreferencesRepository {
+interface UserPrefsRepository {
+    
     /**
      * 获取用户设置
      */
@@ -22,9 +25,9 @@ interface UserPreferencesRepository {
      */
     suspend fun updateAutoChangeSettings(
         enabled: Boolean? = null,
-        frequency: com.vistara.aestheticwalls.data.model.AutoChangeFrequency? = null,
+        frequency: AutoChangeFrequency? = null,
         wifiOnly: Boolean? = null,
-        source: com.vistara.aestheticwalls.data.model.AutoChangeSource? = null,
+        source: AutoChangeSource? = null,
         categoryId: String? = null
     )
     
@@ -40,4 +43,4 @@ interface UserPreferencesRepository {
      * 清除所有用户设置
      */
     suspend fun clearUserSettings()
-} 
+}

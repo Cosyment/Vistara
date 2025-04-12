@@ -15,7 +15,7 @@ import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.safeApiCall
-import com.vistara.aestheticwalls.data.util.Resource
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -44,7 +44,7 @@ class WallpaperRepositoryImpl @Inject constructor(
     /**
      * 获取推荐壁纸，混合不同来源的内容
      */
-    override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): Resource<List<Wallpaper>> = withContext(Dispatchers.IO) {
+    override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
         try {
             val wallpapers = when (page % 4) {
                 0 -> {
@@ -52,7 +52,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     val response = safeApiCall(ApiSource.UNSPLASH) {
                         unsplashApiService.getPhotos(page = page, perPage = pageSize)
                     }
-                    
+
                     when (response) {
                         is ApiResult.Success -> unsplashMapper.toWallpapers(response.data)
                         else -> emptyList()
@@ -63,7 +63,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     val response = safeApiCall(ApiSource.PEXELS) {
                         pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize)
                     }
-                    
+
                     when (response) {
                         is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
                         else -> emptyList()
@@ -74,7 +74,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     val response = safeApiCall(ApiSource.PIXABAY) {
                         pixabayApiService.searchImages(query = "nature", page = page, perPage = pageSize)
                     }
-                    
+
                     when (response) {
                         is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
                         else -> emptyList()
@@ -89,16 +89,16 @@ class WallpaperRepositoryImpl @Inject constructor(
                             page = page
                         )
                     }
-                    
+
                     when (response) {
                         is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
                         else -> emptyList()
                     }
                 }
             }
-            Resource.Success(wallpapers)
+            ApiResult.Success(wallpapers)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "获取推荐壁纸失败")
+            ApiResult.Error(message = e.message ?: "获取推荐壁纸失败", source = ApiSource.UNSPLASH)
         }
     }
 
@@ -106,7 +106,7 @@ class WallpaperRepositoryImpl @Inject constructor(
         type: String,
         page: Int,
         pageSize: Int
-    ): Resource<List<Wallpaper>> = withContext(Dispatchers.IO) {
+    ): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
         try {
             val wallpapers = when (type.lowercase()) {
                 "static" -> {
@@ -114,21 +114,21 @@ class WallpaperRepositoryImpl @Inject constructor(
                     val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
                         unsplashApiService.getPhotos(page = page, perPage = pageSize / 2)
                     }
-                    
+
                     val pexelsResponse = safeApiCall(ApiSource.PEXELS) {
                         pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize / 2)
                     }
-                    
+
                     val unsplashWallpapers = when (unsplashResponse) {
                         is ApiResult.Success -> unsplashMapper.toWallpapers(unsplashResponse.data)
                         else -> emptyList()
                     }
-                    
+
                     val pexelsWallpapers = when (pexelsResponse) {
                         is ApiResult.Success -> pexelsMapper.toWallpapers(pexelsResponse.data.photos)
                         else -> emptyList()
                     }
-                    
+
                     unsplashWallpapers + pexelsWallpapers
                 }
                 "live" -> {
@@ -137,10 +137,10 @@ class WallpaperRepositoryImpl @Inject constructor(
                 }
                 else -> emptyList()
             }
-            
-            Resource.Success(wallpapers)
+
+            ApiResult.Success(wallpapers)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "获取壁纸失败")
+            ApiResult.Error(message = e.message ?: "获取壁纸失败", source = ApiSource.UNSPLASH)
         }
     }
 
@@ -156,26 +156,26 @@ class WallpaperRepositoryImpl @Inject constructor(
                 orderBy = "popular"
             )
         }
-        
+
         return when (response) {
             is ApiResult.Success -> unsplashMapper.toWallpapers(response.data)
             else -> emptyList()
         }
     }
-    
+
     /**
      * 按分类获取壁纸
      */
     override suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): List<Wallpaper> {
         // 根据分类ID确定搜索关键词和API源
         val (apiSource, query) = getCategoryInfo(categoryId)
-        
+
         return when (apiSource) {
             ApiSource.UNSPLASH -> {
                 val response = safeApiCall(ApiSource.UNSPLASH) {
                     unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
                     else -> emptyList()
@@ -185,7 +185,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.PEXELS) {
                     pexelsApiService.searchPhotos(query = query, page = page, perPage = pageSize)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
                     else -> emptyList()
@@ -195,7 +195,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.PIXABAY) {
                     pixabayApiService.searchImages(query = query, page = page, perPage = pageSize)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
                     else -> emptyList()
@@ -205,7 +205,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.WALLHAVEN) {
                     wallhavenApiService.search(query = query, page = page)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
                     else -> emptyList()
@@ -213,7 +213,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             }
         }
     }
-    
+
     /**
      * 根据分类ID获取API源和搜索关键词
      */
@@ -233,7 +233,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             Pair(ApiSource.UNSPLASH, "nature")
         }
     }
-    
+
     /**
      * 搜索壁纸，综合多个来源
      */
@@ -245,7 +245,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.UNSPLASH) {
                     unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
                     else -> emptyList()
@@ -256,7 +256,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.PEXELS) {
                     pexelsApiService.searchPhotos(query = query, page = page, perPage = pageSize)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
                     else -> emptyList()
@@ -267,7 +267,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.PIXABAY) {
                     pixabayApiService.searchImages(query = query, page = page, perPage = pageSize)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
                     else -> emptyList()
@@ -278,7 +278,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.WALLHAVEN) {
                     wallhavenApiService.search(query = query, page = page)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
                     else -> emptyList()
@@ -286,7 +286,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             }
         }
     }
-    
+
     /**
      * 获取壁纸详情
      */
@@ -294,16 +294,16 @@ class WallpaperRepositoryImpl @Inject constructor(
         // 从ID解析来源和原始ID
         val parts = id.split("_")
         if (parts.size < 2) return null
-        
+
         val source = parts[0]
         val originalId = parts[1]
-        
+
         return when (source) {
             "unsplash" -> {
                 val response = safeApiCall(ApiSource.UNSPLASH) {
                     unsplashApiService.getPhoto(originalId)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> unsplashMapper.toWallpaper(response.data)
                     else -> null
@@ -313,7 +313,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.PEXELS) {
                     pexelsApiService.getPhoto(originalId)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> pexelsMapper.toWallpaper(response.data)
                     else -> null
@@ -323,7 +323,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.PIXABAY) {
                     pixabayApiService.getImageById(originalId.toInt())
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> {
                         if (response.data.hits.isNotEmpty()) {
@@ -337,7 +337,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 val response = safeApiCall(ApiSource.WALLHAVEN) {
                     wallhavenApiService.getWallpaper(originalId)
                 }
-                
+
                 when (response) {
                     is ApiResult.Success -> wallhavenMapper.toWallpaper(response.data)
                     else -> null
@@ -346,7 +346,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             else -> null
         }
     }
-    
+
     /**
      * 获取随机壁纸
      */
@@ -355,7 +355,7 @@ class WallpaperRepositoryImpl @Inject constructor(
         val response = safeApiCall(ApiSource.UNSPLASH) {
             unsplashApiService.getRandomPhotos(count = 1)
         }
-        
+
         return when (response) {
             is ApiResult.Success -> {
                 if (response.data.isNotEmpty()) {
@@ -365,18 +365,18 @@ class WallpaperRepositoryImpl @Inject constructor(
             else -> null
         }
     }
-    
+
     /**
      * 按分类获取随机壁纸
      */
     override suspend fun getRandomWallpaperByCategory(categoryId: String): Wallpaper? {
         val (apiSource, query) = getCategoryInfo(categoryId)
-        
+
         // 使用Unsplash的随机API + 查询参数
         val response = safeApiCall(ApiSource.UNSPLASH) {
             unsplashApiService.getRandomPhotos(count = 1, query = query)
         }
-        
+
         return when (response) {
             is ApiResult.Success -> {
                 if (response.data.isNotEmpty()) {
@@ -386,7 +386,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             else -> null
         }
     }
-    
+
     /**
      * 获取所有分类
      */
@@ -403,18 +403,18 @@ class WallpaperRepositoryImpl @Inject constructor(
             Category("pixabay_flowers", "花卉植物", "绚丽多彩的花卉世界", "https://pixabay.com/get/gbaed09c11ef0d9fb5d6b08e92a2784dfb5b32c3a7fd5bdf11dafbe60e11c3eaa3e5c58ffcaef0e621687e97c7a4b08fc_1280.jpg")
         )
     }
-    
+
     /**
      * 获取分类详情
      */
     override suspend fun getCategoryById(id: String): Category? {
         return getCategories().find { it.id == id }
     }
-    
+
     /**
      * 下面是收藏、下载等本地数据相关的功能实现
      */
-    
+
     override suspend fun favoriteWallpaper(wallpaper: Wallpaper): Boolean = withContext(Dispatchers.IO) {
         try {
             wallpaperDao.insertFavorite(wallpaper)
@@ -423,7 +423,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             false
         }
     }
-    
+
     override suspend fun unfavoriteWallpaper(wallpaperId: String): Boolean = withContext(Dispatchers.IO) {
         try {
             wallpaperDao.deleteFavorite(wallpaperId)
@@ -432,19 +432,19 @@ class WallpaperRepositoryImpl @Inject constructor(
             false
         }
     }
-    
+
     override suspend fun isWallpaperFavorited(wallpaperId: String): Boolean = withContext(Dispatchers.IO) {
         wallpaperDao.isFavorite(wallpaperId)
     }
-    
+
     override fun getFavoriteWallpapers(): Flow<List<Wallpaper>> {
         return wallpaperDao.getAllFavorites()
     }
-    
+
     override fun getDownloadedWallpapers(): Flow<List<Wallpaper>> {
         return wallpaperDao.getAllDownloaded()
     }
-    
+
     override suspend fun trackWallpaperDownload(wallpaperId: String) {
         // 如果是Unsplash的壁纸，需要调用下载追踪API
         if (wallpaperId.startsWith("unsplash_")) {
@@ -455,7 +455,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 // 忽略错误，但应该记录日志
             }
         }
-        
+
         // 记录到本地下载历史
         try {
             wallpaperDao.insertDownload(wallpaperId)
@@ -463,13 +463,13 @@ class WallpaperRepositoryImpl @Inject constructor(
             // 忽略错误，但应该记录日志
         }
     }
-    
+
     override suspend fun getLocalFile(wallpaperId: String): File? {
         // 从本地存储中获取已下载的文件
         // 具体实现依赖于文件存储机制
         return null // 暂时返回null，待实现
     }
-    
+
     override suspend fun recordAutoChangeHistory(history: AutoChangeHistory) {
         // 记录自动更换历史
         try {
@@ -478,11 +478,11 @@ class WallpaperRepositoryImpl @Inject constructor(
             // 忽略错误，但应该记录日志
         }
     }
-    
+
     override fun getAutoChangeHistory(): Flow<List<AutoChangeHistory>> {
         return wallpaperDao.getAutoChangeHistory()
     }
-    
+
     /**
      * 获取随机收藏壁纸
      */
@@ -491,7 +491,7 @@ class WallpaperRepositoryImpl @Inject constructor(
         val favorites = wallpaperDao.getFavoritesList()
         favorites.randomOrNull()
     }
-    
+
     /**
      * 获取随机下载壁纸
      */
@@ -500,7 +500,7 @@ class WallpaperRepositoryImpl @Inject constructor(
         val downloaded = wallpaperDao.getDownloadedList()
         downloaded.randomOrNull()
     }
-    
+
     /**
      * 获取随机热门壁纸
      */
@@ -509,4 +509,4 @@ class WallpaperRepositoryImpl @Inject constructor(
         val trending = getTrendingWallpapers(1, 10)
         return trending.randomOrNull()
     }
-} 
+}

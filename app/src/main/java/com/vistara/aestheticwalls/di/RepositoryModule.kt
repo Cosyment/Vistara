@@ -1,5 +1,7 @@
 package com.vistara.aestheticwalls.di
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
 import com.vistara.aestheticwalls.data.mapper.PixabayMapper
@@ -9,6 +11,8 @@ import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
+import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
+import com.vistara.aestheticwalls.data.repository.UserPrefsRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepositoryImpl
 import dagger.Module
@@ -46,4 +50,12 @@ object RepositoryModule {
             wallpaperDao = wallpaperDao
         )
     }
-} 
+
+    @Provides
+    @Singleton
+    fun provideUserPrefsRepository(
+        dataStore: DataStore<Preferences>
+    ): UserPrefsRepository {
+        return UserPrefsRepositoryImpl(dataStore)
+    }
+}

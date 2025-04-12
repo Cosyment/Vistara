@@ -21,11 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.live.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.profile.ProfileScreen
@@ -47,20 +50,26 @@ fun MainNavigation() {
         ) {
             composable(NavDestination.Home.route) {
                 HomeScreen(
-                    onWallpaperClick = { /* 暂时不处理 */ },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    },
                     onSearch = { /* 暂时不处理 */ },
                     onBannerClick = { /* 暂时不处理 */ }
                 )
             }
             composable(NavDestination.StaticWallpapers.route) {
                 StaticLibraryScreen(
-                    onWallpaperClick = { /* 暂时不处理 */ },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    },
                     onSearchClick = { /* 暂时不处理 */ }
                 )
             }
             composable(NavDestination.LiveWallpapers.route) {
                 LiveLibraryScreen(
-                    onWallpaperClick = { /* 暂时不处理 */ },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    },
                     onSearchClick = { /* 暂时不处理 */ }
                 )
             }
@@ -73,6 +82,16 @@ fun MainNavigation() {
                     onFeedbackClick = { /* 暂时不处理 */ },
                     onAboutClick = { /* 暂时不处理 */ },
                     onUpgradeClick = { /* 暂时不处理 */ }
+                )
+            }
+
+            // 壁纸详情页面
+            composable(
+                route = "wallpaper/{wallpaperId}",
+                arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
+            ) {
+                WallpaperDetailScreen(
+                    onBackPressed = { navController.navigateUp() }
                 )
             }
         }

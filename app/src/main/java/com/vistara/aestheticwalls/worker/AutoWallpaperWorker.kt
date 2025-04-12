@@ -26,7 +26,7 @@ import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
-import com.vistara.aestheticwalls.data.repository.UserPreferencesRepository
+import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.utils.NetworkUtil
 import com.vistara.aestheticwalls.utils.NotificationUtil
@@ -48,7 +48,7 @@ import javax.inject.Inject
 class AutoWallpaperWorker @Inject constructor(
     @ApplicationContext private val context: Context,
     workerParameters: WorkerParameters,
-    private val userPrefsRepository: UserPreferencesRepository,
+    private val userPrefsRepository: UserPrefsRepository,
     private val wallpaperRepository: WallpaperRepository,
     private val networkUtils: NetworkUtil,
     private val notificationUtils: NotificationUtil,

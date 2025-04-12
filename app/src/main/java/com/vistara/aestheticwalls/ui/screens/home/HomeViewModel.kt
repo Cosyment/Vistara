@@ -6,7 +6,7 @@ import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
-import com.vistara.aestheticwalls.data.util.Resource
+import com.vistara.aestheticwalls.data.remote.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -83,39 +83,39 @@ class HomeViewModel @Inject constructor(
 
                 // 加载精选壁纸
                 when (val result = wallpaperRepository.getFeaturedWallpapers(1, 10)) {
-                    is Resource.Success -> {
+                    is ApiResult.Success -> {
                         _featuredWallpapers.value = result.data
                     }
-                    is Resource.Error -> {
+                    is ApiResult.Error -> {
                         _error.value = result.message
                     }
-                    is Resource.Loading -> {
+                    is ApiResult.Loading -> {
                         // 忽略加载状态
                     }
                 }
 
                 // 加载静态壁纸
                 when (val result = wallpaperRepository.getWallpapers("static", 1, 10)) {
-                    is Resource.Success -> {
+                    is ApiResult.Success -> {
                         _staticWallpapers.value = result.data
                     }
-                    is Resource.Error -> {
+                    is ApiResult.Error -> {
                         _error.value = result.message
                     }
-                    is Resource.Loading -> {
+                    is ApiResult.Loading -> {
                         // 忽略加载状态
                     }
                 }
 
                 // 加载动态壁纸
                 when (val result = wallpaperRepository.getWallpapers("live", 1, 10)) {
-                    is Resource.Success -> {
+                    is ApiResult.Success -> {
                         _liveWallpapers.value = result.data
                     }
-                    is Resource.Error -> {
+                    is ApiResult.Error -> {
                         _error.value = result.message
                     }
-                    is Resource.Loading -> {
+                    is ApiResult.Loading -> {
                         // 忽略加载状态
                     }
                 }
@@ -141,4 +141,4 @@ class HomeViewModel @Inject constructor(
     fun loadMoreWallpapers() {
         // TODO: 实现加载更多壁纸的逻辑
     }
-} 
+}
