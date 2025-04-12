@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -44,7 +46,6 @@ import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.Carousel
-import com.vistara.aestheticwalls.ui.components.CategoryChip
 import com.vistara.aestheticwalls.ui.components.SearchBar
 import com.vistara.aestheticwalls.ui.components.WallpaperItem
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -59,7 +60,6 @@ fun HomeScreen(
     onWallpaperClick: (Wallpaper) -> Unit = {},
     onSearch: (String) -> Unit = {},
     onBannerClick: (Banner) -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     // 临时Banner数据
     val demoBanners = listOf(
@@ -154,8 +154,7 @@ fun HomeScreen(
                     )
                 )
             )
-        }, modifier = modifier
-    ) { paddingValues ->
+        }) { paddingValues ->
         LazyColumn(
             state = rememberLazyListState(),
             contentPadding = PaddingValues(bottom = 16.dp),
@@ -264,6 +263,20 @@ fun HomeScreenPreview() {
 private fun DailyPickSection(
     onWallpaperClick: (Wallpaper) -> Unit, modifier: Modifier = Modifier
 ) {
+    // 临时壁纸数据
+    val featuredWallpaper = Wallpaper(
+        id = "featured_1",
+        title = "宁静山谷",
+        url = "https://example.com/featured.jpg",
+        thumbnailUrl = "https://example.com/featured_thumb.jpg",
+        author = "艺术家A",
+        source = "Unsplash",
+        isPremium = false,
+        isLive = false,
+        tags = listOf("自然", "山川"),
+        resolution = Resolution(1920, 1080)
+    )
+
     Column(modifier = modifier) {
         Text(
             text = "每日精选", style = MaterialTheme.typography.titleLarge.copy(
@@ -275,13 +288,13 @@ private fun DailyPickSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(380f / 456f)
-                .clickable { onWallpaperClick(demoWallpapers.first()) },
+                .clickable { onWallpaperClick(featuredWallpaper) },
             shape = RoundedCornerShape(15.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 AsyncImage(
-                    model = demoWallpapers.first().thumbnailUrl,
+                    model = featuredWallpaper.thumbnailUrl,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -330,6 +343,11 @@ private fun DailyPickSection(
 private fun CategorySection(
     modifier: Modifier = Modifier
 ) {
+    // 临时分类数据
+    val demoCategories = listOf(
+        "自然风景", "建筑", "动物", "抽象", "太空", "简约"
+    )
+
     Column(modifier = modifier) {
         Text(
             text = "探索分类", style = MaterialTheme.typography.titleLarge.copy(
@@ -348,11 +366,18 @@ private fun CategorySection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
-            items(categories) { category ->
-                CategoryChip(
-                    text = category.name,
-                    selected = category.isSelected,
-                    onClick = { /* 处理点击 */ })
+            items(demoCategories) { category ->
+                Surface(
+                    modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    onClick = { /* 处理点击 */ }) {
+                    Text(
+                        text = category,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
+                }
             }
         }
     }
@@ -373,16 +398,22 @@ private fun WallpaperSection(
             ), modifier = Modifier.padding(bottom = 12.dp)
         )
 
+        // 计算网格高度：每行高度约为240dp，根据壁纸数量和列数计算行数
+        val rows = (wallpapers.size + 1) / 2 // 向上取整，确保有足够空间
+        val gridHeight = (rows * 240).dp // 增加每行高度为240dp
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            // 设置固定高度，避免无限高度约束
+            modifier = Modifier.height(gridHeight.coerceAtMost(720.dp)) // 最多显示3行，增加最大高度
         ) {
             items(wallpapers) { wallpaper ->
                 WallpaperItem(
                     wallpaper = wallpaper,
                     onClick = { onWallpaperClick(wallpaper) },
-                    showPlayIndicator = showPlayIndicator && wallpaper.isLive
+                    modifier = Modifier.aspectRatio(0.75f) // 设置宽高比为3:4，使壁纸显示更高
                 )
             }
         }

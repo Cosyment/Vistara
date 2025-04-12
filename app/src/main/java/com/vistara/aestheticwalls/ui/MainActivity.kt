@@ -25,14 +25,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             VistaraTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // 使用HomeScreen代替临时首页
-                    HomeScreen(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    )
-                }
+                HomeScreen()
             }
         }
     }
