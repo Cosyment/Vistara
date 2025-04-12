@@ -155,7 +155,8 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
                             if (selected) {
                                 Icon(Icons.Filled.Home, contentDescription = destination.title)
                             } else {
-                                Icon(Icons.Outlined.Home, contentDescription = destination.title)
+                                Icon(Icons.Outlined.Home, contentDescription
+                                = destination.title)
                             }
                         }
                         NavDestination.StaticWallpapers -> {

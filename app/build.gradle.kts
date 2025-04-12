@@ -24,7 +24,7 @@ android {
         release {
             isMinifyEnabled = false
             buildConfigField("String", "UNSPLASH_API_KEY", "\"zzzz\"")
-            buildConfigField("String", "PEXELS_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
             buildConfigField("String", "PIXABAY_API_KEY", "\"zzzz\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
             proguardFiles(
@@ -33,7 +33,7 @@ android {
         }
         debug {
             buildConfigField("String", "UNSPLASH_API_KEY", "\"zzzz\"")
-            buildConfigField("String", "PEXELS_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
             buildConfigField("String", "PIXABAY_API_KEY", "\"zzzz\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
         }

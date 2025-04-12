@@ -7,10 +7,13 @@ import com.vistara.aestheticwalls.data.mapper.PexelsMapper
 import com.vistara.aestheticwalls.data.mapper.PixabayMapper
 import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
+import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
+import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
+import com.vistara.aestheticwalls.utils.NetworkMonitor
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
@@ -36,7 +39,10 @@ object RepositoryModule {
         pexelsMapper: PexelsMapper,
         pixabayMapper: PixabayMapper,
         wallhavenMapper: WallhavenMapper,
-        wallpaperDao: WallpaperDao
+        wallpaperDao: WallpaperDao,
+        apiLoadBalancer: ApiLoadBalancer,
+        apiUsageTracker: ApiUsageTracker,
+        networkMonitor: NetworkMonitor
     ): WallpaperRepository {
         return WallpaperRepositoryImpl(
             unsplashApiService = unsplashApiService,
@@ -47,7 +53,10 @@ object RepositoryModule {
             pexelsMapper = pexelsMapper,
             pixabayMapper = pixabayMapper,
             wallhavenMapper = wallhavenMapper,
-            wallpaperDao = wallpaperDao
+            wallpaperDao = wallpaperDao,
+            apiLoadBalancer = apiLoadBalancer,
+            apiUsageTracker = apiUsageTracker,
+            networkMonitor = networkMonitor
         )
     }
 

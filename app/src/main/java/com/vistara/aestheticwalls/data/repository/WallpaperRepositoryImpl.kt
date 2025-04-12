@@ -10,11 +10,14 @@ import com.vistara.aestheticwalls.data.model.Category
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.ApiSource
+import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
+import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.safeApiCall
+import com.vistara.aestheticwalls.utils.NetworkMonitor
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -38,16 +41,37 @@ class WallpaperRepositoryImpl @Inject constructor(
     private val pexelsMapper: PexelsMapper,
     private val pixabayMapper: PixabayMapper,
     private val wallhavenMapper: WallhavenMapper,
-    private val wallpaperDao: WallpaperDao
+    private val wallpaperDao: WallpaperDao,
+    private val apiLoadBalancer: ApiLoadBalancer,
+    private val apiUsageTracker: ApiUsageTracker,
+    private val networkMonitor: NetworkMonitor
 ) : WallpaperRepository {
 
     /**
      * 获取推荐壁纸，混合不同来源的内容
+     * 使用API负载均衡器选择最合适的API来源
      */
     override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
         try {
-            val wallpapers = when (page % 4) {
-                0 -> {
+            // 检查网络连接
+            if (!networkMonitor.isNetworkAvailable()) {
+                // 如果无网络连接，尝试从本地获取数据
+                val localWallpapers = wallpaperDao.getFavoritesList()
+                if (localWallpapers.isNotEmpty()) {
+                    return@withContext ApiResult.Success(localWallpapers)
+                }
+                // 如果本地没有数据，返回错误
+                return@withContext ApiResult.Error(
+                    message = "无网络连接，无法获取壁纸",
+                    source = ApiSource.UNSPLASH
+                )
+            }
+
+            // 使用API负载均衡器选择最合适的API来源
+            val apiSource = apiLoadBalancer.getNextApiSource()
+
+            val wallpapers = when (apiSource) {
+                ApiSource.UNSPLASH -> {
                     // 使用Unsplash API
                     val response = safeApiCall(ApiSource.UNSPLASH) {
                         unsplashApiService.getPhotos(page = page, perPage = pageSize)
@@ -58,7 +82,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                         else -> emptyList()
                     }
                 }
-                1 -> {
+                ApiSource.PEXELS -> {
                     // 使用Pexels API
                     val response = safeApiCall(ApiSource.PEXELS) {
                         pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize)
@@ -69,7 +93,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                         else -> emptyList()
                     }
                 }
-                2 -> {
+                ApiSource.PIXABAY -> {
                     // 使用Pixabay API
                     val response = safeApiCall(ApiSource.PIXABAY) {
                         pixabayApiService.searchImages(query = "nature", page = page, perPage = pageSize)
@@ -80,7 +104,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                         else -> emptyList()
                     }
                 }
-                else -> {
+                ApiSource.WALLHAVEN -> {
                     // 使用Wallhaven API
                     val response = safeApiCall(ApiSource.WALLHAVEN) {
                         wallhavenApiService.search(

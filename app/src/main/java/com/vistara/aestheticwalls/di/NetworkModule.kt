@@ -4,6 +4,9 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vistara.aestheticwalls.BuildConfig
+import com.vistara.aestheticwalls.data.remote.ApiKeyManager
+import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
+import com.vistara.aestheticwalls.data.remote.ApiSource
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
@@ -48,7 +51,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpCache(@ApplicationContext context: Context): Cache {
-        val cacheSize = 10L * 1024L * 1024L // 10 MB
+        val cacheSize = 50L * 1024L * 1024L // 50 MB
         return Cache(context.cacheDir, cacheSize)
     }
 
@@ -68,26 +71,76 @@ object NetworkModule {
     }
 
     /**
+     * 提供缓存拦截器
+     */
+    @Provides
+    @Singleton
+    fun provideCacheInterceptor(): Interceptor {
+        return Interceptor { chain ->
+            val request = chain.request()
+            val url = request.url.toString()
+
+            // 根据请求类型设置不同的缓存策略
+            val cacheControl = when {
+                // 搜索结果缓存较短时间
+                url.contains("search") -> "public, max-age=300"
+                // 详情页可以缓存更长时间
+                url.contains("photos/") || url.contains("w/") -> "public, max-age=3600"
+                // 默认缓存策略
+                else -> "public, max-age=600"
+            }
+
+            val response = chain.proceed(request)
+            response.newBuilder()
+                .header("Cache-Control", cacheControl)
+                .build()
+        }
+    }
+
+    /**
+     * 提供离线模式拦截器
+     */
+    @Provides
+    @Singleton
+    fun provideOfflineInterceptor(@ApplicationContext context: Context): Interceptor {
+        return Interceptor { chain ->
+            var request = chain.request()
+
+            // 检查网络连接
+            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            val networkInfo = connectivityManager.activeNetworkInfo
+            val isConnected = networkInfo != null && networkInfo.isConnected
+
+            if (!isConnected) {
+                // 如果无网络连接，使用缓存
+                request = request.newBuilder()
+                    .header("Cache-Control", "public, only-if-cached, max-stale=2419200") // 4周
+                    .build()
+            }
+
+            chain.proceed(request)
+        }
+    }
+
+    /**
      * 提供基础OkHttpClient实例
      */
     @Provides
     @Singleton
-    fun provideOkHttpClient(cache: Cache, loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        cache: Cache,
+        loggingInterceptor: HttpLoggingInterceptor,
+        cacheInterceptor: Interceptor,
+        offlineInterceptor: Interceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .cache(cache)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(loggingInterceptor)
-            .addInterceptor { chain ->
-                val request = chain.request()
-                val response = chain.proceed(request)
-                
-                // 缓存控制
-                response.newBuilder()
-                    .header("Cache-Control", "public, max-age=600")
-                    .build()
-            }
+            .addInterceptor(offlineInterceptor) // 离线拦截器先执行
+            .addNetworkInterceptor(cacheInterceptor) // 网络拦截器后执行
             .build()
     }
 
@@ -112,12 +165,28 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("unsplashAuthInterceptor")
-    fun provideUnsplashAuthInterceptor(): Interceptor {
+    fun provideUnsplashAuthInterceptor(
+        apiKeyManager: ApiKeyManager,
+        apiUsageTracker: ApiUsageTracker
+    ): Interceptor {
         return Interceptor { chain ->
+            // 跟踪API调用
+            apiUsageTracker.trackApiCall(ApiSource.UNSPLASH)
+
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Client-ID ${BuildConfig.UNSPLASH_API_KEY}")
+                .addHeader("Authorization", "Client-ID ${apiKeyManager.getUnsplashApiKey()}")
                 .build()
-            chain.proceed(request)
+
+            val response = chain.proceed(request)
+
+            // 跟踪API响应
+            if (response.isSuccessful) {
+                apiUsageTracker.trackApiSuccess(ApiSource.UNSPLASH)
+            } else {
+                apiUsageTracker.trackApiError(ApiSource.UNSPLASH, "HTTP ${response.code}")
+            }
+
+            response
         }
     }
 
@@ -165,12 +234,28 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("pexelsAuthInterceptor")
-    fun providePexelsAuthInterceptor(): Interceptor {
+    fun providePexelsAuthInterceptor(
+        apiKeyManager: ApiKeyManager,
+        apiUsageTracker: ApiUsageTracker
+    ): Interceptor {
         return Interceptor { chain ->
+            // 跟踪API调用
+            apiUsageTracker.trackApiCall(ApiSource.PEXELS)
+
             val request = chain.request().newBuilder()
-                .addHeader("Authorization", BuildConfig.PEXELS_API_KEY)
+                .addHeader("Authorization", apiKeyManager.getPexelsApiKey())
                 .build()
-            chain.proceed(request)
+
+            val response = chain.proceed(request)
+
+            // 跟踪API响应
+            if (response.isSuccessful) {
+                apiUsageTracker.trackApiSuccess(ApiSource.PEXELS)
+            } else {
+                apiUsageTracker.trackApiError(ApiSource.PEXELS, "HTTP ${response.code}")
+            }
+
+            response
         }
     }
 
@@ -218,21 +303,36 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("pixabayAuthInterceptor")
-    fun providePixabayAuthInterceptor(): Interceptor {
+    fun providePixabayAuthInterceptor(
+        apiKeyManager: ApiKeyManager,
+        apiUsageTracker: ApiUsageTracker
+    ): Interceptor {
         return Interceptor { chain ->
+            // 跟踪API调用
+            apiUsageTracker.trackApiCall(ApiSource.PIXABAY)
+
             val originalRequest = chain.request()
             val originalUrl = originalRequest.url
-            
+
             // 添加API密钥作为查询参数
             val url = originalUrl.newBuilder()
-                .addQueryParameter("key", BuildConfig.PIXABAY_API_KEY)
+                .addQueryParameter("key", apiKeyManager.getPixabayApiKey())
                 .build()
-            
+
             val request = originalRequest.newBuilder()
                 .url(url)
                 .build()
-            
-            chain.proceed(request)
+
+            val response = chain.proceed(request)
+
+            // 跟踪API响应
+            if (response.isSuccessful) {
+                apiUsageTracker.trackApiSuccess(ApiSource.PIXABAY)
+            } else {
+                apiUsageTracker.trackApiError(ApiSource.PIXABAY, "HTTP ${response.code}")
+            }
+
+            response
         }
     }
 
@@ -280,21 +380,36 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("wallhavenAuthInterceptor")
-    fun provideWallhavenAuthInterceptor(): Interceptor {
+    fun provideWallhavenAuthInterceptor(
+        apiKeyManager: ApiKeyManager,
+        apiUsageTracker: ApiUsageTracker
+    ): Interceptor {
         return Interceptor { chain ->
+            // 跟踪API调用
+            apiUsageTracker.trackApiCall(ApiSource.WALLHAVEN)
+
             val originalRequest = chain.request()
             val originalUrl = originalRequest.url
-            
+
             // 添加API密钥作为查询参数
             val url = originalUrl.newBuilder()
-                .addQueryParameter("apikey", BuildConfig.WALLHAVEN_API_KEY)
+                .addQueryParameter("apikey", apiKeyManager.getWallhavenApiKey())
                 .build()
-            
+
             val request = originalRequest.newBuilder()
                 .url(url)
                 .build()
-            
-            chain.proceed(request)
+
+            val response = chain.proceed(request)
+
+            // 跟踪API响应
+            if (response.isSuccessful) {
+                apiUsageTracker.trackApiSuccess(ApiSource.WALLHAVEN)
+            } else {
+                apiUsageTracker.trackApiError(ApiSource.WALLHAVEN, "HTTP ${response.code}")
+            }
+
+            response
         }
     }
 
