@@ -11,19 +11,22 @@ data class PexelsPhoto(
     val height: Int,
     val url: String,
     val photographer: String,
-    
+
     @SerializedName("photographer_url")
     val photographerUrl: String,
-    
+
     @SerializedName("photographer_id")
     val photographerId: Int,
-    
+
     @SerializedName("avg_color")
     val avgColor: String?,
-    
+
     val src: PexelsPhotoSources,
     val liked: Boolean,
-    val alt: String?
+    val alt: String?,
+
+    // 媒体类型，通常为"Photo"
+    val type: String? = null
 )
 
 /**
@@ -38,4 +41,4 @@ data class PexelsPhotoSources(
     val portrait: String,
     val landscape: String,
     val tiny: String
-) 
+)

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Build
 
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
@@ -64,7 +65,9 @@ fun ProfileScreen(
     onFeedbackClick: () -> Unit = {},
     onAboutClick: () -> Unit = {},
     onUpgradeClick: () -> Unit = {},
-    isPremiumUser: Boolean = false
+    onTestToolsClick: () -> Unit = {},
+    isPremiumUser: Boolean = false,
+    isDebugMode: Boolean = false
 ) {
     Scaffold(
         topBar = {
@@ -147,6 +150,21 @@ fun ProfileScreen(
             subtitle = "查看应用信息和版权",
             onClick = onAboutClick
         )
+
+        // 开发者模式下显示测试工具入口
+        if (isDebugMode) {
+            Divider(
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+
+            FeatureItem(
+                icon = Icons.Default.Build,
+                title = "测试工具",
+                subtitle = "测试API接口和其他功能",
+                onClick = onTestToolsClick
+            )
+        }
     }
     }
 }

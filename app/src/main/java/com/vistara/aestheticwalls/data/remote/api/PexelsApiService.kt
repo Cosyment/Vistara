@@ -1,6 +1,8 @@
 package com.vistara.aestheticwalls.data.remote.api
 
 import com.vistara.aestheticwalls.data.model.pexels.PexelsCollection
+import com.vistara.aestheticwalls.data.model.pexels.PexelsCollectionMediaResponse
+import com.vistara.aestheticwalls.data.model.pexels.PexelsCollectionsResponse
 import com.vistara.aestheticwalls.data.model.pexels.PexelsPhoto
 import com.vistara.aestheticwalls.data.model.pexels.PexelsSearchResponse
 import retrofit2.http.GET
@@ -63,8 +65,8 @@ interface PexelsApiService {
     suspend fun getFeaturedCollections(
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 10
-    ): List<PexelsCollection>
-    
+    ): PexelsCollectionsResponse
+
     /**
      * 获取集合中的照片
      * @param id 集合ID
@@ -76,5 +78,5 @@ interface PexelsApiService {
         @Path("id") id: String,
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 10
-    ): PexelsSearchResponse
-} 
+    ): PexelsCollectionMediaResponse
+}

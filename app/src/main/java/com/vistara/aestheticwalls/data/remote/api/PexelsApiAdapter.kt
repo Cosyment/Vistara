@@ -72,8 +72,8 @@ class PexelsApiAdapter @Inject constructor(
 
     override suspend fun getCollections(page: Int, pageSize: Int): ApiResult<List<Collection>> {
         return safeApiCall(ApiSource.PEXELS) {
-            val collections = pexelsApiService.getFeaturedCollections(page = page, perPage = pageSize)
-            collections.map { pexelsCollection ->
+            val response = pexelsApiService.getFeaturedCollections(page = page, perPage = pageSize)
+            response.collections.map { pexelsCollection ->
                 mapPexelsCollection(pexelsCollection)
             }
         }
@@ -90,7 +90,18 @@ class PexelsApiAdapter @Inject constructor(
                 page = page,
                 perPage = pageSize
             )
-            pexelsMapper.toWallpapers(response.photos)
+            // 检查media是否为null
+            if (response.media == null) {
+                return@safeApiCall emptyList<Wallpaper>()
+            }
+
+            // 过滤出照片类型的媒体，忽略视频等其他类型
+            val photos = response.media.filter { it.type == null || it.type == "Photo" }
+            if (photos.isEmpty()) {
+                return@safeApiCall emptyList<Wallpaper>()
+            }
+
+            pexelsMapper.toWallpapers(photos)
         }
     }
 

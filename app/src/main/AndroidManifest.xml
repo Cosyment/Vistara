@@ -26,6 +26,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 测试启动器Activity -->
+        <activity
+            android:name=".ui.test.TestLauncherActivity"
+            android:exported="true"
+            android:label="测试工具"
+            android:theme="@style/Theme.Vistara">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- API测试Activity -->
+        <activity
+            android:name=".ui.test.ApiTestActivity"
+            android:exported="false"
+            android:label="API测试"
+            android:theme="@style/Theme.Vistara" />
     </application>
 
 </manifest>

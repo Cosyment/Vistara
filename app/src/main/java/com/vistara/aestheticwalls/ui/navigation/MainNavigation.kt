@@ -35,6 +35,8 @@ import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.live.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.profile.ProfileScreen
 import com.vistara.aestheticwalls.ui.screens.static.StaticLibraryScreen
+import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
+import android.content.Intent
 
 /**
  * 主导航组件
@@ -84,6 +86,7 @@ fun MainNavigation() {
                 )
             }
             composable(NavDestination.Profile.route) {
+                val context = navController.context
                 ProfileScreen(
                     onFavoritesClick = { navController.navigate("favorites") },
                     onDownloadsClick = { navController.navigate("downloads") },
@@ -91,7 +94,12 @@ fun MainNavigation() {
                     onSettingsClick = { /* 暂时不处理 */ },
                     onFeedbackClick = { /* 暂时不处理 */ },
                     onAboutClick = { /* 暂时不处理 */ },
-                    onUpgradeClick = { /* 暂时不处理 */ }
+                    onUpgradeClick = { /* 暂时不处理 */ },
+                    onTestToolsClick = {
+                        // 启动测试工具
+                        context.startActivity(Intent(context, TestLauncherActivity::class.java))
+                    },
+                    isDebugMode = true // 开发模式下显示测试工具
                 )
             }
 
