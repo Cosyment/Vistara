@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import java.io.IOException
 import java.net.URL
 import javax.inject.Inject
@@ -60,6 +61,14 @@ class WallpaperDetailViewModel @Inject constructor(
     // 下载状态
     private val _isDownloading = mutableStateOf(false)
     val isDownloading: State<Boolean> = _isDownloading
+
+    // 下载进度
+    private val _downloadProgress = MutableStateFlow(0f)
+    val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
+
+    // 壁纸信息展开状态
+    private val _isInfoExpanded = mutableStateOf(false)
+    val isInfoExpanded: State<Boolean> = _isInfoExpanded
 
     init {
         loadWallpaper()
@@ -206,18 +215,25 @@ class WallpaperDetailViewModel @Inject constructor(
             return
         }
 
+        // 开始下载壁纸
+        _isDownloading.value = true
+        _downloadProgress.value = 0f
+
         viewModelScope.launch {
-            _isDownloading.value = true
-
             try {
-                // 记录下载
+                // 模拟下载过程
+                for (i in 1..10) {
+                    delay(300)
+                    _downloadProgress.value = i / 10f
+                }
+
+                // 记录下载历史
                 wallpaperRepository.trackWallpaperDownload(wallpaperId)
-
-                // TODO: 实现实际的下载逻辑
-
                 _isDownloading.value = false
+                _downloadProgress.value = 1f
             } catch (e: Exception) {
                 _isDownloading.value = false
+                _downloadProgress.value = 0f
             }
         }
     }
@@ -226,7 +242,24 @@ class WallpaperDetailViewModel @Inject constructor(
      * 分享壁纸
      */
     fun shareWallpaper() {
-        // TODO: 实现分享逻辑
+        val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
+
+        // 分享壁纸信息
+        val shareText = "\u6211发现了一张精美的壁纸\n" +
+                "\u6807题: ${currentWallpaper.title ?: "未命名壁纸"}\n" +
+                "\u4f5c者: ${currentWallpaper.author}\n" +
+                "\u6765源: ${currentWallpaper.source}\n" +
+                "\u5206辨率: ${currentWallpaper.resolution?.width} x ${currentWallpaper.resolution?.height}\n" +
+                "\u4e0b载 Vistara 壁纸应用以获取更多精美壁纸!"
+
+        // TODO: 实现实际的分享逻辑
+    }
+
+    /**
+     * 切换壁纸信息展开状态
+     */
+    fun toggleInfoExpanded() {
+        _isInfoExpanded.value = !_isInfoExpanded.value
     }
 
     /**

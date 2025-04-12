@@ -44,11 +44,19 @@ import com.vistara.aestheticwalls.ui.screens.static.StaticLibraryScreen
 fun MainNavigation() {
     val navController = rememberNavController()
 
+    // 获取当前导航状态
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    // 判断当前是否在主页面
+    val isMainScreen = currentRoute in NavDestination.values().map { it.route }
+
     Box {
         NavHost(
             navController = navController,
             startDestination = NavDestination.Home.route,
-            modifier = Modifier.padding(bottom = 80.dp) // 为底部导航栏留出空间
+            // 只有在主页面才为底部导航栏留出空间
+            modifier = if (isMainScreen) Modifier.padding(bottom = 80.dp) else Modifier
         ) {
             composable(NavDestination.Home.route) {
                 HomeScreen(
@@ -118,11 +126,13 @@ fun MainNavigation() {
             }
         }
 
-        // 底部导航栏
-        BottomNavBar(
-            navController = navController,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        // 底部导航栏，只在主页面显示
+        if (isMainScreen) {
+            BottomNavBar(
+                navController = navController,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
     }
 }
 

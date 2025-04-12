@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,8 +35,12 @@ import com.vistara.aestheticwalls.data.model.Wallpaper
 fun WallpaperDetail(
     wallpaper: Wallpaper,
     isFavorite: Boolean,
+    isInfoExpanded: Boolean = false,
+    isDownloading: Boolean = false,
+    downloadProgress: Float = 0f,
     onBackPressed: () -> Unit,
     onToggleFavorite: () -> Unit,
+    onToggleInfo: () -> Unit = {},
     onSetWallpaper: () -> Unit,
     onDownload: () -> Unit,
     onShare: () -> Unit,
@@ -44,7 +50,7 @@ fun WallpaperDetail(
 ) {
     var showControls by remember { mutableStateOf(true) }
     val context = LocalContext.current
-    
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -59,7 +65,7 @@ fun WallpaperDetail(
             modifier = Modifier
                 .fillMaxSize()
         )
-        
+
         // 顶部控制栏 (状态栏区域)
         AnimatedVisibility(
             visible = showControls,
@@ -70,17 +76,24 @@ fun WallpaperDetail(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.6f),
+                                Color.Black.copy(alpha = 0.3f),
+                                Color.Transparent
+                            )
+                        )
+                    )
                     .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .height(56.dp)
             ) {
                 IconButton(
                     onClick = onBackPressed,
                     modifier = Modifier
                         .align(Alignment.CenterStart)
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.3f))
+                        .padding(start = 8.dp)
+                        .size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
@@ -88,7 +101,7 @@ fun WallpaperDetail(
                         tint = Color.White
                     )
                 }
-                
+
                 // 如果壁纸有标题，显示标题
                 wallpaper.title?.let {
                     Text(
@@ -99,12 +112,12 @@ fun WallpaperDetail(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .padding(horizontal = 64.dp)
+                            .padding(horizontal = 56.dp) // 留出两边按钮的空间
                     )
                 }
             }
         }
-        
+
         // 底部控制栏
         AnimatedVisibility(
             visible = showControls,
@@ -123,8 +136,9 @@ fun WallpaperDetail(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(
                         modifier = Modifier.weight(1f)
@@ -134,60 +148,101 @@ fun WallpaperDetail(
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White
                         )
-                        
+
                         Text(
                             text = "来源: ${wallpaper.source}",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.7f)
                         )
-                        
-                        Text(
-                            text = "${wallpaper.resolution?.width} x ${wallpaper.resolution?.height}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f)
-                        )
                     }
-                    
-                    if (wallpaper.isPremium && !isPremiumUser) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Text(
-                                text = "高级 👑",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                }
-                
-                // 标签显示
-                if (wallpaper.tags.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier
-                            .horizontalScroll(rememberScrollState())
-                            .padding(bottom = 16.dp)
-                    ) {
-                        wallpaper.tags.forEach { tag ->
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (wallpaper.isPremium && !isPremiumUser) {
                             Surface(
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(16.dp),
                                 modifier = Modifier.padding(end = 8.dp)
                             ) {
                                 Text(
-                                    text = tag,
+                                    text = "高级 👑",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
                         }
+
+                        // 信息展开/收起按钮
+                        IconButton(
+                            onClick = onToggleInfo,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.2f))
+                        ) {
+                            Icon(
+                                imageVector = if (isInfoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = if (isInfoExpanded) "收起信息" else "展开信息",
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
-                
+
+                // 展开的详细信息
+                AnimatedVisibility(visible = isInfoExpanded) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                    ) {
+                        // 分辨率
+                        Text(
+                            text = "分辨率: ${wallpaper.resolution?.width} x ${wallpaper.resolution?.height}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+
+                        // 壁纸类型
+                        Text(
+                            text = "类型: ${if (wallpaper.isLive) "动态壁纸" else "静态壁纸"}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+
+                        // 标签显示
+                        if (wallpaper.tags.isNotEmpty()) {
+                            Text(
+                                text = "标签:",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.7f),
+                                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(bottom = 4.dp)
+                            ) {
+                                wallpaper.tags.forEach { tag ->
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                                        shape = RoundedCornerShape(16.dp),
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = tag,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // 操作按钮行
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -207,7 +262,7 @@ fun WallpaperDetail(
                             tint = if (isFavorite) Color.Red else Color.White
                         )
                     }
-                    
+
                     // 编辑按钮 - 仅对静态壁纸显示且不是动态壁纸时
                     if (!wallpaper.isLive) {
                         val canEdit = !wallpaper.isPremium || isPremiumUser
@@ -226,24 +281,41 @@ fun WallpaperDetail(
                             )
                         }
                     }
-                    
+
                     // 下载按钮
                     val canDownload = !wallpaper.isPremium || isPremiumUser
-                    IconButton(
-                        onClick = onDownload,
-                        enabled = canDownload,
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = if (canDownload) 0.2f else 0.1f))
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_download),
-                            contentDescription = "下载",
-                            tint = if (canDownload) Color.White else Color.White.copy(alpha = 0.5f)
-                        )
+                        // 下载进度指示器
+                        if (isDownloading) {
+                            CircularProgressIndicator(
+                                progress = { downloadProgress },
+                                modifier = Modifier.size(48.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = Color.White.copy(alpha = 0.2f),
+                                strokeWidth = 2.dp
+                            )
+                        }
+
+                        IconButton(
+                            onClick = onDownload,
+                            enabled = canDownload && !isDownloading,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = if (canDownload && !isDownloading) 0.2f else 0.1f))
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_download),
+                                contentDescription = "下载",
+                                tint = if (canDownload && !isDownloading) Color.White else Color.White.copy(alpha = 0.5f)
+                            )
+                        }
                     }
-                    
+
                     // 分享按钮
                     IconButton(
                         onClick = onShare,
@@ -259,7 +331,7 @@ fun WallpaperDetail(
                         )
                     }
                 }
-                
+
                 // 设置壁纸按钮 - 主要操作
                 val canSetWallpaper = !wallpaper.isPremium || isPremiumUser
                 Button(
@@ -281,7 +353,7 @@ fun WallpaperDetail(
                 }
             }
         }
-        
+
         // 点击屏幕切换控制栏显示状态
         Box(
             modifier = Modifier
@@ -313,7 +385,7 @@ fun WallpaperSetOptions(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             Button(
                 onClick = onSetHomeScreen,
                 modifier = Modifier
@@ -322,7 +394,7 @@ fun WallpaperSetOptions(
             ) {
                 Text(text = "主屏幕壁纸")
             }
-            
+
             Button(
                 onClick = onSetLockScreen,
                 modifier = Modifier
@@ -331,7 +403,7 @@ fun WallpaperSetOptions(
             ) {
                 Text(text = "锁屏壁纸")
             }
-            
+
             Button(
                 onClick = onSetBoth,
                 modifier = Modifier
@@ -340,7 +412,7 @@ fun WallpaperSetOptions(
             ) {
                 Text(text = "主屏幕和锁屏")
             }
-            
+
             TextButton(
                 onClick = onDismiss,
                 modifier = Modifier
@@ -376,20 +448,20 @@ fun PremiumWallpaperPrompt(
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Text(
                 text = "此壁纸为高级会员专享内容",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
-            
+
             Text(
                 text = "升级到Vistara高级版解锁全部内容",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-            
+
             Button(
                 onClick = onUpgrade,
                 modifier = Modifier.fillMaxWidth()
@@ -400,7 +472,7 @@ fun PremiumWallpaperPrompt(
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             TextButton(
                 onClick = onDismiss,
                 modifier = Modifier.padding(top = 8.dp)
@@ -409,4 +481,4 @@ fun PremiumWallpaperPrompt(
             }
         }
     }
-} 
+}
