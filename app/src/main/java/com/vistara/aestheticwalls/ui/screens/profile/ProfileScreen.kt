@@ -17,12 +17,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -42,6 +45,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -100,18 +104,21 @@ fun ProfileScreen(
         FeatureItem(
             icon = Icons.Default.Favorite,
             title = "我的收藏",
+            subtitle = "查看所有收藏的壁纸",
             onClick = onFavoritesClick
         )
 
         FeatureItem(
             icon = Icons.Default.Star,
             title = "我的下载",
+            subtitle = "查看所有下载的壁纸",
             onClick = onDownloadsClick
         )
 
         FeatureItem(
-            icon = Icons.Default.Star,
+            icon = Icons.Default.Refresh,
             title = "自动更换壁纸",
+            subtitle = "设置自动更换壁纸的频率和来源",
             onClick = onAutoChangeClick
         )
 
@@ -123,18 +130,21 @@ fun ProfileScreen(
         FeatureItem(
             icon = Icons.Default.Settings,
             title = "设置",
+            subtitle = "调整应用偏好和通知",
             onClick = onSettingsClick
         )
 
         FeatureItem(
             icon = Icons.Default.Star,
             title = "评分与反馈",
+            subtitle = "帮助我们改进应用",
             onClick = onFeedbackClick
         )
 
         FeatureItem(
             icon = Icons.Default.Info,
             title = "关于与致谢",
+            subtitle = "查看应用信息和版权",
             onClick = onAboutClick
         )
     }
@@ -242,6 +252,7 @@ private fun UpgradeBanner(
 private fun FeatureItem(
     icon: ImageVector,
     title: String,
+    subtitle: String? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -258,7 +269,8 @@ private fun FeatureItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
                 Icon(
                     imageVector = icon,
@@ -267,15 +279,27 @@ private fun FeatureItem(
                     modifier = Modifier.padding(end = 16.dp)
                 )
 
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
 
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier.size(20.dp)

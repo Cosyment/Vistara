@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.constraint.compose)
+    implementation(libs.androidx.material.icons.core)
 
     // Hilt
     implementation(libs.hilt.android)

@@ -29,6 +29,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
+import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
+import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.live.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.profile.ProfileScreen
@@ -75,8 +77,8 @@ fun MainNavigation() {
             }
             composable(NavDestination.Profile.route) {
                 ProfileScreen(
-                    onFavoritesClick = { /* 暂时不处理 */ },
-                    onDownloadsClick = { /* 暂时不处理 */ },
+                    onFavoritesClick = { navController.navigate("favorites") },
+                    onDownloadsClick = { navController.navigate("downloads") },
                     onAutoChangeClick = { /* 暂时不处理 */ },
                     onSettingsClick = { /* 暂时不处理 */ },
                     onFeedbackClick = { /* 暂时不处理 */ },
@@ -92,6 +94,26 @@ fun MainNavigation() {
             ) {
                 WallpaperDetailScreen(
                     onBackPressed = { navController.navigateUp() }
+                )
+            }
+
+            // 收藏页面
+            composable("favorites") {
+                FavoritesScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    }
+                )
+            }
+
+            // 下载页面
+            composable("downloads") {
+                DownloadsScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    }
                 )
             }
         }
