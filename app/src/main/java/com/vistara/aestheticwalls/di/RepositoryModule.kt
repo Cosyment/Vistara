@@ -9,6 +9,7 @@ import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
 import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
+import com.vistara.aestheticwalls.data.remote.api.PexelsApiAdapter
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
@@ -17,12 +18,15 @@ import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import com.vistara.aestheticwalls.utils.NetworkMonitor
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepositoryImpl
+import com.vistara.aestheticwalls.data.repository.UserRepository
+import com.vistara.aestheticwalls.data.repository.UserRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -44,7 +48,8 @@ object RepositoryModule {
         apiLoadBalancer: ApiLoadBalancer,
         apiUsageTracker: ApiUsageTracker,
         networkMonitor: NetworkMonitor,
-        wallpaperApiAdapter: WallpaperApiAdapter
+        wallpaperApiAdapter: WallpaperApiAdapter,
+        @Named("pexelsApiAdapter") pexelsApiAdapter: WallpaperApiAdapter
     ): WallpaperRepository {
         return WallpaperRepositoryImpl(
             unsplashApiService = unsplashApiService,
@@ -59,7 +64,8 @@ object RepositoryModule {
             apiLoadBalancer = apiLoadBalancer,
             apiUsageTracker = apiUsageTracker,
             networkMonitor = networkMonitor,
-            wallpaperApiAdapter = wallpaperApiAdapter
+            wallpaperApiAdapter = wallpaperApiAdapter,
+            pexelsApiAdapter = pexelsApiAdapter
         )
     }
 
@@ -69,5 +75,13 @@ object RepositoryModule {
         dataStore: DataStore<Preferences>
     ): UserPrefsRepository {
         return UserPrefsRepositoryImpl(dataStore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(
+        dataStore: DataStore<Preferences>
+    ): UserRepository {
+        return UserRepositoryImpl(dataStore)
     }
 }

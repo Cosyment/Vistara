@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.ErrorState
 import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.WallpaperStaggeredGrid
@@ -186,49 +187,6 @@ fun StaticLibraryScreen(
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary
             )
-        }
-    }
-}
-
-/**
- * 分类选择器组件
- * 使用remember缓存分类选择器的状态，避免在点击时闪烁
- */
-@Composable
-fun CategorySelector(
-    categories: List<String>,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // 使用remember缓存分类选择器的状态
-    val rememberedCategories = remember { categories }
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        items(
-            items = rememberedCategories,
-            key = { category -> category } // 使用category作为key
-        ) { category ->
-            val isSelected = category == selectedCategory
-
-            Surface(
-                onClick = { onCategorySelected(category) },
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = category,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
         }
     }
 }

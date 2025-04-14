@@ -5,6 +5,8 @@ import com.vistara.aestheticwalls.data.model.pexels.PexelsCollectionMediaRespons
 import com.vistara.aestheticwalls.data.model.pexels.PexelsCollectionsResponse
 import com.vistara.aestheticwalls.data.model.pexels.PexelsPhoto
 import com.vistara.aestheticwalls.data.model.pexels.PexelsSearchResponse
+import com.vistara.aestheticwalls.data.model.pexels.PexelsVideo
+import com.vistara.aestheticwalls.data.model.pexels.PexelsVideoSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -16,6 +18,7 @@ import retrofit2.http.Query
 interface PexelsApiService {
     companion object {
         const val BASE_URL = "https://api.pexels.com/v1/"
+        const val VIDEO_BASE_URL = "https://api.pexels.com/videos/"
     }
 
     /**
@@ -79,4 +82,39 @@ interface PexelsApiService {
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 10
     ): PexelsCollectionMediaResponse
+
+    /**
+     * 获取精选视频
+     * @param page 页码，从1开始
+     * @param perPage 每页数量，默认10，最大80
+     */
+    @GET("popular")
+    suspend fun getPopularVideos(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 10
+    ): PexelsVideoSearchResponse
+
+    /**
+     * 搜索视频
+     * @param query 搜索关键词
+     * @param page 页码，从1开始
+     * @param perPage 每页数量，默认10，最大80
+     * @param orientation 视频方向，landscape、portrait、square
+     * @param size 视频尺寸，large(>1280x720)、medium(>960x540)、small(>640x360)
+     */
+    @GET("search")
+    suspend fun searchVideos(
+        @Query("query") query: String,
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 10,
+        @Query("orientation") orientation: String? = null,
+        @Query("size") size: String? = null
+    ): PexelsVideoSearchResponse
+
+    /**
+     * 获取视频详情
+     * @param id 视频ID
+     */
+    @GET("videos/{id}")
+    suspend fun getVideo(@Path("id") id: String): PexelsVideo
 }

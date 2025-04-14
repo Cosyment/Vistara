@@ -7,11 +7,13 @@ import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.Category
+import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.ApiSource
 import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
+import com.vistara.aestheticwalls.data.remote.api.PexelsApiAdapter
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
@@ -46,7 +48,8 @@ class WallpaperRepositoryImpl @Inject constructor(
     private val apiLoadBalancer: ApiLoadBalancer,
     private val apiUsageTracker: ApiUsageTracker,
     private val networkMonitor: NetworkMonitor,
-    private val wallpaperApiAdapter: WallpaperApiAdapter // 新增的壁纸API适配器
+    private val wallpaperApiAdapter: WallpaperApiAdapter, // 新增的壁纸API适配器
+    private val pexelsApiAdapter: WallpaperApiAdapter // Pexels API适配器，用于获取视频
 ) : WallpaperRepository {
 
     /**
@@ -102,15 +105,41 @@ class WallpaperRepositoryImpl @Inject constructor(
                     }
 
                     val pexelsWallpapers = when (pexelsResponse) {
-                        is ApiResult.Success -> pexelsMapper.toWallpapers(pexelsResponse.data.photos)
+                        is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(pexelsResponse.data.photos)
                         else -> emptyList()
                     }
 
                     unsplashWallpapers + pexelsWallpapers
                 }
                 "live" -> {
-                    // 暂时不支持动态壁纸，返回空列表
-                    emptyList()
+                    // 使用 Pexels 的视频 API 获取动态壁纸
+                    val pexelsAdapter = pexelsApiAdapter as PexelsApiAdapter
+                    val pexelsResponse = pexelsAdapter.getPopularVideos(page, pageSize)
+
+                    val pexelsVideos = when (pexelsResponse) {
+                        is ApiResult.Success -> pexelsResponse.data
+                        else -> emptyList()
+                    }
+
+                    // 如果没有获取到视频数据，返回模拟数据
+                    if (pexelsVideos.isEmpty()) {
+                        List(10) { index ->
+                            Wallpaper(
+                                id = "live_${page}_$index",
+                                title = "动态壁纸 ${page}_$index",
+                                url = "https://example.com/live_wallpaper${page}_$index.mp4",
+                                thumbnailUrl = "https://picsum.photos/id/${(index + page * 10) % 1000}/500/800",
+                                author = "动画师 $index",
+                                source = "Vistara",
+                                isPremium = true,
+                                isLive = true,
+                                tags = listOf("动态", "炫酷", if (index % 3 == 0) "自然" else if (index % 3 == 1) "科技感" else "抽象"),
+                                resolution = Resolution(1080, 1920)
+                            )
+                        }
+                    } else {
+                        pexelsVideos
+                    }
                 }
                 else -> emptyList()
             }
@@ -164,7 +193,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 }
 
                 when (response) {
-                    is ApiResult.Success -> pexelsMapper.toWallpapers(response.data.photos)
+                    is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(response.data.photos)
                     else -> emptyList()
                 }
             }

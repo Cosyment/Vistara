@@ -25,7 +25,7 @@ class PexelsApiAdapter @Inject constructor(
     override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): ApiResult<List<Wallpaper>> {
         return safeApiCall(ApiSource.PEXELS) {
             val response = pexelsApiService.getCuratedPhotos(page = page, perPage = pageSize)
-            pexelsMapper.toWallpapers(response.photos)
+            pexelsMapper.toWallpapersFromPhotos(response.photos)
         }
     }
 
@@ -49,7 +49,7 @@ class PexelsApiAdapter @Inject constructor(
                 size = size,
                 color = color
             )
-            pexelsMapper.toWallpapers(response.photos)
+            pexelsMapper.toWallpapersFromPhotos(response.photos)
         }
     }
 
@@ -66,7 +66,7 @@ class PexelsApiAdapter @Inject constructor(
             // 使用随机页码来模拟随机效果
             val randomPage = (1..50).random()
             val response = pexelsApiService.getCuratedPhotos(page = randomPage, perPage = count)
-            pexelsMapper.toWallpapers(response.photos)
+            pexelsMapper.toWallpapersFromPhotos(response.photos)
         }
     }
 
@@ -101,13 +101,58 @@ class PexelsApiAdapter @Inject constructor(
                 return@safeApiCall emptyList<Wallpaper>()
             }
 
-            pexelsMapper.toWallpapers(photos)
+            pexelsMapper.toWallpapersFromPhotos(photos)
         }
     }
 
     override suspend fun trackDownload(id: String): ApiResult<Unit> {
         // Pexels API不需要跟踪下载，直接返回成功
         return ApiResult.Success(Unit)
+    }
+
+    /**
+     * 获取精选视频壁纸
+     */
+    suspend fun getPopularVideos(page: Int, pageSize: Int): ApiResult<List<Wallpaper>> {
+        return safeApiCall(ApiSource.PEXELS) {
+            val response = pexelsApiService.getPopularVideos(page = page, perPage = pageSize)
+            pexelsMapper.toWallpapersFromVideos(response.videos)
+        }
+    }
+
+    /**
+     * 搜索视频壁纸
+     */
+    suspend fun searchVideos(
+        query: String,
+        page: Int,
+        pageSize: Int,
+        filters: Map<String, String>
+    ): ApiResult<List<Wallpaper>> {
+        return safeApiCall(ApiSource.PEXELS) {
+            // 从过滤条件中提取参数
+            val orientation = filters["orientation"]
+            val size = filters["size"]
+
+            val response = pexelsApiService.searchVideos(
+                query = query,
+                page = page,
+                perPage = pageSize,
+                orientation = orientation,
+                size = size
+            )
+            pexelsMapper.toWallpapersFromVideos(response.videos)
+        }
+    }
+
+    /**
+     * 获取视频详情
+     */
+    suspend fun getVideoById(id: String): ApiResult<Wallpaper?> {
+        return safeApiCall(ApiSource.PEXELS) {
+            val video = pexelsApiService.getVideo(id)
+            pexelsMapper.toWallpaper(video)
+        }
     }
 
     /**
