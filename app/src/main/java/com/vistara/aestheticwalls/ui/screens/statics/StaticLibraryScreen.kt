@@ -121,7 +121,7 @@ fun StaticLibraryScreen(
             // 根据状态显示不同的内容
             when (wallpapersState) {
                 is UiState.Loading -> {
-                    LoadingState(message = "正在加载壁纸...")
+                    LoadingState()
                 }
 
                 is UiState.Success -> {

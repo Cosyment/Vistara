@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,14 +35,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.LiveVideoGrid
-import com.vistara.aestheticwalls.ui.components.VideoPlaybackManager
+import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.rememberVideoPlaybackManager
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
@@ -48,7 +47,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
  * 动态壁纸库页面
  * 显示所有动态壁纸，支持分类筛选
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Suppress("OPT_IN_USAGE")
 @Composable
 fun LiveLibraryScreen(
@@ -69,40 +68,41 @@ fun LiveLibraryScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "动态壁纸", style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
+                Text(
+                    "动态壁纸", style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold
                     )
-                }, actions = {
-                    IconButton(onClick = onSearchClick) {
-                        Icon(
-                            imageVector = Icons.Default.Search, contentDescription = "搜索"
-                        )
-                    }
-                }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
+            }, actions = {
+                IconButton(onClick = onSearchClick) {
+                    Icon(
+                        imageVector = Icons.Default.Search, contentDescription = "搜索"
+                    )
+                }
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                titleContentColor = MaterialTheme.colorScheme.onBackground
+            )
             )
         }) { paddingValues ->
-        SwipeRefresh(
-            state = rememberSwipeRefreshState(isRefreshing),
-            onRefresh = { viewModel.refresh() },
+        val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = {})
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .pullRefresh(pullRefreshState)
         ) {
             // 将整个when表达式包裹在一个组合函数中
             val content = @Composable {
                 when (wallpapersState) {
                     is UiState.Loading -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
-                        }
+                        LoadingState()
                     }
+
                     is UiState.Error -> {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                        ) {
                             Text(
                                 text = (wallpapersState as UiState.Error).message,
                                 color = MaterialTheme.colorScheme.error,
@@ -111,6 +111,7 @@ fun LiveLibraryScreen(
                             )
                         }
                     }
+
                     is UiState.Success -> {
                         val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
 
@@ -122,8 +123,7 @@ fun LiveLibraryScreen(
                                 selectedCategory = selectedCategory,
                                 onCategorySelected = { category: String ->
                                     viewModel.filterByCategory(category)
-                                }
-                            )
+                                })
 
                             // 显示动态壁纸网格 (统一大小布局)
                             Box(modifier = Modifier.weight(1f)) {
@@ -134,7 +134,8 @@ fun LiveLibraryScreen(
 
                                 // 使用remember缓存LiveVideoGrid组件
                                 val rememberedWallpapers = remember(wallpapers) { wallpapers }
-                                val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
+                                val rememberedIsLoadingMore =
+                                    remember(isLoadingMore) { isLoadingMore }
                                 val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
 
                                 LiveVideoGrid(
@@ -147,7 +148,7 @@ fun LiveLibraryScreen(
                                     videoPlaybackManager = videoPlaybackManager,
                                     // 使用固定列数，确保统一大小
                                     columns = 2,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
                                 )
                             }
 
