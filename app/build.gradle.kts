@@ -74,6 +74,7 @@ dependencies {
     // StaggeredGrid for waterfall layout
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
     implementation("com.google.accompanist:accompanist-flowlayout:0.28.0")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.28.0")
 
     // Hilt
     implementation(libs.hilt.android)

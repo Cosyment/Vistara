@@ -1,15 +1,18 @@
 package com.vistara.aestheticwalls.ui.screens.lives
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -20,17 +23,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.vistara.aestheticwalls.data.model.Resolution
+import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import com.vistara.aestheticwalls.ui.components.WallpaperGrid
+import com.vistara.aestheticwalls.ui.components.CategorySelector
+import com.vistara.aestheticwalls.ui.components.WallpaperStaggeredGrid
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -38,35 +47,21 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
  * 显示所有动态壁纸，支持分类筛选
  */
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("OPT_IN_USAGE")
 @Composable
 fun LiveLibraryScreen(
-    onWallpaperClick: (Wallpaper) -> Unit, onSearchClick: () -> Unit = {}
+    onWallpaperClick: (Wallpaper) -> Unit,
+    onSearchClick: () -> Unit = {},
+    viewModel: LiveLibraryViewModel = hiltViewModel()
 ) {
-    // 分类数据
-    val categories = listOf(
-        "全部", "抽象", "科技感", "自然", "赛博朋克", "粒子", "流体", "简约", "卡通"
-    )
-
-    // 当前选中的分类
-    var selectedCategory by remember { mutableStateOf("全部") }
-
-    // 示例壁纸数据
-    val wallpapers = remember {
-        List(8) { index ->
-            Wallpaper(
-                id = "live_$index",
-                title = "动态壁纸 $index",
-                url = "https://example.com/live_wallpaper$index.mp4",
-                thumbnailUrl = "https://example.com/live_thumbnail$index.jpg",
-                author = "动画师 $index",
-                source = "Vistara",
-                isPremium = true, // 动态壁纸默认都是高级内容
-                isLive = true,
-                tags = listOf("动态", "炫酷"),
-                resolution = Resolution(1080, 1920)
-            )
-        }
-    }
+    // 从 ViewModel 中获取状态
+    val wallpapersState by viewModel.wallpapersState.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val categories = viewModel.categories
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val canLoadMore by viewModel.canLoadMore.collectAsState()
+    val isPremiumUser by viewModel.isPremiumUser.collectAsState()
 
     Scaffold(
         topBar = {
@@ -89,67 +84,116 @@ fun LiveLibraryScreen(
                 )
             )
         }) { paddingValues ->
-        Column(
+        SwipeRefresh(
+            state = rememberSwipeRefreshState(isRefreshing),
+            onRefresh = { viewModel.refresh() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(categories) { category ->
-                    val isSelected = category == selectedCategory
+            // 将整个when表达式包裹在一个组合函数中
+            val content = @Composable {
+                when (wallpapersState) {
+                    is UiState.Loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    is UiState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = (wallpapersState as UiState.Error).message,
+                                color = MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                    is UiState.Success -> {
+                        val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
 
-                    Surface(
-                        onClick = { selectedCategory = category },
-                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = category,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                        // 使用Column包裹LazyRow和WallpaperStaggeredGrid
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            // 分类选择器 - 使用remember缓存分类选择器
+                            CategorySelector(
+                                categories = categories,
+                                selectedCategory = selectedCategory,
+                                onCategorySelected = { category: String ->
+                                    viewModel.filterByCategory(category)
+                                }
+                            )
+
+                            // 显示壁纸网格 (瀑布流布局)
+                            Box(modifier = Modifier.weight(1f)) {
+                                // 使用remember缓存WallpaperStaggeredGrid组件
+                                val rememberedWallpapers = remember(wallpapers) { wallpapers }
+                                val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
+                                val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
+
+                                WallpaperStaggeredGrid(
+                                    wallpapers = rememberedWallpapers,
+                                    onWallpaperClick = onWallpaperClick,
+                                    onLoadMore = { viewModel.loadMore() },
+                                    isLoadingMore = rememberedIsLoadingMore,
+                                    canLoadMore = rememberedCanLoadMore,
+                                    showEndMessage = !rememberedCanLoadMore,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+
+                            // 高级版提示
+                            if (!isPremiumUser) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            text = "动态壁纸为高级功能，升级会员即可解锁全部内容",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Button(
+                                            onClick = { viewModel.upgradeToPremium() },
+                                            shape = RoundedCornerShape(8.dp),
+                                            modifier = Modifier.align(Alignment.End)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Star,
+                                                contentDescription = null,
+                                                modifier = Modifier.padding(end = 4.dp)
+                                            )
+                                            Text(text = "升级会员")
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
-            // 壁纸网格
-            WallpaperGrid(
-                wallpapers = wallpapers,
-                onWallpaperClick = onWallpaperClick,
-                modifier = Modifier.padding(0.dp)
-            )
-
-            // 高级版提示
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    text = "动态壁纸为高级功能，升级会员即可解锁全部内容",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+            // 调用组合函数
+            content()
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun LiveLibraryScreenPreview() {
     VistaraTheme {
-        LiveLibraryScreen(
-            onWallpaperClick = {})
+        // 注意：Preview中不能使用hiltViewModel，所以这里只是一个简单的预览
+        // 实际使用时需要提供真实的ViewModel
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("动态壁纸页面预览")
+        }
     }
 }
