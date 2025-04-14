@@ -158,44 +158,58 @@ class StaticLibraryViewModel @Inject constructor(
         // 如果当前已经是这个分类，不需要重复筛选
         if (_selectedCategory.value == category) return
 
+        Log.d("StaticLibraryViewModel", "Filtering by category: $category")
+
+        // 先更新选中的分类，这样UI可以立即响应
         _selectedCategory.value = category
-        // 重置分页参数
-        _currentPage.value = 1
-        _canLoadMore.value = true
-        _wallpapers.value = emptyList()
 
-        // 如果选择"全部"，则重新加载所有壁纸
-        if (category == "全部") {
-            loadWallpapers(true)
-            return
-        }
-
-        // 否则，根据分类筛选
+        // 在单独的协程中处理数据加载，避免阻塞UI线程
         viewModelScope.launch {
-            _wallpapersState.value = UiState.Loading
+            // 重置分页参数
+            _currentPage.value = 1
+            _canLoadMore.value = true
 
+            // 如果选择"全部"，则重新加载所有壁纸
+            if (category == "全部") {
+                // 先设置加载状态，然后再清空列表，避免闪烁
+                _wallpapersState.value = UiState.Loading
+                _wallpapers.value = emptyList()
+                loadWallpapers(true)
+                return@launch
+            }
+
+            // 否则，根据分类筛选
             try {
                 // 使用现有数据进行筛选，避免重复网络请求
-                val currentWallpapers = (_wallpapersState.value as? UiState.Success)?.data
+                val allWallpapers = _wallpapers.value
 
-                if (currentWallpapers != null && currentWallpapers.isNotEmpty()) {
-                    // 如果已有数据，直接筛选
-                    val filtered = currentWallpapers.filter { wallpaper ->
+                if (allWallpapers.isNotEmpty()) {
+                    // 先设置加载状态
+                    _wallpapersState.value = UiState.Loading
+
+                    // 在后台进行筛选，不会阻塞UI
+                    val filtered = allWallpapers.filter { wallpaper ->
                         wallpaper.tags.any { it.contains(category, ignoreCase = true) }
                     }
 
                     if (filtered.isNotEmpty()) {
-                        _wallpapers.value = filtered
+                        Log.d("StaticLibraryViewModel", "Filtered wallpapers: ${filtered.size}")
                         _wallpapersState.value = UiState.Success(filtered)
                     } else {
                         // 如果筛选后没有数据，尝试从服务器加载
+                        Log.d("StaticLibraryViewModel", "No filtered results, loading from server")
+                        _wallpapers.value = emptyList()
                         loadWallpapers(true)
                     }
                 } else {
                     // 如果没有数据，重新加载
+                    Log.d("StaticLibraryViewModel", "No existing data, loading from server")
+                    _wallpapersState.value = UiState.Loading
+                    _wallpapers.value = emptyList()
                     loadWallpapers(true)
                 }
             } catch (e: Exception) {
+                Log.e("StaticLibraryViewModel", "Error filtering by category: ${e.message}", e)
                 _wallpapersState.value = UiState.Error(e.message ?: "筛选壁纸失败")
             }
         }

@@ -50,7 +50,7 @@ import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.ErrorState
 import com.vistara.aestheticwalls.ui.components.LoadingState
-import com.vistara.aestheticwalls.ui.components.WallpaperGrid
+import com.vistara.aestheticwalls.ui.components.WallpaperStaggeredGrid
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -72,62 +72,22 @@ fun StaticLibraryScreen(
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
     val canLoadMore by viewModel.canLoadMore.collectAsState()
 
-    // 创建LazyListState来监听滚动状态
-    val listState = rememberLazyListState()
-
     // 下拉刷新状态
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing,
         onRefresh = { viewModel.refresh() }
     )
 
-    // 检测是否滚动到底部
-    val shouldLoadMore = remember {
-        derivedStateOf {
-            val layoutInfo = listState.layoutInfo
-            val totalItemsNumber = layoutInfo.totalItemsCount
-            val lastVisibleItemIndex = (layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0) + 1
-
-            // 记录滚动状态信息
-            Log.d("StaticLibraryScreen", "Scroll state: lastVisibleItemIndex=$lastVisibleItemIndex, totalItemsNumber=$totalItemsNumber")
-
-            // 如果最后可见项的索引接近总项数，则认为滚动到了底部
-            // 增加判断条件，确保滚动到底部时能正确触发
-            val reachedEnd = lastVisibleItemIndex > 0 && lastVisibleItemIndex >= totalItemsNumber - 1
-            val reachedEndWithBuffer = layoutInfo.visibleItemsInfo.isNotEmpty() &&
-                    layoutInfo.visibleItemsInfo.last().index >= totalItemsNumber - 3
-
-            val shouldLoad = reachedEnd || reachedEndWithBuffer
-            Log.d("StaticLibraryScreen", "shouldLoadMore: $shouldLoad (reachedEnd=$reachedEnd, reachedEndWithBuffer=$reachedEndWithBuffer)")
-            shouldLoad
-        }
-    }
-
-    // 当滚动到底部时自动加载更多
-    LaunchedEffect(shouldLoadMore.value, isLoadingMore, canLoadMore, wallpapersState) {
-        Log.d("StaticLibraryScreen", "LaunchedEffect triggered: shouldLoadMore=${shouldLoadMore.value}, isLoadingMore=$isLoadingMore, canLoadMore=$canLoadMore")
-        if (shouldLoadMore.value && !isLoadingMore && canLoadMore && wallpapersState is UiState.Success) {
-            Log.d("StaticLibraryScreen", "Calling loadMore()")
-            viewModel.loadMore()
-        } else {
-            Log.d("StaticLibraryScreen", "Not calling loadMore() because: shouldLoadMore=${shouldLoadMore.value}, isLoadingMore=$isLoadingMore, canLoadMore=$canLoadMore, wallpapersState is Success=${wallpapersState is UiState.Success}")
-        }
-    }
-
-    // 监听滚动状态变化
-    LaunchedEffect(listState) {
-        // 每次滚动状态变化时都会触发
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
-            .collect { lastIndex ->
-                val totalItems = listState.layoutInfo.totalItemsCount
-                Log.d("StaticLibraryScreen", "Scroll state changed: lastIndex=$lastIndex, totalItems=$totalItems")
-
-                // 如果滚动到了底部附近，则加载更多
-                if (lastIndex > 0 && lastIndex >= totalItems - 3 && !isLoadingMore && canLoadMore && wallpapersState is UiState.Success) {
-                    Log.d("StaticLibraryScreen", "Reached bottom, loading more...")
-                    viewModel.loadMore()
-                }
+    // 监听壁纸数量变化，当壁纸数量足够多时自动加载更多
+    LaunchedEffect(wallpapersState) {
+        if (wallpapersState is UiState.Success && !isLoadingMore && canLoadMore) {
+            val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
+            // 当壁纸数量达到一定阈值时，自动加载更多
+            if (wallpapers.size % 10 == 0 && wallpapers.size > 0) {
+                Log.d("StaticLibraryScreen", "Auto loading more wallpapers, current count: ${wallpapers.size}")
+                viewModel.loadMore()
             }
+        }
     }
 
     Scaffold(
@@ -157,122 +117,66 @@ fun StaticLibraryScreen(
                 .padding(paddingValues)
                 .pullRefresh(pullRefreshState)
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-                // 滚动到底部时自动加载更多
-                content = {
-                // 分类选择器
-                item {
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(categories) { category ->
-                            val isSelected = category == selectedCategory
-
-                            Surface(
-                                onClick = { viewModel.filterByCategory(category) },
-                                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                                shape = RoundedCornerShape(20.dp),
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = category,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
-                    }
+            // 根据状态显示不同的内容
+            when (wallpapersState) {
+                is UiState.Loading -> {
+                    LoadingState(message = "正在加载壁纸...")
                 }
 
-                // 根据状态显示不同的内容
-                when (wallpapersState) {
-                    is UiState.Loading -> {
-                        item {
-                            LoadingState(message = "正在加载壁纸...")
-                        }
-                    }
-
-                    is UiState.Success -> {
-                        val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
-                        if (wallpapers.isEmpty()) {
-                            // 显示空状态
-                            item {
-                                Box(
-                                    modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "没有找到壁纸",
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                    )
-                                }
-                            }
-                        } else {
-                            // 显示壁纸网格
-                            item {
-                                WallpaperGrid(
-                                    wallpapers = wallpapers,
-                                    onWallpaperClick = onWallpaperClick,
-                                    modifier = Modifier.padding(0.dp)
-                                )
-                            }
-
-                            // 如果正在加载更多，显示加载指示器
-                            if (isLoadingMore) {
-                                item {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(32.dp),
-                                            color = MaterialTheme.colorScheme.primary,
-                                            strokeWidth = 3.dp
-                                        )
-                                    }
-                                }
-                            }
-
-                            // 如果没有更多数据，显示到底部提示
-                            if (!canLoadMore) {
-                                item {
-                                    Text(
-                                        text = "已经到底了",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 16.dp)
-                                    )
-                                }
-                            }
-
-                            // 底部空白，防止内容被遮挡，但不要太大
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
-                        }
-                    }
-
-                    is UiState.Error -> {
-                        item {
-                            ErrorState(
-                                message = (wallpapersState as UiState.Error).message,
-                                onRetry = { viewModel.refresh() }
+                is UiState.Success -> {
+                    val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
+                    if (wallpapers.isEmpty()) {
+                        // 显示空状态
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "没有找到壁纸",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
                         }
+                    } else {
+                        // 使用Column包裹LazyRow和WallpaperStaggeredGrid
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            // 分类选择器 - 使用remember缓存分类选择器
+                            CategorySelector(
+                                categories = categories,
+                                selectedCategory = selectedCategory,
+                                onCategorySelected = { category ->
+                                    viewModel.filterByCategory(category)
+                                }
+                            )
+
+                            // 显示壁纸网格 (瀑布流布局)
+                            Box(modifier = Modifier.weight(1f)) {
+                                // 使用remember缓存WallpaperStaggeredGrid组件
+                                val rememberedWallpapers = remember(wallpapers) { wallpapers }
+                                val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
+                                val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
+
+                                WallpaperStaggeredGrid(
+                                    wallpapers = rememberedWallpapers,
+                                    onWallpaperClick = onWallpaperClick,
+                                    onLoadMore = { viewModel.loadMore() },
+                                    isLoadingMore = rememberedIsLoadingMore,
+                                    canLoadMore = rememberedCanLoadMore,
+                                    showEndMessage = !rememberedCanLoadMore,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
                     }
                 }
-            })
+
+                is UiState.Error -> {
+                    ErrorState(
+                        message = (wallpapersState as UiState.Error).message,
+                        onRetry = { viewModel.refresh() }
+                    )
+                }
+            }
 
             // 显示下拉刷新指示器
             PullRefreshIndicator(
@@ -282,6 +186,49 @@ fun StaticLibraryScreen(
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary
             )
+        }
+    }
+}
+
+/**
+ * 分类选择器组件
+ * 使用remember缓存分类选择器的状态，避免在点击时闪烁
+ */
+@Composable
+fun CategorySelector(
+    categories: List<String>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // 使用remember缓存分类选择器的状态
+    val rememberedCategories = remember { categories }
+
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        items(
+            items = rememberedCategories,
+            key = { category -> category } // 使用category作为key
+        ) { category ->
+            val isSelected = category == selectedCategory
+
+            Surface(
+                onClick = { onCategorySelected(category) },
+                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = category,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
         }
     }
 }
