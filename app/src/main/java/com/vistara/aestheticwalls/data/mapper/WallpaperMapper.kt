@@ -88,10 +88,15 @@ class PexelsMapper @Inject constructor() {
      * 将Pexels视频转换为壁纸
      */
     fun toWallpaper(source: PexelsVideo): Wallpaper {
-        // 获取最高质量的视频文件
+        // 获取适合移动设备的中等质量视频文件
+        // 选择分辨率适中的MP4文件，避免选择过高分辨率导致性能问题
         val videoFile = source.videoFiles
             .filter { it.file_type == "video/mp4" } // 只使用MP4格式
-            .maxByOrNull { it.width * it.height } // 选择分辨率最高的
+            .filter { it.width <= 1280 && it.height <= 720 } // 限制分辨率不超过720p
+            .maxByOrNull { it.width * it.height } // 选择满足条件的最高分辨率
+            ?: source.videoFiles
+                .filter { it.file_type == "video/mp4" }
+                .minByOrNull { it.width * it.height } // 如果没有满足条件的，选择最低分辨率
 
         // 获取最高质量的预览图
         val bestPreview = source.videoPictures.firstOrNull()?.picture ?: source.image
@@ -126,10 +131,26 @@ class PexelsMapper @Inject constructor() {
             else -> "\u52a8\u6001\u58c1\u7eb8 ${source.id}"
         }
 
+        // 选择最适合的视频URL
+        val videoUrl = if (videoFile != null) {
+            // 使用直接的视频文件URL
+            videoFile.link
+        } else {
+            // 如果没有找到适合的视频文件，使用默认URL
+            // 注意：这可能不是直接可播放的URL
+            "https://www.pexels.com/video/${source.id}/download"
+        }
+
+        // 打印日志以便调试
+        android.util.Log.d("PexelsMapper", "Video URL for ID ${source.id}: $videoUrl")
+        if (videoFile != null) {
+            android.util.Log.d("PexelsMapper", "Selected video file: ${videoFile.quality}, ${videoFile.width}x${videoFile.height}")
+        }
+
         return Wallpaper(
             id = "pexels_video_${source.id}",
             title = title,
-            url = videoFile?.link, // 视频文件URL
+            url = videoUrl, // 使用选择的视频URL
             thumbnailUrl = bestPreview, // 使用最佳预览图
             previewUrl = bestPreview,
             width = source.width,

@@ -327,14 +327,47 @@ class WallpaperRepositoryImpl @Inject constructor(
             return null
         }
 
+        // 特殊处理动态壁纸ID
+        if (id.startsWith("live_")) {
+            Log.d(TAG, "处理模拟动态壁纸ID: $id")
+            return recreateLiveWallpaper(id)
+        }
+
         // 从ID解析来源和原始ID
         val parts = id.split("_")
         if (parts.size < 2) return null
 
         val source = parts[0]
-        val originalId = parts[1]
 
-        // 如果是Pexels来源，使用壁纸API适配器
+        // 处理Pexels视频壁纸
+        if (id.startsWith("pexels_video_")) {
+            Log.d(TAG, "处理Pexels视频壁纸ID: $id")
+            // 提取原始ID，去掉"pexels_video_"前缀
+            val videoId = id.substringAfter("pexels_video_")
+            val pexelsAdapter = pexelsApiAdapter as PexelsApiAdapter
+            try {
+                // 使用PexelsApiAdapter获取视频详情
+                val video = pexelsApiService.getVideo(videoId)
+                return pexelsMapper.toWallpaper(video)
+            } catch (e: Exception) {
+                Log.e(TAG, "获取Pexels视频详情失败: ${e.message}")
+
+                // 如果获取失败，尝试从本地缓存中获取
+                // 直接使用getWallpaperById方法再次尝试获取
+                val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                if (cachedWallpaper != null) {
+                    Log.d(TAG, "从缓存中找到壁纸: $id")
+                    return cachedWallpaper
+                }
+
+                // 如果缓存中也没有，创建一个模拟的壁纸对象
+                Log.d(TAG, "创建模拟的Pexels视频壁纸: $id")
+                return createMockVideoWallpaper(id, videoId.toIntOrNull() ?: 1000)
+            }
+        }
+
+        // 如果是Pexels照片来源，使用壁纸API适配器
+        val originalId = parts[1]
         if (source == "pexels") {
             val result = wallpaperApiAdapter.getWallpaperById(originalId)
             return when (result) {
@@ -380,6 +413,143 @@ class WallpaperRepositoryImpl @Inject constructor(
                 }
             }
             else -> null
+        }
+    }
+
+    /**
+     * 重新创建动态壁纸对象
+     * 用于处理动态壁纸详情页
+     */
+    private fun recreateLiveWallpaper(id: String): Wallpaper? {
+        try {
+            // 解析ID格式：live_page_index
+            val parts = id.split("_")
+            if (parts.size < 3) return null
+
+            val page = parts[1].toIntOrNull() ?: 1
+            val index = parts[2].toIntOrNull() ?: 0
+
+            // 生成随机宽高比
+            val isLandscape = index % 3 != 1 // 大部分是横向
+            val width = if (isLandscape) 1920 else 1080
+            val height = if (isLandscape) 1080 else 1920
+
+            // 生成随机标签
+            val tags = mutableListOf("动态")
+
+            // 根据宽高比添加分类标签
+            if (isLandscape) {
+                tags.add("风景")
+                tags.add("自然")
+            } else {
+                tags.add("人像")
+            }
+
+            // 根据索引添加随机标签
+            when (index % 5) {
+                0 -> tags.add("抽象")
+                1 -> tags.add("科技感")
+                2 -> tags.add("赛博朋克")
+                3 -> tags.add("粒子")
+                4 -> tags.add("流体")
+            }
+
+            // 生成随机标题
+            val title = when (index % 4) {
+                0 -> "动态壁纸 ${page}_$index"
+                1 -> "炫酷动态 ${page}_$index"
+                2 -> "流动背景 ${page}_$index"
+                else -> "动态壁纸 ${page}_$index"
+            }
+
+            // 使用更真实的缩略图 URL
+            // 使用与原始生成逻辑相同的pageSize值(20)
+            val pageSize = 20
+            val imageId = (index + page * pageSize) % 1000 + 100
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+
+            return Wallpaper(
+                id = id,
+                title = title,
+                url = "https://example.com/live_wallpaper${page}_$index.mp4",
+                thumbnailUrl = thumbnailUrl,
+                previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
+                author = "动画师 ${index + 1}",
+                source = "Vistara",
+                isPremium = index % 3 == 0, // 每三个视频中有一个是高级内容
+                isLive = true,
+                tags = tags,
+                width = width,
+                height = height,
+                resolution = Resolution(width, height)
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "重新创建动态壁纸失败: ${e.message}")
+            return null
+        }
+    }
+
+    /**
+     * 创建模拟的Pexels视频壁纸
+     * 用于处理网络错误时的回退方案
+     */
+    private fun createMockVideoWallpaper(id: String, videoId: Int): Wallpaper? {
+        try {
+            // 生成随机宽高比
+            val isLandscape = videoId % 3 != 1 // 大部分是横向
+            val width = if (isLandscape) 1280 else 720
+            val height = if (isLandscape) 720 else 1280
+
+            // 生成随机标签
+            val tags = mutableListOf("动态", "Pexels")
+
+            // 根据宽高比添加分类标签
+            if (isLandscape) {
+                tags.add("风景")
+                tags.add("自然")
+            } else {
+                tags.add("人像")
+            }
+
+            // 根据视频ID添加随机标签
+            when (videoId % 5) {
+                0 -> tags.add("抽象")
+                1 -> tags.add("科技感")
+                2 -> tags.add("赛博朋克")
+                3 -> tags.add("粒子")
+                4 -> tags.add("流体")
+            }
+
+            // 生成随机标题
+            val title = when (videoId % 4) {
+                0 -> "Pexels 动态壁纸 $videoId"
+                1 -> "Pexels 炫酷动态 $videoId"
+                2 -> "Pexels 流动背景 $videoId"
+                else -> "Pexels 动态壁纸 $videoId"
+            }
+
+            // 使用更真实的缩略图 URL
+            val imageId = videoId % 1000 + 100
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}"
+
+            return Wallpaper(
+                id = id,
+                title = title,
+                url = "https://example.com/pexels_video_$videoId.mp4", // 使用本地模拟视频URL
+                thumbnailUrl = thumbnailUrl,
+                previewUrl = "https://picsum.photos/id/$imageId/$width/$height",
+                author = "Pexels 作者 $videoId",
+                source = "Pexels",
+                isPremium = videoId % 3 == 0, // 每三个视频中有一个是高级内容
+                isLive = true,
+                tags = tags,
+                width = width,
+                height = height,
+                resolution = Resolution(width, height)
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "创建模拟的Pexels视频壁纸失败: ${e.message}")
+            return null
         }
     }
 

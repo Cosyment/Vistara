@@ -164,7 +164,52 @@ fun VideoPreviewItem(
 
             // 监听播放器错误
             override fun onPlayerError(error: PlaybackException) {
-                // 出错时回退到静态图片
+                // 记录错误信息
+                Log.e("VideoPreviewItem", "Player error: ${error.message}")
+                error.cause?.let { Log.e("VideoPreviewItem", "Cause: ${it.message}") }
+
+                // 如果是模拟数据的URL，直接回退到静态图片
+                wallpaper.url?.let { originalUrl ->
+                    if (originalUrl.contains("example.com")) {
+                        Log.d("VideoPreviewItem", "Mock video URL detected, falling back to static image")
+                        isPlayerVisible = false
+                        isVideoReady = false
+                        isBuffering = false
+                        return
+                    }
+
+                    // 尝试使用低分辨率版本
+                    if (originalUrl.contains("uhd") || originalUrl.contains("4k") || originalUrl.contains("2160") ||
+                        originalUrl.contains("3840") || originalUrl.contains("4096")) {
+                        // 如果是高清视频，尝试使用低分辨率版本
+                        val lowerResUrl = originalUrl
+                            .replace("uhd", "hd")
+                            .replace("2160", "720")
+                            .replace("4096", "1280")
+                            .replace("3840", "1280")
+
+                        Log.d("VideoPreviewItem", "Trying lower resolution URL: $lowerResUrl")
+                        exoPlayer.setMediaItem(MediaItem.fromUri(lowerResUrl))
+                        exoPlayer.prepare()
+                        return
+                    }
+
+                    // 如果是Pexels视频，尝试使用更低分辨率版本
+                    if (originalUrl.contains("pexels.com") && originalUrl.contains("video-files")) {
+                        // 尝试使用最低分辨率版本
+                        val parts = originalUrl.split("/")
+                        if (parts.size >= 2) {
+                            val videoId = parts[parts.size - 2]
+                            val lowestResUrl = "https://player.vimeo.com/external/" + videoId + ".sd.mp4"
+                            Log.d("VideoPreviewItem", "Trying Vimeo URL: $lowestResUrl")
+                            exoPlayer.setMediaItem(MediaItem.fromUri(lowestResUrl))
+                            exoPlayer.prepare()
+                            return
+                        }
+                    }
+                }
+
+                // 如果无法切换到低分辨率，回退到静态图片
                 isPlayerVisible = false
                 isVideoReady = false
                 isBuffering = false
