@@ -1,8 +1,11 @@
 package com.vistara.aestheticwalls.di
 
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
+import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiAdapter
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
+import com.vistara.aestheticwalls.data.remote.api.UnsplashApiAdapter
+import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import dagger.Module
 import dagger.Provides
@@ -31,7 +34,20 @@ object WallpaperApiModule {
     ): WallpaperApiAdapter {
         return PexelsApiAdapter(pexelsApiService, pexelsMapper)
     }
-    
+
+    /**
+     * 提供Unsplash API适配器
+     */
+    @Provides
+    @Singleton
+    @Named("unsplashApiAdapter")
+    fun provideUnsplashApiAdapter(
+        unsplashApiService: UnsplashApiService,
+        unsplashMapper: UnsplashMapper
+    ): WallpaperApiAdapter {
+        return UnsplashApiAdapter(unsplashApiService, unsplashMapper)
+    }
+
     /**
      * 提供默认的壁纸API适配器
      * 当前使用Pexels作为默认API

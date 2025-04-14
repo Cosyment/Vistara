@@ -54,7 +54,7 @@ fun WallpaperDetail(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        // 壁纸图片
+        // 壁纸图片 - 全屏显示
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(wallpaper.url)
@@ -66,7 +66,7 @@ fun WallpaperDetail(
                 .fillMaxSize()
         )
 
-        // 顶部控制栏 (状态栏区域)
+        // 顶部控制栏 (状态栏区域) - 半透明渐变背景
         AnimatedVisibility(
             visible = showControls,
             enter = fadeIn(),
@@ -79,13 +79,13 @@ fun WallpaperDetail(
                     .background(
                         brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.6f),
-                                Color.Black.copy(alpha = 0.3f),
+                                Color.Black.copy(alpha = 0.7f),
+                                Color.Black.copy(alpha = 0.4f),
                                 Color.Transparent
                             )
                         )
                     )
-                    .statusBarsPadding()
+                    .statusBarsPadding() // 确保内容不会被状态栏遮挡
                     .height(56.dp)
             ) {
                 IconButton(
@@ -118,7 +118,7 @@ fun WallpaperDetail(
             }
         }
 
-        // 底部控制栏
+        // 底部控制栏 - 半透明渐变背景
         AnimatedVisibility(
             visible = showControls,
             enter = fadeIn(),
@@ -128,8 +128,16 @@ fun WallpaperDetail(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .navigationBarsPadding()
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.5f),
+                                Color.Black.copy(alpha = 0.8f)
+                            )
+                        )
+                    )
+                    .navigationBarsPadding() // 确保内容不会被导航栏遮挡
                     .padding(16.dp)
             ) {
                 // 作者信息和来源
@@ -371,9 +379,11 @@ fun WallpaperSetOptions(
     onDismiss: () -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     ) {
         Column(
             modifier = Modifier
@@ -432,10 +442,10 @@ fun PremiumWallpaperPrompt(
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Column(
             modifier = Modifier

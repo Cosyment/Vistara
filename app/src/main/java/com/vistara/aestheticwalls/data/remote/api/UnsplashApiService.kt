@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.data.remote.api
 
+import com.vistara.aestheticwalls.data.model.unsplash.UnsplashCollection
 import com.vistara.aestheticwalls.data.model.unsplash.UnsplashPhoto
 import com.vistara.aestheticwalls.data.model.unsplash.UnsplashSearchResponse
 import retrofit2.http.GET
@@ -89,5 +90,18 @@ interface UnsplashApiService {
     suspend fun getFeaturedCollections(
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 10
+    ): List<UnsplashCollection>
+
+    /**
+     * 获取集合中的照片
+     * @param id 集合ID
+     * @param page 页码，从1开始
+     * @param perPage 每页数量，默认10
+     */
+    @GET("collections/{id}/photos")
+    suspend fun getCollectionPhotos(
+        @Path("id") id: String,
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 10
     ): List<UnsplashPhoto>
-} 
+}

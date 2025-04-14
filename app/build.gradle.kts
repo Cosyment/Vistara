@@ -23,18 +23,20 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "UNSPLASH_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\"")
+            buildConfigField("String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\"")
             buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
-            buildConfigField("String", "PIXABAY_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PIXABAY_API_KEY", "\"49629695-35e6ee8fb0f82cc4b4ed4b6a2\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
         }
         debug {
-            buildConfigField("String", "UNSPLASH_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\"")
+            buildConfigField("String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\"")
             buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
-            buildConfigField("String", "PIXABAY_API_KEY", "\"zzzz\"")
+            buildConfigField("String", "PIXABAY_API_KEY", "\"49629695-35e6ee8fb0f82cc4b4ed4b6a2\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
         }
     }
