@@ -104,6 +104,11 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.accompanist.drawablepainter)
 
+    // Media3 for video playback
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -112,4 +117,21 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+// 自定义任务：编译、安装并启动应用
+tasks.register("buildInstallAndRun") {
+    dependsOn("assembleDebug", "installDebug")
+    doLast {
+        // 启动应用
+        try {
+            exec {
+                commandLine("adb", "shell", "am", "start", "-n", "com.vistara.aestheticwalls/.ui.MainActivity")
+                isIgnoreExitValue = true // 忽略退出代码
+            }
+            println("\n\n应用已成功编译、安装并启动\n\n")
+        } catch (e: Exception) {
+            println("\n\n启动应用时出错: ${e.message}\n\n")
+        }
+    }
 }

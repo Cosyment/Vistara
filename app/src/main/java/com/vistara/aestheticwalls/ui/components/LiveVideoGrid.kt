@@ -8,44 +8,40 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
- * 瀑布流壁纸网格组件
- * 使用LazyVerticalStaggeredGrid实现瀑布流布局
- *
- * @param wallpapers 壁纸列表
- * @param onWallpaperClick 点击壁纸回调
- * @param onLoadMore 加载更多回调
- * @param isLoadingMore 是否正在加载更多
- * @param canLoadMore 是否可以加载更多
- * @param showEndMessage 是否显示到底部提示
- * @param columns 网格列数，默认为2
- * @param contentPadding 内容内边距
- * @param videoPlaybackManager 视频播放管理器，用于控制视频预览
- * @param modifier 可选的修饰符
+ * 动态壁纸网格组件
+ * 使用统一大小的网格布局，专门用于显示动态壁纸
  */
 @Composable
-fun WallpaperStaggeredGrid(
+fun LiveVideoGrid(
     wallpapers: List<Wallpaper>,
     onWallpaperClick: (Wallpaper) -> Unit,
     onLoadMore: () -> Unit = {},
@@ -57,11 +53,20 @@ fun WallpaperStaggeredGrid(
     videoPlaybackManager: VideoPlaybackManager? = null,
     modifier: Modifier = Modifier
 ) {
-    // 创建LazyStaggeredGridState来监听滚动状态
-    val gridState = rememberLazyStaggeredGridState()
+    // 创建LazyGridState来监听滚动状态
+    val gridState = rememberLazyGridState()
 
     // 跟踪可见的壁纸项
     val visibleWallpaperIds = remember { mutableStateListOf<String>() }
+
+    // 滚动状态
+    var isScrolling by remember { mutableStateOf(false) }
+
+    // 协程作用域
+    val coroutineScope = rememberCoroutineScope()
+
+    // 滚动停止计时器
+    var scrollStopTimer: Job? by remember { mutableStateOf(null) }
 
     // 检测是否滚动到底部
     val shouldLoadMore = remember {
@@ -78,9 +83,32 @@ fun WallpaperStaggeredGrid(
     // 当滚动到底部时自动加载更多
     LaunchedEffect(shouldLoadMore.value, isLoadingMore, canLoadMore) {
         if (shouldLoadMore.value && !isLoadingMore && canLoadMore) {
-            Log.d("WallpaperStaggeredGrid", "Reached bottom, loading more...")
+            Log.d("LiveVideoGrid", "Reached bottom, loading more...")
             onLoadMore()
         }
+    }
+
+    // 监听滚动状态
+    LaunchedEffect(gridState) {
+        snapshotFlow { gridState.isScrollInProgress }.collectLatest { scrolling ->
+                // 更新滚动状态
+                isScrolling = scrolling
+
+                // 通知视频播放管理器
+                videoPlaybackManager?.setScrolling(scrolling)
+
+                // 如果停止滚动，设置延迟恢复播放
+                if (!scrolling) {
+                    // 取消之前的计时器
+                    scrollStopTimer?.cancel()
+
+                    // 创建新的计时器，延迟500毫秒后恢复播放
+                    scrollStopTimer = coroutineScope.launch {
+                        delay(500) // 等待500毫秒再恢复播放，避免频繁切换
+                        videoPlaybackManager?.setScrolling(false)
+                    }
+                }
+            }
     }
 
     // 跟踪可见项目，用于视频播放控制
@@ -116,67 +144,42 @@ fun WallpaperStaggeredGrid(
             }
     }
 
-    LazyVerticalStaggeredGrid(
-        columns = StaggeredGridCells.Fixed(columns),
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
         state = gridState,
         contentPadding = contentPadding,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalItemSpacing = 8.dp,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         // 壁纸项
         items(wallpapers) { wallpaper ->
-            // 根据壁纸的宽高比计算高度
-            val aspectRatio = calculateAspectRatio(wallpaper)
-            val itemHeight = remember(aspectRatio) {
-                // 根据宽高比和壁纸ID生成不同的高度，使瀑布流更自然
-                (180 + (wallpaper.id.hashCode() % 120)).dp
-            }
+            // 使用固定高度，确保统一的视觉效果
+            val itemHeight = 240.dp
 
             // 检查该壁纸是否应该播放视频
             val isVisible = wallpaper.id in visibleWallpaperIds
             val shouldPlayVideo = videoPlaybackManager?.shouldPlayVideo(wallpaper.id) ?: false
 
-            if (wallpaper.isLive) {
-                // 动态壁纸使用视频预览组件
-                VideoPreviewItem(
-                    wallpaper = wallpaper,
-                    isVisible = isVisible && shouldPlayVideo,
-                    onClick = { onWallpaperClick(wallpaper) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(itemHeight)
-                        .padding(4.dp)
-                )
-            } else {
-                // 静态壁纸使用普通壁纸项
-                WallpaperItem(
-                    wallpaper = wallpaper,
-                    onClick = { onWallpaperClick(wallpaper) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(itemHeight)
-                        .padding(4.dp)
-                )
-            }
+            // 使用优化的视频预览组件
+            VideoPreviewItem(
+                wallpaper = wallpaper,
+                isVisible = isVisible && shouldPlayVideo,
+                onClick = { onWallpaperClick(wallpaper) },
+                onVideoComplete = { videoId ->
+                    // 通知视频播放管理器视频播放完成
+                    videoPlaybackManager?.notifyVideoComplete(videoId)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(itemHeight)
+                    .padding(4.dp)
+            )
         }
 
         // 如果正在加载更多，显示加载指示器
         if (isLoadingMore) {
-            // 使用虚拟壁纸项来显示加载指示器
-            val loadingWallpapers = List(columns) { index ->
-                Wallpaper(
-                    id = "loading_$index", title = null, thumbnailUrl = null, author = null
-                )
-            }
-
-            items(loadingWallpapers) { _ ->
-                // 空白项，仅用于占位
-                Box(modifier = Modifier.height(0.dp)) {}
-            }
-
-            // 使用单独的项来显示加载指示器，确保它占满整个宽度
-            item(span = StaggeredGridItemSpan.FullLine) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -194,20 +197,7 @@ fun WallpaperStaggeredGrid(
 
         // 如果显示底部提示，添加一个底部项
         if (showEndMessage) {
-            // 使用虚拟壁纸项来占位，确保“已经到底了”提示在最后一行
-            val endSpacerWallpapers = List(columns) { index ->
-                Wallpaper(
-                    id = "end_spacer_$index", title = null, thumbnailUrl = null, author = null
-                )
-            }
-
-            items(endSpacerWallpapers) { _ ->
-                // 空白项，仅用于占位
-                Box(modifier = Modifier.height(0.dp)) {}
-            }
-
-            // 使用单独的项来显示“已经到底了”提示，确保它占满整个宽度
-            item(span = StaggeredGridItemSpan.FullLine) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -223,21 +213,5 @@ fun WallpaperStaggeredGrid(
                 }
             }
         }
-    }
-}
-
-/**
- * 计算壁纸的宽高比
- * 如果壁纸有分辨率信息，则使用实际宽高比
- * 否则使用默认宽高比0.75f (3:4)
- */
-private fun calculateAspectRatio(wallpaper: Wallpaper): Float {
-    return if (wallpaper.width > 0 && wallpaper.height > 0) {
-        wallpaper.width.toFloat() / wallpaper.height.toFloat()
-    } else if (wallpaper.resolution != null && wallpaper.resolution.width > 0 && wallpaper.resolution.height > 0) {
-        wallpaper.resolution.width.toFloat() / wallpaper.resolution.height.toFloat()
-    } else {
-        // 默认宽高比
-        0.75f
     }
 }

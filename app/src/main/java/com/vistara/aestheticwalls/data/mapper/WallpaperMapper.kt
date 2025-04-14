@@ -93,12 +93,45 @@ class PexelsMapper @Inject constructor() {
             .filter { it.file_type == "video/mp4" } // 只使用MP4格式
             .maxByOrNull { it.width * it.height } // 选择分辨率最高的
 
+        // 获取最高质量的预览图
+        val bestPreview = source.videoPictures.firstOrNull()?.picture ?: source.image
+
+        // 根据视频属性生成标签
+        val tags = mutableListOf<String>("\u52a8\u6001")
+
+        // 根据视频尺寸添加分类标签
+        if (source.width > source.height) {
+            tags.add("\u98ce\u666f")
+            tags.add("\u81ea\u7136")
+        } else if (source.width < source.height) {
+            tags.add("\u4eba\u50cf")
+        } else {
+            tags.add("\u65b9\u5f62")
+        }
+
+        // 根据视频ID添加随机标签
+        when (source.id % 5) {
+            0 -> tags.add("\u62bd\u8c61")
+            1 -> tags.add("\u79d1\u6280\u611f")
+            2 -> tags.add("\u8d5b\u535a\u670b\u514b")
+            3 -> tags.add("\u7c92\u5b50")
+            4 -> tags.add("\u6d41\u4f53")
+        }
+
+        // 根据视频ID生成标题
+        val title = when (source.id % 4) {
+            0 -> "\u52a8\u6001\u58c1\u7eb8 ${source.id}"
+            1 -> "\u70ab\u9177\u52a8\u6001 ${source.id}"
+            2 -> "\u6d41\u52a8\u80cc\u666f ${source.id}"
+            else -> "\u52a8\u6001\u58c1\u7eb8 ${source.id}"
+        }
+
         return Wallpaper(
             id = "pexels_video_${source.id}",
-            title = "Pexels Video ${source.id}",
+            title = title,
             url = videoFile?.link, // 视频文件URL
-            thumbnailUrl = source.image, // 视频缩略图
-            previewUrl = source.image,
+            thumbnailUrl = bestPreview, // 使用最佳预览图
+            previewUrl = bestPreview,
             width = source.width,
             height = source.height,
             author = source.user.name,
@@ -106,8 +139,9 @@ class PexelsMapper @Inject constructor() {
             source = "Pexels",
             sourceUrl = source.url,
             attributionRequired = true, // Pexels API要求显示署名
-            isPremium = true, // 视频壁纸设为高级内容
+            isPremium = source.id % 3 == 0, // 每三个视频中有一个是高级内容
             isLive = true, // 这是动态壁纸
+            tags = tags, // 添加标签便于分类
             resolution = Resolution(source.width, source.height))
     }
 

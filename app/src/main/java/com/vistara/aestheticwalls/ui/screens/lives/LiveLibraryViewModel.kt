@@ -37,7 +37,7 @@ class LiveLibraryViewModel @Inject constructor(
 
     // 分类数据
     val categories = listOf(
-        "全部", "抽象", "科技感", "自然", "赛博朋克", "粒子", "流体", "简约", "卡通"
+        "全部", "抽象", "科技感", "自然", "赛博朋克", "粒子", "流体", "风景", "人像"
     )
 
     // 当前选中的分类

@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.data.repository
 
+import android.util.Log
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
 import com.vistara.aestheticwalls.data.mapper.PixabayMapper
@@ -51,6 +52,10 @@ class WallpaperRepositoryImpl @Inject constructor(
     private val wallpaperApiAdapter: WallpaperApiAdapter, // 新增的壁纸API适配器
     private val pexelsApiAdapter: WallpaperApiAdapter // Pexels API适配器，用于获取视频
 ) : WallpaperRepository {
+
+    companion object {
+        private const val TAG = "WallpaperRepositoryImpl"
+    }
 
     /**
      * 获取推荐壁纸
@@ -123,18 +128,61 @@ class WallpaperRepositoryImpl @Inject constructor(
 
                     // 如果没有获取到视频数据，返回模拟数据
                     if (pexelsVideos.isEmpty()) {
-                        List(10) { index ->
+                        Log.w(TAG, "未能从 Pexels API 获取视频数据，使用模拟数据")
+
+                        // 生成更多样的模拟数据，并且添加与分类匹配的标签
+                        List(pageSize) { index ->
+                            // 生成随机宽高比
+                            val isLandscape = index % 3 != 1 // 大部分是横向
+                            val width = if (isLandscape) 1920 else 1080
+                            val height = if (isLandscape) 1080 else 1920
+
+                            // 生成随机标签
+                            val tags = mutableListOf("动态")
+
+                            // 根据宽高比添加分类标签
+                            if (isLandscape) {
+                                tags.add("风景")
+                                tags.add("自然")
+                            } else {
+                                tags.add("人像")
+                            }
+
+                            // 根据索引添加随机标签
+                            when (index % 5) {
+                                0 -> tags.add("抽象")
+                                1 -> tags.add("科技感")
+                                2 -> tags.add("赛博朋克")
+                                3 -> tags.add("粒子")
+                                4 -> tags.add("流体")
+                            }
+
+                            // 生成随机标题
+                            val title = when (index % 4) {
+                                0 -> "动态壁纸 ${page}_$index"
+                                1 -> "炫酷动态 ${page}_$index"
+                                2 -> "流动背景 ${page}_$index"
+                                else -> "动态壁纸 ${page}_$index"
+                            }
+
+                            // 使用更真实的缩略图 URL
+                            val imageId = (index + page * pageSize) % 1000 + 100
+                            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+
                             Wallpaper(
                                 id = "live_${page}_$index",
-                                title = "动态壁纸 ${page}_$index",
+                                title = title,
                                 url = "https://example.com/live_wallpaper${page}_$index.mp4",
-                                thumbnailUrl = "https://picsum.photos/id/${(index + page * 10) % 1000}/500/800",
-                                author = "动画师 $index",
+                                thumbnailUrl = thumbnailUrl,
+                                previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
+                                author = "动画师 ${index + 1}",
                                 source = "Vistara",
-                                isPremium = true,
+                                isPremium = index % 3 == 0, // 每三个视频中有一个是高级内容
                                 isLive = true,
-                                tags = listOf("动态", "炫酷", if (index % 3 == 0) "自然" else if (index % 3 == 1) "科技感" else "抽象"),
-                                resolution = Resolution(1080, 1920)
+                                tags = tags,
+                                width = width,
+                                height = height,
+                                resolution = Resolution(width, height)
                             )
                         }
                     } else {

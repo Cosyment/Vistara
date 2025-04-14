@@ -39,7 +39,9 @@ import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.CategorySelector
-import com.vistara.aestheticwalls.ui.components.WallpaperStaggeredGrid
+import com.vistara.aestheticwalls.ui.components.LiveVideoGrid
+import com.vistara.aestheticwalls.ui.components.VideoPlaybackManager
+import com.vistara.aestheticwalls.ui.components.rememberVideoPlaybackManager
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -123,20 +125,28 @@ fun LiveLibraryScreen(
                                 }
                             )
 
-                            // 显示壁纸网格 (瀑布流布局)
+                            // 显示动态壁纸网格 (统一大小布局)
                             Box(modifier = Modifier.weight(1f)) {
-                                // 使用remember缓存WallpaperStaggeredGrid组件
+                                // 创建视频播放管理器
+                                val videoPlaybackManager = rememberVideoPlaybackManager()
+                                // 启用顺序播放模式，确保同一时间只有一个视频在播放
+                                videoPlaybackManager.setSequentialPlayback(true)
+
+                                // 使用remember缓存LiveVideoGrid组件
                                 val rememberedWallpapers = remember(wallpapers) { wallpapers }
                                 val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
                                 val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
 
-                                WallpaperStaggeredGrid(
+                                LiveVideoGrid(
                                     wallpapers = rememberedWallpapers,
                                     onWallpaperClick = onWallpaperClick,
                                     onLoadMore = { viewModel.loadMore() },
                                     isLoadingMore = rememberedIsLoadingMore,
                                     canLoadMore = rememberedCanLoadMore,
                                     showEndMessage = !rememberedCanLoadMore,
+                                    videoPlaybackManager = videoPlaybackManager,
+                                    // 使用固定列数，确保统一大小
+                                    columns = 2,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }

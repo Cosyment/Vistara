@@ -291,12 +291,59 @@ object NetworkModule {
             .build()
     }
 
+    // 为Pexels视频API提供单独的Retrofit实例
+    @Provides
+    @Singleton
+    @Named("pexelsVideoRetrofit")
+    fun providePexelsVideoRetrofit(
+        gson: Gson,
+        @Named("pexelsHttpClient") client: OkHttpClient
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(PexelsApiService.VIDEO_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+    }
+
     @Provides
     @Singleton
     fun providePexelsApiService(
-        @Named("pexelsRetrofit") retrofit: Retrofit
+        @Named("pexelsRetrofit") photoRetrofit: Retrofit,
+        @Named("pexelsVideoRetrofit") videoRetrofit: Retrofit
     ): PexelsApiService {
-        return retrofit.create(PexelsApiService::class.java)
+        // 使用动态代理创建PexelsApiService实例
+        // 根据方法名判断使用哪个Retrofit实例
+        return object : PexelsApiService {
+            private val photoService = photoRetrofit.create(PexelsApiService::class.java)
+            private val videoService = videoRetrofit.create(PexelsApiService::class.java)
+
+            // 照片相关API使用photoService
+            override suspend fun getCuratedPhotos(page: Int, perPage: Int) =
+                photoService.getCuratedPhotos(page, perPage)
+
+            override suspend fun searchPhotos(query: String, page: Int, perPage: Int, orientation: String?, size: String?, color: String?) =
+                photoService.searchPhotos(query, page, perPage, orientation, size, color)
+
+            override suspend fun getPhoto(id: String) =
+                photoService.getPhoto(id)
+
+            override suspend fun getFeaturedCollections(page: Int, perPage: Int) =
+                photoService.getFeaturedCollections(page, perPage)
+
+            override suspend fun getCollectionPhotos(id: String, page: Int, perPage: Int) =
+                photoService.getCollectionPhotos(id, page, perPage)
+
+            // 视频相关API使用videoService
+            override suspend fun getPopularVideos(page: Int, perPage: Int) =
+                videoService.getPopularVideos(page, perPage)
+
+            override suspend fun searchVideos(query: String, page: Int, perPage: Int, orientation: String?, size: String?) =
+                videoService.searchVideos(query, page, perPage, orientation, size)
+
+            override suspend fun getVideo(id: String) =
+                videoService.getVideo(id)
+        }
     }
 
     // Pixabay API
