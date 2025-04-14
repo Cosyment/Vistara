@@ -289,7 +289,7 @@ fun HomeScreen(
                 item {
                     WallpaperSectionTitle(
                         title = "最新上传",
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
                     )
                 }
 
@@ -364,7 +364,7 @@ private fun WallpaperSectionTitle(
     Text(
         text = title, style = MaterialTheme.typography.titleLarge.copy(
             fontWeight = FontWeight.SemiBold
-        ), modifier = modifier.padding(bottom = 12.dp)
+        ), modifier = modifier.padding(bottom = 5.dp)
     )
 }
 

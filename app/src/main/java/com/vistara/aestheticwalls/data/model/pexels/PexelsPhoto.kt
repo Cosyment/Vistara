@@ -16,7 +16,7 @@ data class PexelsPhoto(
     val photographerUrl: String,
 
     @SerializedName("photographer_id")
-    val photographerId: Int,
+    val photographerId: Long,
 
     @SerializedName("avg_color")
     val avgColor: String?,
