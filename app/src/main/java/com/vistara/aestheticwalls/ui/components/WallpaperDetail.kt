@@ -1,33 +1,59 @@
 package com.vistara.aestheticwalls.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
 
@@ -54,23 +80,22 @@ fun WallpaperDetail(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        // 壁纸图片 - 全屏显示
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(wallpaper.url)
-                .crossfade(true)
-                .build(),
+        // 壁纸图片 - 全屏显示，支持缩放
+        ZoomableImage(
+            imageUrl = wallpaper.url ?: "",
             contentDescription = wallpaper.title ?: "壁纸",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-        )
+            modifier = Modifier.fillMaxSize(),
+            onTap = { showControls = !showControls })
 
         // 顶部控制栏 (状态栏区域) - 半透明渐变背景
         AnimatedVisibility(
             visible = showControls,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = fadeIn(animationSpec = tween(300)) + slideInVertically(animationSpec = tween(300)) { -it / 3 },
+            exit = fadeOut(animationSpec = tween(300)) + slideOutVertically(
+                animationSpec = tween(
+                    300
+                )
+            ) { -it / 3 },
             modifier = Modifier.align(Alignment.TopCenter)
         ) {
             Box(
@@ -121,8 +146,12 @@ fun WallpaperDetail(
         // 底部控制栏 - 半透明渐变背景
         AnimatedVisibility(
             visible = showControls,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = fadeIn(animationSpec = tween(300)) + slideInVertically(animationSpec = tween(300)) { it / 3 },
+            exit = fadeOut(animationSpec = tween(300)) + slideOutVertically(
+                animationSpec = tween(
+                    300
+                )
+            ) { it / 3 },
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             Column(
@@ -179,21 +208,6 @@ fun WallpaperDetail(
                                 )
                             }
                         }
-
-                        // 信息展开/收起按钮
-                        IconButton(
-                            onClick = onToggleInfo,
-                            modifier = Modifier
-                                .size(32.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.2f))
-                        ) {
-                            Icon(
-                                imageVector = if (isInfoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                                contentDescription = if (isInfoExpanded) "收起信息" else "展开信息",
-                                tint = Color.White
-                            )
-                        }
                     }
                 }
 
@@ -242,7 +256,9 @@ fun WallpaperDetail(
                                             text = tag,
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            modifier = Modifier.padding(
+                                                horizontal = 8.dp, vertical = 4.dp
+                                            )
                                         )
                                     }
                                 }
@@ -260,7 +276,7 @@ fun WallpaperDetail(
                     IconButton(
                         onClick = onToggleFavorite,
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f))
                     ) {
@@ -278,7 +294,7 @@ fun WallpaperDetail(
                             onClick = onEdit,
                             enabled = canEdit,
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = if (canEdit) 0.2f else 0.1f))
                         ) {
@@ -293,15 +309,13 @@ fun WallpaperDetail(
                     // 下载按钮
                     val canDownload = !wallpaper.isPremium || isPremiumUser
                     Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(48.dp)
+                        contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp)
                     ) {
                         // 下载进度指示器
                         if (isDownloading) {
                             CircularProgressIndicator(
                                 progress = { downloadProgress },
-                                modifier = Modifier.size(48.dp),
+                                modifier = Modifier.size(40.dp),
                                 color = MaterialTheme.colorScheme.primary,
                                 trackColor = Color.White.copy(alpha = 0.2f),
                                 strokeWidth = 2.dp
@@ -312,14 +326,16 @@ fun WallpaperDetail(
                             onClick = onDownload,
                             enabled = canDownload && !isDownloading,
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(Color.White.copy(alpha = if (canDownload && !isDownloading) 0.2f else 0.1f))
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_download),
                                 contentDescription = "下载",
-                                tint = if (canDownload && !isDownloading) Color.White else Color.White.copy(alpha = 0.5f)
+                                tint = if (canDownload && !isDownloading) Color.White else Color.White.copy(
+                                    alpha = 0.5f
+                                )
                             )
                         }
                     }
@@ -328,13 +344,28 @@ fun WallpaperDetail(
                     IconButton(
                         onClick = onShare,
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f))
                     ) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "分享",
+                            tint = Color.White
+                        )
+                    }
+
+                    // 信息展开/收起按钮
+                    IconButton(
+                        onClick = onToggleInfo,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.2f))
+                    ) {
+                        Icon(
+                            imageVector = if (isInfoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = if (isInfoExpanded) "收起信息" else "展开信息",
                             tint = Color.White
                         )
                     }
@@ -362,12 +393,7 @@ fun WallpaperDetail(
             }
         }
 
-        // 点击屏幕切换控制栏显示状态
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { showControls = !showControls }
-        )
+        // 注意：点击屏幕切换控制栏显示状态的功能已移至ZoomableImage组件中
     }
 }
 
@@ -415,8 +441,7 @@ fun WallpaperSetOptions(
             }
 
             Button(
-                onClick = onSetBoth,
-                modifier = Modifier
+                onClick = onSetBoth, modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
@@ -424,8 +449,7 @@ fun WallpaperSetOptions(
             }
 
             TextButton(
-                onClick = onDismiss,
-                modifier = Modifier
+                onClick = onDismiss, modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
@@ -437,8 +461,7 @@ fun WallpaperSetOptions(
 
 @Composable
 fun PremiumWallpaperPrompt(
-    onUpgrade: () -> Unit,
-    onDismiss: () -> Unit
+    onUpgrade: () -> Unit, onDismiss: () -> Unit
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -473,8 +496,7 @@ fun PremiumWallpaperPrompt(
             )
 
             Button(
-                onClick = onUpgrade,
-                modifier = Modifier.fillMaxWidth()
+                onClick = onUpgrade, modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = "立即升级",
@@ -484,8 +506,7 @@ fun PremiumWallpaperPrompt(
             }
 
             TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.padding(top = 8.dp)
+                onClick = onDismiss, modifier = Modifier.padding(top = 8.dp)
             ) {
                 Text(text = "返回")
             }

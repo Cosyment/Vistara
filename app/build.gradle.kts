@@ -96,6 +96,7 @@ dependencies {
     // Accompanist
     implementation(libs.accompanist.permissions)
     implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.accompanist.drawablepainter)
 
     // Testing
     testImplementation(libs.junit)

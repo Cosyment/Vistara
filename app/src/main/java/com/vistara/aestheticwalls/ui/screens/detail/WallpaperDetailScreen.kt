@@ -1,8 +1,13 @@
 package com.vistara.aestheticwalls.ui.screens.detail
 
+import android.Manifest
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +47,22 @@ fun WallpaperDetailScreen(
     val isDownloading by viewModel.isDownloading
     val downloadProgress by viewModel.downloadProgress.collectAsState()
     val isInfoExpanded by viewModel.isInfoExpanded
+    val needStoragePermission by viewModel.needStoragePermission
     val context = LocalContext.current
+
+    // 权限请求器
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // 权限已授予，继续下载
+            viewModel.continueDownloadAfterPermissionGranted()
+            Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
+        } else {
+            // 权限被拒绝
+            Toast.makeText(context, "无法下载壁纸：存储权限被拒绝", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     // 设置沉浸式状态栏和导航栏
     val systemUiController = rememberSystemUiController()
@@ -150,5 +170,27 @@ fun WallpaperDetailScreen(
                 }
             }
         }
+    }
+
+    // 存储权限请求对话框
+    if (needStoragePermission) {
+        AlertDialog(
+            onDismissRequest = { /* 不允许通过点击外部关闭 */ },
+            title = { Text("需要存储权限") },
+            text = { Text("为了将壁纸保存到相册，需要获取存储权限。请允许此权限以便下载壁纸。") },
+            confirmButton = {
+                Button(onClick = { permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }) {
+                    Text("授予权限")
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    Toast.makeText(context, "无法下载壁纸：需要存储权限", Toast.LENGTH_SHORT).show()
+                    viewModel.resetPermissionRequest()
+                }) {
+                    Text("取消")
+                }
+            }
+        )
     }
 }

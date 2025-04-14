@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls.ui.screens.profile
+package com.vistara.aestheticwalls.ui.screens.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,15 +18,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Build
-
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -72,14 +70,12 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("个人中心") },
-                colors = TopAppBarDefaults.topAppBarColors(
+                title = { }, colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
-        }
-    ) { paddingValues ->
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -87,85 +83,84 @@ fun ProfileScreen(
                 .padding(paddingValues)
                 .padding(bottom = 16.dp)
         ) {
-        // 用户信息区域
-        ProfileHeader(
-            username = "Vistara 用户",
-            isPremiumUser = isPremiumUser
-        )
-
-        // 升级横幅
-        if (!isPremiumUser) {
-            UpgradeBanner(
-                onClick = onUpgradeClick,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            // 用户信息区域
+            ProfileHeader(
+                username = "Vistara 用户", isPremiumUser = isPremiumUser
             )
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+            // 升级横幅
+            if (!isPremiumUser) {
+                UpgradeBanner(
+                    onClick = onUpgradeClick,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
 
-        // 功能列表
-        FeatureItem(
-            icon = Icons.Default.Favorite,
-            title = "我的收藏",
-            subtitle = "查看所有收藏的壁纸",
-            onClick = onFavoritesClick
-        )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        FeatureItem(
-            icon = Icons.Default.Star,
-            title = "我的下载",
-            subtitle = "查看所有下载的壁纸",
-            onClick = onDownloadsClick
-        )
+            // 功能列表
+            FeatureItem(
+                icon = Icons.Default.Favorite,
+                title = "我的收藏",
+                subtitle = "查看所有收藏的壁纸",
+                onClick = onFavoritesClick
+            )
 
-        FeatureItem(
-            icon = Icons.Default.Refresh,
-            title = "自动更换壁纸",
-            subtitle = "设置自动更换壁纸的频率和来源",
-            onClick = onAutoChangeClick
-        )
+            FeatureItem(
+                icon = Icons.Default.Star,
+                title = "我的下载",
+                subtitle = "查看所有下载的壁纸",
+                onClick = onDownloadsClick
+            )
 
-        Divider(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+            FeatureItem(
+                icon = Icons.Default.Refresh,
+                title = "自动更换壁纸",
+                subtitle = "设置自动更换壁纸的频率和来源",
+                onClick = onAutoChangeClick
+            )
 
-        FeatureItem(
-            icon = Icons.Default.Settings,
-            title = "设置",
-            subtitle = "调整应用偏好和通知",
-            onClick = onSettingsClick
-        )
-
-        FeatureItem(
-            icon = Icons.Default.Star,
-            title = "评分与反馈",
-            subtitle = "帮助我们改进应用",
-            onClick = onFeedbackClick
-        )
-
-        FeatureItem(
-            icon = Icons.Default.Info,
-            title = "关于与致谢",
-            subtitle = "查看应用信息和版权",
-            onClick = onAboutClick
-        )
-
-        // 开发者模式下显示测试工具入口
-        if (isDebugMode) {
             Divider(
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
 
             FeatureItem(
-                icon = Icons.Default.Build,
-                title = "测试工具",
-                subtitle = "测试API接口和其他功能",
-                onClick = onTestToolsClick
+                icon = Icons.Default.Settings,
+                title = "设置",
+                subtitle = "调整应用偏好和通知",
+                onClick = onSettingsClick
             )
+
+            FeatureItem(
+                icon = Icons.Default.Star,
+                title = "评分与反馈",
+                subtitle = "帮助我们改进应用",
+                onClick = onFeedbackClick
+            )
+
+            FeatureItem(
+                icon = Icons.Default.Info,
+                title = "关于与致谢",
+                subtitle = "查看应用信息和版权",
+                onClick = onAboutClick
+            )
+
+            // 开发者模式下显示测试工具入口
+            if (isDebugMode) {
+                Divider(
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+
+                FeatureItem(
+                    icon = Icons.Default.Build,
+                    title = "测试工具",
+                    subtitle = "测试API接口和其他功能",
+                    onClick = onTestToolsClick
+                )
+            }
         }
-    }
     }
 }
 
@@ -174,9 +169,7 @@ fun ProfileScreen(
  */
 @Composable
 private fun ProfileHeader(
-    username: String,
-    isPremiumUser: Boolean,
-    modifier: Modifier = Modifier
+    username: String, isPremiumUser: Boolean, modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -227,8 +220,7 @@ private fun ProfileHeader(
  */
 @Composable
 private fun UpgradeBanner(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
@@ -245,13 +237,11 @@ private fun UpgradeBanner(
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFF8E2DE2),
-                            Color(0xFF4A00E0)
+                            Color(0xFF8E2DE2), Color(0xFF4A00E0)
                         )
                     )
                 )
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
+                .padding(16.dp), contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "✨ 解锁全部特权，畅享高清视界 ✨",
@@ -275,9 +265,7 @@ private fun FeatureItem(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        onClick = onClick,
-        color = Color.Transparent,
-        modifier = modifier.fillMaxWidth()
+        onClick = onClick, color = Color.Transparent, modifier = modifier.fillMaxWidth()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -287,8 +275,7 @@ private fun FeatureItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)
             ) {
                 Icon(
                     imageVector = icon,

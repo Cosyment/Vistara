@@ -33,7 +33,7 @@ import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
 import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.live.LiveLibraryScreen
-import com.vistara.aestheticwalls.ui.screens.profile.ProfileScreen
+import com.vistara.aestheticwalls.ui.screens.mine.ProfileScreen
 import com.vistara.aestheticwalls.ui.screens.static.StaticLibraryScreen
 import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
 import android.content.Intent
