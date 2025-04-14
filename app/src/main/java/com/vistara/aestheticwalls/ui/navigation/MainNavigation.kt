@@ -32,9 +32,9 @@ import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
 import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
 import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
-import com.vistara.aestheticwalls.ui.screens.live.LiveLibraryScreen
-import com.vistara.aestheticwalls.ui.screens.mine.ProfileScreen
-import com.vistara.aestheticwalls.ui.screens.static.StaticLibraryScreen
+import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
+import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
+import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
 import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
 import android.content.Intent
 
@@ -85,9 +85,9 @@ fun MainNavigation() {
                     onSearchClick = { /* 暂时不处理 */ }
                 )
             }
-            composable(NavDestination.Profile.route) {
+            composable(NavDestination.Mine.route) {
                 val context = navController.context
-                ProfileScreen(
+                MineScreen(
                     onFavoritesClick = { navController.navigate("favorites") },
                     onDownloadsClick = { navController.navigate("downloads") },
                     onAutoChangeClick = { /* 暂时不处理 */ },
@@ -179,7 +179,7 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
                                 contentDescription = destination.title
                             )
                         }
-                        NavDestination.Profile -> {
+                        NavDestination.Mine -> {
                             if (selected) {
                                 Icon(Icons.Filled.Person, contentDescription = destination.title)
                             } else {
@@ -214,5 +214,5 @@ enum class NavDestination(val route: String, val title: String) {
     Home("home", "首页"),
     StaticWallpapers("static", "静态"),
     LiveWallpapers("live", "动态"),
-    Profile("profile", "我的")
+    Mine("mine", "我的")
 }

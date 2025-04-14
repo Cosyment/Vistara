@@ -55,7 +55,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
+fun MineScreen(
     onFavoritesClick: () -> Unit = {},
     onDownloadsClick: () -> Unit = {},
     onAutoChangeClick: () -> Unit = {},
@@ -317,7 +317,7 @@ private fun FeatureItem(
 @Composable
 fun ProfileScreenPreview() {
     VistaraTheme {
-        ProfileScreen()
+        MineScreen()
     }
 }
 
@@ -325,6 +325,6 @@ fun ProfileScreenPreview() {
 @Composable
 fun ProfileScreenPremiumPreview() {
     VistaraTheme {
-        ProfileScreen(isPremiumUser = true)
+        MineScreen(isPremiumUser = true)
     }
 }

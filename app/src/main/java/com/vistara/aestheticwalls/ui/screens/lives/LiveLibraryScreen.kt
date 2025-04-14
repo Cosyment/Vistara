@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls.ui.screens.static
+package com.vistara.aestheticwalls.ui.screens.lives
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,17 +34,17 @@ import com.vistara.aestheticwalls.ui.components.WallpaperGrid
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
- * 静态壁纸库页面
- * 显示所有静态壁纸，支持分类筛选
+ * 动态壁纸库页面
+ * 显示所有动态壁纸，支持分类筛选
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StaticLibraryScreen(
+fun LiveLibraryScreen(
     onWallpaperClick: (Wallpaper) -> Unit, onSearchClick: () -> Unit = {}
 ) {
     // 分类数据
     val categories = listOf(
-        "全部", "自然", "城市", "抽象", "插画", "科技", "简约", "动物", "食物"
+        "全部", "抽象", "科技感", "自然", "赛博朋克", "粒子", "流体", "简约", "卡通"
     )
 
     // 当前选中的分类
@@ -52,18 +52,18 @@ fun StaticLibraryScreen(
 
     // 示例壁纸数据
     val wallpapers = remember {
-        List(10) { index ->
+        List(8) { index ->
             Wallpaper(
-                id = "static_$index",
-                title = "静态壁纸 $index",
-                url = "https://example.com/wallpaper$index.jpg",
-                thumbnailUrl = "https://example.com/thumbnail$index.jpg",
-                author = "艺术家 $index",
-                source = "Unsplash",
-                isPremium = index % 3 == 0,
-                isLive = false,
-                tags = listOf("自然", "风景"),
-                resolution = Resolution(1920, 1080)
+                id = "live_$index",
+                title = "动态壁纸 $index",
+                url = "https://example.com/live_wallpaper$index.mp4",
+                thumbnailUrl = "https://example.com/live_thumbnail$index.jpg",
+                author = "动画师 $index",
+                source = "Vistara",
+                isPremium = true, // 动态壁纸默认都是高级内容
+                isLive = true,
+                tags = listOf("动态", "炫酷"),
+                resolution = Resolution(1080, 1920)
             )
         }
     }
@@ -72,21 +72,21 @@ fun StaticLibraryScreen(
         topBar = {
             TopAppBar(
                 title = {
-                Text(
-                    "静态壁纸", style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.SemiBold
+                    Text(
+                        "动态壁纸", style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.SemiBold
+                        )
                     )
+                }, actions = {
+                    IconButton(onClick = onSearchClick) {
+                        Icon(
+                            imageVector = Icons.Default.Search, contentDescription = "搜索"
+                        )
+                    }
+                }, colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
-            }, actions = {
-                IconButton(onClick = onSearchClick) {
-                    Icon(
-                        imageVector = Icons.Default.Search, contentDescription = "搜索"
-                    )
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                titleContentColor = MaterialTheme.colorScheme.onBackground
-            )
             )
         }) { paddingValues ->
         Column(
@@ -125,15 +125,31 @@ fun StaticLibraryScreen(
                 onWallpaperClick = onWallpaperClick,
                 modifier = Modifier.padding(0.dp)
             )
+
+            // 高级版提示
+            Surface(
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "动态壁纸为高级功能，升级会员即可解锁全部内容",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun StaticLibraryScreenPreview() {
+fun LiveLibraryScreenPreview() {
     VistaraTheme {
-        StaticLibraryScreen(
+        LiveLibraryScreen(
             onWallpaperClick = {})
     }
 }
