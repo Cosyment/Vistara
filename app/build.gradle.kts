@@ -28,6 +28,7 @@ android {
             buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
             buildConfigField("String", "PIXABAY_API_KEY", "\"49629695-35e6ee8fb0f82cc4b4ed4b6a2\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
+            buildConfigField("boolean", "IS_DEV_MODE", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
@@ -38,6 +39,7 @@ android {
             buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
             buildConfigField("String", "PIXABAY_API_KEY", "\"49629695-35e6ee8fb0f82cc4b4ed4b6a2\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"zzzz\"")
+            buildConfigField("boolean", "IS_DEV_MODE", "true")
         }
     }
     compileOptions {

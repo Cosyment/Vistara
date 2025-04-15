@@ -642,6 +642,28 @@ class WallpaperDetailViewModel @Inject constructor(
     }
 
     /**
+     * 测试支付
+     * 仅用于开发测试
+     */
+    fun testPayment(activity: Activity?) {
+        if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
+            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
+            return
+        }
+
+        // 测试不同的支付方式
+        val productIds = listOf(
+            BillingManager.SUBSCRIPTION_MONTHLY,
+            BillingManager.SUBSCRIPTION_YEARLY,
+            BillingManager.PREMIUM_LIFETIME
+        )
+
+        // 随机选择一种支付方式进行测试
+        val randomProductId = productIds.random()
+        billingManager.launchBillingFlow(activity, randomProductId)
+    }
+
+    /**
      * 升级结果
      */
     sealed class UpgradeResult {
