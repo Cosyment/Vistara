@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -139,18 +140,29 @@ fun WallpaperDetailScreen(
 
         // 开发模式下显示测试支付按钮
         if (BuildConfig.IS_DEV_MODE) {
-            FloatingActionButton(
-                onClick = { viewModel.testPayment(activity) },
+            // 使用Box包裹FloatingActionButton，并设置高z-index确保在最上层
+            Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                containerColor = MaterialTheme.colorScheme.tertiary
+                    .padding(16.dp)
+                    .size(56.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "测试支付",
-                    tint = MaterialTheme.colorScheme.onTertiary
-                )
+                FloatingActionButton(
+                    onClick = {
+                        // 调用测试支付方法
+                        viewModel.testPayment(activity)
+                        // 显示提示
+                        Toast.makeText(context, "正在测试支付...", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.tertiary
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = "测试支付",
+                        tint = MaterialTheme.colorScheme.onTertiary
+                    )
+                }
             }
         }
         when (wallpaperState) {
