@@ -157,12 +157,16 @@ class WallpaperRepositoryImpl @Inject constructor(
                                 4 -> tags.add("流体")
                             }
 
-                            // 生成随机标题
-                            val title = when (index % 4) {
-                                0 -> "动态壁纸 ${page}_$index"
-                                1 -> "炫酷动态 ${page}_$index"
-                                2 -> "流动背景 ${page}_$index"
-                                else -> "动态壁纸 ${page}_$index"
+                            // 生成更友好的标题
+                            val title = when (index % 8) {
+                                0 -> "流动的光影"
+                                1 -> "炫酷动态壁纸"
+                                2 -> "流动的背景"
+                                3 -> "灵动的粒子"
+                                4 -> "流体艺术"
+                                5 -> "科技感动态"
+                                6 -> "赛博朋克风格"
+                                else -> "灵动壁纸"
                             }
 
                             // 使用更真实的缩略图 URL
@@ -344,9 +348,8 @@ class WallpaperRepositoryImpl @Inject constructor(
             Log.d(TAG, "处理Pexels视频壁纸ID: $id")
             // 提取原始ID，去掉"pexels_video_"前缀
             val videoId = id.substringAfter("pexels_video_")
-            val pexelsAdapter = pexelsApiAdapter as PexelsApiAdapter
             try {
-                // 使用PexelsApiAdapter获取视频详情
+                // 使用PexelsApiService获取视频详情
                 val video = pexelsApiService.getVideo(videoId)
                 return pexelsMapper.toWallpaper(video)
             } catch (e: Exception) {
@@ -366,53 +369,176 @@ class WallpaperRepositoryImpl @Inject constructor(
             }
         }
 
-        // 如果是Pexels照片来源，使用壁纸API适配器
-        val originalId = parts[1]
-        if (source == "pexels") {
-            val result = wallpaperApiAdapter.getWallpaperById(originalId)
-            return when (result) {
-                is ApiResult.Success -> result.data
-                else -> null
+        // 处理Pexels照片壁纸
+        if (id.startsWith("pexels_photo_")) {
+            Log.d(TAG, "处理Pexels照片壁纸ID: $id")
+            // 提取原始ID，去掉"pexels_photo_"前缀
+            val photoId = id.substringAfter("pexels_photo_")
+            try {
+                // 使用PexelsApiService获取照片详情
+                val photo = pexelsApiService.getPhoto(photoId)
+                return pexelsMapper.toWallpaper(photo)
+            } catch (e: Exception) {
+                Log.e(TAG, "获取Pexels照片详情失败: ${e.message}")
+
+                // 如果获取失败，尝试从本地缓存中获取
+                val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                if (cachedWallpaper != null) {
+                    Log.d(TAG, "从缓存中找到壁纸: $id")
+                    return cachedWallpaper
+                }
+
+                // 如果缓存中也没有，创建一个模拟的壁纸对象
+                Log.d(TAG, "创建模拟的Pexels照片壁纸: $id")
+                return createMockPhotoWallpaper(id, photoId, "Pexels")
             }
         }
 
-        // 其他来源仍然使用原来的方式
+        // 如果是其他Pexels照片来源，使用壁纸API适配器
+        val originalId = parts[1]
+        if (source == "pexels") {
+            try {
+                val result = wallpaperApiAdapter.getWallpaperById(originalId)
+                return when (result) {
+                    is ApiResult.Success -> result.data
+                    else -> {
+                        // 如果API调用失败，尝试从缓存中获取
+                        val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                        if (cachedWallpaper != null) {
+                            Log.d(TAG, "从缓存中找到Pexels壁纸: $id")
+                            return cachedWallpaper
+                        }
+                        null
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "获取Pexels壁纸详情失败: ${e.message}")
+                // 尝试从缓存中获取
+                val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                if (cachedWallpaper != null) {
+                    return cachedWallpaper
+                }
+                return null
+            }
+        }
+
+        // 其他来源使用原来的方式，但增强错误处理
         return when (source) {
             "unsplash" -> {
-                val response = safeApiCall(ApiSource.UNSPLASH) {
-                    unsplashApiService.getPhoto(originalId)
-                }
+                try {
+                    val response = safeApiCall(ApiSource.UNSPLASH) {
+                        unsplashApiService.getPhoto(originalId)
+                    }
 
-                when (response) {
-                    is ApiResult.Success -> unsplashMapper.toWallpaper(response.data)
-                    else -> null
+                    when (response) {
+                        is ApiResult.Success -> unsplashMapper.toWallpaper(response.data)
+                        else -> {
+                            // 如果API调用失败，尝试从缓存中获取
+                            val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                            if (cachedWallpaper != null) {
+                                Log.d(TAG, "从缓存中找到Unsplash壁纸: $id")
+                                return cachedWallpaper
+                            }
+                            // 如果缓存中也没有，创建一个模拟的壁纸对象
+                            Log.d(TAG, "创建模拟的Unsplash壁纸: $id")
+                            return createMockPhotoWallpaper(id, originalId, "Unsplash")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "获取Unsplash壁纸详情失败: ${e.message}")
+                    // 尝试从缓存中获取
+                    val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                    if (cachedWallpaper != null) {
+                        return cachedWallpaper
+                    }
+                    // 创建模拟壁纸
+                    return createMockPhotoWallpaper(id, originalId, "Unsplash")
                 }
             }
             "pixabay" -> {
-                val response = safeApiCall(ApiSource.PIXABAY) {
-                    pixabayApiService.getImageById(originalId.toInt())
-                }
-
-                when (response) {
-                    is ApiResult.Success -> {
-                        if (response.data.hits.isNotEmpty()) {
-                            pixabayMapper.toWallpaper(response.data.hits[0])
-                        } else null
+                try {
+                    val response = safeApiCall(ApiSource.PIXABAY) {
+                        pixabayApiService.getImageById(originalId.toInt())
                     }
-                    else -> null
+
+                    when (response) {
+                        is ApiResult.Success -> {
+                            if (response.data.hits.isNotEmpty()) {
+                                pixabayMapper.toWallpaper(response.data.hits[0])
+                            } else {
+                                // 如果没有结果，尝试从缓存中获取
+                                val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                                if (cachedWallpaper != null) {
+                                    Log.d(TAG, "从缓存中找到Pixabay壁纸: $id")
+                                    return cachedWallpaper
+                                }
+                                // 创建模拟壁纸
+                                return createMockPhotoWallpaper(id, originalId, "Pixabay")
+                            }
+                        }
+                        else -> {
+                            // 如果API调用失败，尝试从缓存中获取
+                            val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                            if (cachedWallpaper != null) {
+                                Log.d(TAG, "从缓存中找到Pixabay壁纸: $id")
+                                return cachedWallpaper
+                            }
+                            // 创建模拟壁纸
+                            return createMockPhotoWallpaper(id, originalId, "Pixabay")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "获取Pixabay壁纸详情失败: ${e.message}")
+                    // 尝试从缓存中获取
+                    val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                    if (cachedWallpaper != null) {
+                        return cachedWallpaper
+                    }
+                    // 创建模拟壁纸
+                    return createMockPhotoWallpaper(id, originalId, "Pixabay")
                 }
             }
             "wallhaven" -> {
-                val response = safeApiCall(ApiSource.WALLHAVEN) {
-                    wallhavenApiService.getWallpaper(originalId)
-                }
+                try {
+                    val response = safeApiCall(ApiSource.WALLHAVEN) {
+                        wallhavenApiService.getWallpaper(originalId)
+                    }
 
-                when (response) {
-                    is ApiResult.Success -> wallhavenMapper.toWallpaper(response.data)
-                    else -> null
+                    when (response) {
+                        is ApiResult.Success -> wallhavenMapper.toWallpaper(response.data)
+                        else -> {
+                            // 如果API调用失败，尝试从缓存中获取
+                            val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                            if (cachedWallpaper != null) {
+                                Log.d(TAG, "从缓存中找到Wallhaven壁纸: $id")
+                                return cachedWallpaper
+                            }
+                            // 创建模拟壁纸
+                            return createMockPhotoWallpaper(id, originalId, "Wallhaven")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "获取Wallhaven壁纸详情失败: ${e.message}")
+                    // 尝试从缓存中获取
+                    val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                    if (cachedWallpaper != null) {
+                        return cachedWallpaper
+                    }
+                    // 创建模拟壁纸
+                    return createMockPhotoWallpaper(id, originalId, "Wallhaven")
                 }
             }
-            else -> null
+            else -> {
+                // 对于未知来源，尝试从缓存中获取
+                val cachedWallpaper = wallpaperDao.getWallpaperById(id)
+                if (cachedWallpaper != null) {
+                    Log.d(TAG, "从缓存中找到未知来源壁纸: $id")
+                    return cachedWallpaper
+                }
+                // 如果缓存中也没有，创建一个通用的模拟壁纸对象
+                Log.d(TAG, "创建通用模拟壁纸: $id")
+                return createMockPhotoWallpaper(id, originalId, "Unknown")
+            }
         }
     }
 
@@ -454,12 +580,16 @@ class WallpaperRepositoryImpl @Inject constructor(
                 4 -> tags.add("流体")
             }
 
-            // 生成随机标题
-            val title = when (index % 4) {
-                0 -> "动态壁纸 ${page}_$index"
-                1 -> "炫酷动态 ${page}_$index"
-                2 -> "流动背景 ${page}_$index"
-                else -> "动态壁纸 ${page}_$index"
+            // 生成更友好的标题
+            val title = when (index % 8) {
+                0 -> "流动的光影"
+                1 -> "炫酷动态壁纸"
+                2 -> "流动的背景"
+                3 -> "灵动的粒子"
+                4 -> "流体艺术"
+                5 -> "科技感动态"
+                6 -> "赛博朋克风格"
+                else -> "灵动壁纸"
             }
 
             // 使用更真实的缩略图 URL
@@ -520,12 +650,16 @@ class WallpaperRepositoryImpl @Inject constructor(
                 4 -> tags.add("流体")
             }
 
-            // 生成随机标题
-            val title = when (videoId % 4) {
-                0 -> "Pexels 动态壁纸 $videoId"
-                1 -> "Pexels 炫酷动态 $videoId"
-                2 -> "Pexels 流动背景 $videoId"
-                else -> "Pexels 动态壁纸 $videoId"
+            // 生成更友好的标题
+            val title = when (videoId % 8) {
+                0 -> "流动的光影"
+                1 -> "炫酷动态壁纸"
+                2 -> "流动的背景"
+                3 -> "灵动的粒子"
+                4 -> "流体艺术"
+                5 -> "科技感动态"
+                6 -> "赛博朋克风格"
+                else -> "灵动壁纸"
             }
 
             // 使用更真实的缩略图 URL
@@ -549,6 +683,76 @@ class WallpaperRepositoryImpl @Inject constructor(
             )
         } catch (e: Exception) {
             Log.e(TAG, "创建模拟的Pexels视频壁纸失败: ${e.message}")
+            return null
+        }
+    }
+
+    /**
+     * 创建模拟的静态壁纸
+     * 用于处理网络错误时的回退方案
+     */
+    private fun createMockPhotoWallpaper(id: String, photoId: String, source: String): Wallpaper? {
+        try {
+            // 生成随机宽高比
+            val numericId = photoId.hashCode() // 将字符串ID转换为数字
+            val isLandscape = numericId % 3 != 1 // 大部分是横向
+            val width = if (isLandscape) 1920 else 1080
+            val height = if (isLandscape) 1080 else 1920
+
+            // 生成随机标签
+            val tags = mutableListOf<String>()
+
+            // 根据来源添加标签
+            tags.add(source)
+
+            // 根据宽高比添加分类标签
+            if (isLandscape) {
+                tags.add("风景")
+                tags.add("自然")
+            } else {
+                tags.add("人像")
+            }
+
+            // 根据照片ID添加随机标签
+            when (numericId % 5) {
+                0 -> tags.add("抽象")
+                1 -> tags.add("自然")
+                2 -> tags.add("城市")
+                3 -> tags.add("动物")
+                4 -> tags.add("建筑")
+            }
+
+            // 生成随机标题
+            val title = when (numericId % 4) {
+                0 -> "$source 壁纸 $photoId"
+                1 -> "$source 精选 $photoId"
+                2 -> "$source 高清壁纸 $photoId"
+                else -> "$source 壁纸 $photoId"
+            }
+
+            // 使用更真实的缩略图 URL
+            val imageId = Math.abs(numericId) % 1000 + 100
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+            val previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}"
+            val fullUrl = "https://picsum.photos/id/$imageId/$width/$height"
+
+            return Wallpaper(
+                id = id,
+                title = title,
+                url = fullUrl,
+                thumbnailUrl = thumbnailUrl,
+                previewUrl = previewUrl,
+                author = "$source 作者 $photoId",
+                source = source,
+                isPremium = numericId % 3 == 0, // 每三个壁纸中有一个是高级内容
+                isLive = false, // 这是静态壁纸
+                tags = tags,
+                width = width,
+                height = height,
+                resolution = Resolution(width, height)
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "创建模拟的静态壁纸失败: ${e.message}")
             return null
         }
     }

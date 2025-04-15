@@ -123,12 +123,15 @@ class PexelsMapper @Inject constructor() {
             4 -> tags.add("\u6d41\u4f53")
         }
 
-        // 根据视频ID生成标题
-        val title = when (source.id % 4) {
-            0 -> "\u52a8\u6001\u58c1\u7eb8 ${source.id}"
-            1 -> "\u70ab\u9177\u52a8\u6001 ${source.id}"
-            2 -> "\u6d41\u52a8\u80cc\u666f ${source.id}"
-            else -> "\u52a8\u6001\u58c1\u7eb8 ${source.id}"
+        // 生成更友好的标题
+        // 使用视频尺寸和属性来生成描述性标题
+        val title = when {
+            // 根据视频尺寸判断类型
+            source.width > source.height * 1.5 -> "\u5168\u666f\u52a8\u6001\u58c1\u7eb8" // 宽屏全景
+            source.width > source.height -> "\u98ce\u666f\u52a8\u6001\u58c1\u7eb8" // 普通横向
+            source.height > source.width * 1.5 -> "\u7ad6\u5c4f\u52a8\u6001\u58c1\u7eb8" // 竖屏
+            source.height > source.width -> "\u4eba\u50cf\u52a8\u6001\u58c1\u7eb8" // 竖向
+            else -> "\u65b9\u5f62\u52a8\u6001\u58c1\u7eb8" // 正方形
         }
 
         // 选择最适合的视频URL
@@ -149,7 +152,7 @@ class PexelsMapper @Inject constructor() {
 
         return Wallpaper(
             id = "pexels_video_${source.id}",
-            title = title,
+            title = "",
             url = videoUrl, // 使用选择的视频URL
             thumbnailUrl = bestPreview, // 使用最佳预览图
             previewUrl = bestPreview,
