@@ -8,9 +8,7 @@ import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.Category
-import com.vistara.aestheticwalls.data.model.RatingSummary
 import com.vistara.aestheticwalls.data.model.Resolution
-import com.vistara.aestheticwalls.data.model.Review
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.ApiSource
@@ -988,56 +986,7 @@ class WallpaperRepositoryImpl @Inject constructor(
         return wallpaperDao.getAutoChangeHistory()
     }
 
-    /**
-     * 获取壁纸评论
-     */
-    override suspend fun getWallpaperReviews(wallpaperId: String, page: Int, pageSize: Int): List<Review> {
-        // 模拟评论数据
-        return generateMockReviews(wallpaperId, page, pageSize)
-    }
 
-    /**
-     * 获取壁纸评分统计
-     */
-    override suspend fun getWallpaperRatingSummary(wallpaperId: String): RatingSummary {
-        // 模拟评分统计数据
-        return generateMockRatingSummary(wallpaperId)
-    }
-
-    /**
-     * 添加壁纸评论
-     */
-    override suspend fun addWallpaperReview(wallpaperId: String, rating: Float, comment: String): Review {
-        // 模拟添加评论
-        return Review(
-            id = UUID.randomUUID().toString(),
-            wallpaperId = wallpaperId,
-            userId = "current_user",
-            userName = "当前用户",
-            userAvatar = null,
-            rating = rating,
-            comment = comment,
-            createdAt = Date(),
-            likes = 0,
-            isLiked = false
-        )
-    }
-
-    /**
-     * 点赞评论
-     */
-    override suspend fun likeReview(reviewId: String): Boolean {
-        // 模拟点赞成功
-        return true
-    }
-
-    /**
-     * 取消点赞评论
-     */
-    override suspend fun unlikeReview(reviewId: String): Boolean {
-        // 模拟取消点赞成功
-        return true
-    }
 
     /**
      * 获取相关壁纸推荐
@@ -1063,144 +1012,6 @@ class WallpaperRepositoryImpl @Inject constructor(
         return relatedWallpapers.filter { it.id != wallpaperId }.take(limit)
     }
 
-    /**
-     * 生成模拟评论数据
-     */
-    private fun generateMockReviews(wallpaperId: String, page: Int, pageSize: Int): List<Review> {
-        // 根据壁纸ID和页码生成固定的评论数据，确保每次请求相同页面返回相同数据
-        val seed = wallpaperId.hashCode() + page * 1000
-        val random = Random(seed.toLong())
-
-        // 模拟总评论数
-        val totalReviews = 50
-
-        // 计算当前页应该返回的评论数量
-        val startIndex = (page - 1) * pageSize
-        val endIndex = minOf(startIndex + pageSize, totalReviews)
-
-        // 如果已经超出总评论数，返回空列表
-        if (startIndex >= totalReviews) {
-            return emptyList()
-        }
-
-        // 生成当前页的评论
-        return (startIndex until endIndex).map { index ->
-            val reviewSeed = seed + index
-            val reviewRandom = Random(reviewSeed.toLong())
-
-            // 生成随机用户名
-            val userName = when (reviewRandom.nextInt(10)) {
-                0 -> "壁纸爱好者"
-                1 -> "设计师小明"
-                2 -> "摄影师阿杰"
-                3 -> "艺术家小红"
-                4 -> "科技达人"
-                5 -> "自然控"
-                6 -> "城市探索者"
-                7 -> "极简主义者"
-                8 -> "色彩控"
-                else -> "用户${reviewRandom.nextInt(1000)}"
-            }
-
-            // 生成随机评论内容
-            val commentContent = when (reviewRandom.nextInt(10)) {
-                0 -> "这张壁纸太美了，已经设为我的锁屏！"
-                1 -> "色彩搭配非常和谐，很喜欢。"
-                2 -> "分辨率很高，在我的手机上显示效果很棒。"
-                3 -> "这种风格正是我一直在找的，感谢分享。"
-                4 -> "简约而不简单，很有设计感。"
-                5 -> "这张壁纸让我的主屏焕然一新。"
-                6 -> "图片质量很高，细节表现很好。"
-                7 -> "这个系列的壁纸都很棒，这张尤其喜欢。"
-                8 -> "完美契合我的手机主题，太赞了。"
-                else -> "很喜欢这张壁纸，谢谢分享！"
-            }
-
-            // 生成随机评分，偏向高分
-            val rating = when (reviewRandom.nextInt(10)) {
-                0 -> 3.0f
-                1 -> 3.5f
-                2 -> 4.0f
-                3, 4, 5 -> 4.5f
-                else -> 5.0f
-            }
-
-            // 生成随机点赞数
-            val likes = reviewRandom.nextInt(50)
-
-            // 生成随机日期（过去30天内）
-            val daysAgo = reviewRandom.nextInt(30)
-            val createdAt = Date(System.currentTimeMillis() - daysAgo * 24 * 60 * 60 * 1000L)
-
-            // 创建评论对象
-            Review(
-                id = "review_${wallpaperId}_${index}",
-                wallpaperId = wallpaperId,
-                userId = "user_${index}",
-                userName = userName,
-                userAvatar = null, // 暂不提供头像
-                rating = rating,
-                comment = commentContent,
-                createdAt = createdAt,
-                likes = likes,
-                isLiked = reviewRandom.nextBoolean() // 随机是否已点赞
-            )
-        }
-    }
-
-    /**
-     * 生成模拟评分统计数据
-     */
-    private fun generateMockRatingSummary(wallpaperId: String): RatingSummary {
-        // 使用壁纸ID作为随机种子，确保每次请求相同壁纸返回相同数据
-        val seed = wallpaperId.hashCode()
-        val random = Random(seed.toLong())
-
-        // 生成随机总评分数
-        val totalRatings = 50 + random.nextInt(200)
-
-        // 生成各评分的数量，偏向高分
-        val ratingCounts = mutableMapOf<Int, Int>()
-        var remainingRatings = totalRatings
-
-        // 5星评分（占40-60%）
-        val fiveStarPercentage = 40 + random.nextInt(21)
-        val fiveStarCount = (totalRatings * fiveStarPercentage / 100)
-        ratingCounts[5] = fiveStarCount
-        remainingRatings -= fiveStarCount
-
-        // 4星评分（占20-40%）
-        val fourStarPercentage = 20 + random.nextInt(21)
-        val fourStarCount = minOf((totalRatings * fourStarPercentage / 100), remainingRatings)
-        ratingCounts[4] = fourStarCount
-        remainingRatings -= fourStarCount
-
-        // 3星评分（占5-15%）
-        val threeStarPercentage = 5 + random.nextInt(11)
-        val threeStarCount = minOf((totalRatings * threeStarPercentage / 100), remainingRatings)
-        ratingCounts[3] = threeStarCount
-        remainingRatings -= threeStarCount
-
-        // 2星评分（占1-5%）
-        val twoStarPercentage = 1 + random.nextInt(5)
-        val twoStarCount = minOf((totalRatings * twoStarPercentage / 100), remainingRatings)
-        ratingCounts[2] = twoStarCount
-        remainingRatings -= twoStarCount
-
-        // 1星评分（剩余的）
-        ratingCounts[1] = remainingRatings
-
-        // 计算平均评分
-        val totalScore = ratingCounts.entries.sumOf { it.key * it.value }
-        val averageRating = totalScore.toFloat() / totalRatings
-
-        return RatingSummary(
-            wallpaperId = wallpaperId,
-            averageRating = averageRating,
-            totalRatings = totalRatings,
-            ratingCounts = ratingCounts
-        )
-    }
 
     /**
      * 获取随机收藏壁纸

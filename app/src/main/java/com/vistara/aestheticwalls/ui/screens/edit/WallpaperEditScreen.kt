@@ -2,12 +2,15 @@ package com.vistara.aestheticwalls.ui.screens.edit
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,10 +19,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -55,16 +60,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -84,6 +99,26 @@ fun WallpaperEditScreen(
     val editState by viewModel.editState.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val context = LocalContext.current
+
+    // 获取原始位图用于裁剪
+    var originalBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    // 当壁纸加载成功时，异步加载原始位图
+    LaunchedEffect(wallpaperState) {
+        if (wallpaperState is UiState.Success) {
+            val wallpaper = (wallpaperState as UiState.Success).data
+            if (wallpaper.url != null) {
+                withContext(Dispatchers.IO) {
+                    try {
+                        val url = URL(wallpaper.url)
+                        originalBitmap = BitmapFactory.decodeStream(url.openStream())
+                    } catch (e: Exception) {
+                        // 处理加载错误
+                    }
+                }
+            }
+        }
+    }
 
     // 当前选中的编辑工具
     var selectedTool by remember { mutableStateOf(EditTool.BRIGHTNESS) }
@@ -181,23 +216,42 @@ fun WallpaperEditScreen(
                                 .background(Color.Black)
                         ) {
                             // 显示带有实时效果的图片
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(wallpaper.url)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = wallpaper.title,
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier.fillMaxSize(),
-                                colorFilter = ColorFilter.colorMatrix(
-                                    createPreviewColorMatrix(
-                                        editState.brightness,
-                                        editState.contrast,
-                                        editState.saturation,
-                                        editState.filter
+                            if (editState.croppedBitmap != null) {
+                                // 如果有裁剪后的图片，显示裁剪后的图片
+                                Image(
+                                    bitmap = editState.croppedBitmap!!.asImageBitmap(),
+                                    contentDescription = wallpaper.title,
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.fillMaxSize(),
+                                    colorFilter = ColorFilter.colorMatrix(
+                                        createPreviewColorMatrix(
+                                            editState.brightness,
+                                            editState.contrast,
+                                            editState.saturation,
+                                            editState.filter
+                                        )
                                     )
                                 )
-                            )
+                            } else {
+                                // 否则显示原始图片
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(wallpaper.url)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = wallpaper.title,
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.fillMaxSize(),
+                                    colorFilter = ColorFilter.colorMatrix(
+                                        createPreviewColorMatrix(
+                                            editState.brightness,
+                                            editState.contrast,
+                                            editState.saturation,
+                                            editState.filter
+                                        )
+                                    )
+                                )
+                            }
 
                             // 保存中指示器
                             if (isSaving) {
@@ -243,7 +297,13 @@ fun WallpaperEditScreen(
                                 isSelected = selectedTool == EditTool.FILTER,
                                 onClick = { selectedTool = EditTool.FILTER }
                             )
-
+                            // 裁剪功能暂时隐藏
+                            // EditToolButton(
+                            //     tool = EditTool.CROP,
+                            //     icon = Icons.Default.Edit,
+                            //     isSelected = selectedTool == EditTool.CROP,
+                            //     onClick = { selectedTool = EditTool.CROP }
+                            // )
                         }
 
                         // 编辑控制区域
@@ -283,7 +343,14 @@ fun WallpaperEditScreen(
                                         onFilterSelected = { viewModel.applyFilter(it) }
                                     )
                                 }
-
+                                EditTool.CROP -> {
+                                    CropOptions(
+                                        originalBitmap = originalBitmap,
+                                        onCropComplete = { croppedBitmap ->
+                                            viewModel.updateCroppedBitmap(croppedBitmap)
+                                        }
+                                    )
+                                }
                             }
                         }
 
@@ -295,7 +362,13 @@ fun WallpaperEditScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Button(
-                                onClick = { viewModel.resetEdits() },
+                                onClick = {
+                                    viewModel.resetEdits()
+                                    // 如果当前在裁剪工具，切换到亮度工具
+                                    if (selectedTool == EditTool.CROP) {
+                                        selectedTool = EditTool.BRIGHTNESS
+                                    }
+                                },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.errorContainer,
                                     contentColor = MaterialTheme.colorScheme.onErrorContainer
@@ -322,7 +395,7 @@ fun WallpaperEditScreen(
 @Composable
 fun EditToolButton(
     tool: EditTool,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -413,13 +486,15 @@ fun FilterOptions(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Row(
+        // 使用 LazyRow 来支持水平滚动
+        androidx.compose.foundation.lazy.LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ImageFilter.values().forEach { filter ->
+            items(ImageFilter.values()) { filter ->
                 FilterOption(
                     filter = filter,
                     isSelected = filter == selectedFilter,
@@ -427,6 +502,325 @@ fun FilterOptions(
                 )
             }
         }
+    }
+}
+
+/**
+ * 裁剪组件
+ */
+@Composable
+fun CropOptions(
+    originalBitmap: Bitmap?,
+    onCropComplete: (Bitmap?) -> Unit
+) {
+    if (originalBitmap == null) {
+        Text(
+            text = "加载图片中...",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(16.dp)
+        )
+        return
+    }
+
+    var showCropView by remember { mutableStateOf(true) }
+    var cropType by remember { mutableStateOf(CropType.FREE) }
+    var cropRect by remember { mutableStateOf<Rect?>(null) }
+
+    // 裁剪区域的初始值
+    LaunchedEffect(originalBitmap, cropType) {
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+
+        cropRect = when (cropType) {
+            CropType.FREE -> {
+                // 默认裁剪区域为图片的中心80%
+                val cropWidth = width * 0.8f
+                val cropHeight = height * 0.8f
+                val left = (width - cropWidth) / 2
+                val top = (height - cropHeight) / 2
+                Rect(left, top, left + cropWidth, top + cropHeight)
+            }
+            CropType.SQUARE -> {
+                // 正方形裁剪区域
+                val size = minOf(width, height) * 0.8f
+                val left = (width - size) / 2
+                val top = (height - size) / 2
+                Rect(left, top, left + size, top + size)
+            }
+            CropType.CIRCLE -> {
+                // 圆形裁剪区域（实际上也是正方形，只是显示为圆形）
+                val size = minOf(width, height) * 0.8f
+                val left = (width - size) / 2
+                val top = (height - size) / 2
+                Rect(left, top, left + size, top + size)
+            }
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (showCropView) {
+            // 裁剪视图
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .padding(vertical = 8.dp)
+                    .background(Color.Black)
+            ) {
+                // 显示原始图片
+                Image(
+                    bitmap = originalBitmap.asImageBitmap(),
+                    contentDescription = "原始图片",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // 裁剪框
+                cropRect?.let { rect ->
+                    // 计算裁剪框在UI上的位置
+                    val imageWidth = originalBitmap.width.toFloat()
+                    val imageHeight = originalBitmap.height.toFloat()
+                    val boxWidth = 300.dp.toPx() // 这里需要转换，实际应用中应该使用布局信息
+                    val boxHeight = 300.dp.toPx()
+
+                    // 简化版：假设图片完全填充Box
+                    val scaleX = boxWidth / imageWidth
+                    val scaleY = boxHeight / imageHeight
+                    val scale = minOf(scaleX, scaleY)
+
+                    val uiRect = Rect(
+                        rect.left * scale,
+                        rect.top * scale,
+                        rect.right * scale,
+                        rect.bottom * scale
+                    )
+
+                    // 绘制裁剪框
+                    Box(
+                        modifier = Modifier
+                            .absoluteOffset(uiRect.left.dp, uiRect.top.dp)
+                            .size(
+                                width = (uiRect.right - uiRect.left).dp,
+                                height = (uiRect.bottom - uiRect.top).dp
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = Color.White,
+                                shape = if (cropType == CropType.CIRCLE) CircleShape else RoundedCornerShape(4.dp)
+                            )
+                    )
+                }
+            }
+
+            // 裁剪类型选择
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                CropTypeButton(
+                    title = "自由裁剪",
+                    isSelected = cropType == CropType.FREE,
+                    onClick = { cropType = CropType.FREE }
+                )
+                CropTypeButton(
+                    title = "正方形",
+                    isSelected = cropType == CropType.SQUARE,
+                    onClick = { cropType = CropType.SQUARE }
+                )
+                CropTypeButton(
+                    title = "圆形",
+                    isSelected = cropType == CropType.CIRCLE,
+                    onClick = { cropType = CropType.CIRCLE }
+                )
+            }
+
+            // 操作按钮
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = {
+                        // 取消裁剪
+                        onCropComplete(null)
+                        showCropView = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "取消",
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Text("取消")
+                }
+
+                Button(
+                    onClick = {
+                        // 应用裁剪
+                        cropRect?.let { rect ->
+                            val x = rect.left.toInt().coerceAtLeast(0)
+                            val y = rect.top.toInt().coerceAtLeast(0)
+                            val width = (rect.right - rect.left).toInt()
+                                .coerceAtMost(originalBitmap.width - x)
+                            val height = (rect.bottom - rect.top).toInt()
+                                .coerceAtMost(originalBitmap.height - y)
+
+                            if (width > 0 && height > 0) {
+                                // 创建裁剪后的位图
+                                val cropped = Bitmap.createBitmap(
+                                    originalBitmap,
+                                    x, y, width, height
+                                )
+
+                                // 如果是圆形裁剪，创建圆形位图
+                                val finalBitmap = if (cropType == CropType.CIRCLE) {
+                                    createCircularBitmap(cropped)
+                                } else {
+                                    cropped
+                                }
+
+                                onCropComplete(finalBitmap)
+                                showCropView = false
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "应用",
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Text("应用")
+                }
+            }
+        } else {
+            // 显示裁剪完成的提示
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "裁剪已应用",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            // 重新裁剪按钮
+            Button(
+                onClick = { showCropView = true },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "重新裁剪",
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+                Text("重新裁剪")
+            }
+        }
+    }
+}
+
+/**
+ * 创建圆形位图
+ */
+fun createCircularBitmap(bitmap: Bitmap): Bitmap {
+    val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(output)
+    val paint = android.graphics.Paint()
+    val rect = android.graphics.Rect(0, 0, bitmap.width, bitmap.height)
+
+    paint.isAntiAlias = true
+    canvas.drawARGB(0, 0, 0, 0)
+    paint.color = android.graphics.Color.WHITE
+
+    canvas.drawCircle(
+        bitmap.width / 2f,
+        bitmap.height / 2f,
+        minOf(bitmap.width, bitmap.height) / 2f,
+        paint
+    )
+
+    paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN)
+    canvas.drawBitmap(bitmap, rect, rect, paint)
+
+    return output
+}
+
+/**
+ * 裁剪类型
+ */
+enum class CropType {
+    FREE, SQUARE, CIRCLE
+}
+
+/**
+ * 将 Dp 转换为像素
+ */
+@Composable
+fun Dp.toPx(): Float {
+    return with(LocalDensity.current) { this@toPx.toPx() }
+}
+
+/**
+ * 裁剪类型按钮
+ */
+@Composable
+fun CropTypeButton(
+    title: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(4.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                    if (isSelected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.surfaceVariant
+                )
+                .border(
+                    width = 1.dp,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline,
+                    shape = RoundedCornerShape(8.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = title.take(1),
+                style = MaterialTheme.typography.titleMedium,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -443,12 +837,12 @@ fun FilterOption(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .padding(4.dp)
-            .width(72.dp)
+            .width(80.dp) // 增加宽度，确保所有滤镜选项都能完全显示
             .clickable(onClick = onClick)
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            border = androidx.compose.foundation.BorderStroke(
+            border = BorderStroke(
                 width = if (isSelected) 2.dp else 0.dp,
                 color = if (isSelected) MaterialTheme.colorScheme.primary
                 else Color.Transparent
@@ -468,7 +862,10 @@ fun FilterOption(
             style = MaterialTheme.typography.bodySmall,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurface
+            else MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
@@ -480,7 +877,8 @@ enum class EditTool(val title: String) {
     BRIGHTNESS("亮度"),
     CONTRAST("对比度"),
     SATURATION("饱和度"),
-    FILTER("滤镜")
+    FILTER("滤镜"),
+    CROP("裁剪")
 }
 
 /**

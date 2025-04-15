@@ -2,8 +2,6 @@ package com.vistara.aestheticwalls.data.repository
 
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.Category
-import com.vistara.aestheticwalls.data.model.RatingSummary
-import com.vistara.aestheticwalls.data.model.Review
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import java.io.File
 import kotlinx.coroutines.flow.Flow
@@ -126,30 +124,7 @@ interface WallpaperRepository {
      */
     fun getAutoChangeHistory(): Flow<List<AutoChangeHistory>>
 
-    /**
-     * 获取壁纸评论
-     */
-    suspend fun getWallpaperReviews(wallpaperId: String, page: Int, pageSize: Int): List<Review>
 
-    /**
-     * 获取壁纸评分统计
-     */
-    suspend fun getWallpaperRatingSummary(wallpaperId: String): RatingSummary
-
-    /**
-     * 添加壁纸评论
-     */
-    suspend fun addWallpaperReview(wallpaperId: String, rating: Float, comment: String): Review
-
-    /**
-     * 点赞评论
-     */
-    suspend fun likeReview(reviewId: String): Boolean
-
-    /**
-     * 取消点赞评论
-     */
-    suspend fun unlikeReview(reviewId: String): Boolean
 
     /**
      * 获取相关壁纸推荐

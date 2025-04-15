@@ -65,16 +65,16 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation("androidx.compose.material:material:1.5.4") // 添加 Material 依赖，用于 PullRefresh
+    implementation(libs.androidx.material) // 添加 Material 依赖，用于 PullRefresh
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.constraint.compose)
     implementation(libs.androidx.material.icons.core)
 
     // StaggeredGrid for waterfall layout
-    implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
-    implementation("com.google.accompanist:accompanist-flowlayout:0.28.0")
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.28.0")
+    implementation(libs.compose.glide)
+    implementation(libs.accompanist.flowlayout)
+    implementation(libs.accompanist.swiperefresh)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -105,9 +105,12 @@ dependencies {
     implementation(libs.accompanist.drawablepainter)
 
     // Media3 for video playback
-    implementation("androidx.media3:media3-exoplayer:1.2.1")
-    implementation("androidx.media3:media3-ui:1.2.1")
-    implementation("androidx.media3:media3-common:1.2.1")
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
+    implementation(libs.androidx.media3.common)
+
+    // Image Cropping
+    implementation(libs.imagecropper)
 
     // Testing
     testImplementation(libs.junit)

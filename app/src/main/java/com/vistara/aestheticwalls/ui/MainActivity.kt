@@ -41,19 +41,14 @@ class MainActivity : ComponentActivity() {
 
                 // 如果有初始导航路径，导航到该路径
                 if (startDestination != null) {
-                    android.util.Log.d("MainActivity", "准备导航到: $startDestination")
                     LaunchedEffect(startDestination) {
-                        android.util.Log.d("MainActivity", "执行导航到: $startDestination")
                         navController.navigate(startDestination!!) {
                             launchSingleTop = true
                         }
                         // 重置初始导航，避免重复导航
                         startDestination = null
                         initialNavigation = null
-                        android.util.Log.d("MainActivity", "导航完成并重置")
                     }
-                } else {
-                    android.util.Log.d("MainActivity", "没有初始导航路径")
                 }
 
                 MainNavigation(navController = navController)
@@ -73,10 +68,7 @@ class MainActivity : ComponentActivity() {
         // 从意图中获取导航路径
         val navigation = intent.getStringExtra("navigation")
         if (!navigation.isNullOrEmpty()) {
-            android.util.Log.d("MainActivity", "接收到导航路径: $navigation")
             initialNavigation = navigation
-        } else {
-            android.util.Log.d("MainActivity", "没有接收到导航路径")
         }
     }
 }

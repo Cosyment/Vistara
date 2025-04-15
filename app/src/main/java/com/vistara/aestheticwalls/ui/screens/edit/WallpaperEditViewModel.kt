@@ -42,7 +42,8 @@ data class WallpaperEditState(
     val brightness: Float = 1.0f,
     val contrast: Float = 1.0f,
     val saturation: Float = 1.0f,
-    val filter: ImageFilter = ImageFilter.NONE
+    val filter: ImageFilter = ImageFilter.NONE,
+    val croppedBitmap: Bitmap? = null
 )
 
 /**
@@ -154,6 +155,13 @@ class WallpaperEditViewModel @Inject constructor(
     }
 
     /**
+     * 更新裁剪后的图片
+     */
+    fun updateCroppedBitmap(bitmap: Bitmap?) {
+        _editState.value = _editState.value.copy(croppedBitmap = bitmap)
+    }
+
+    /**
      * 应用编辑 - 现在不需要这个方法了，因为我们实时显示效果
      */
     fun applyEdits() {
@@ -164,7 +172,8 @@ class WallpaperEditViewModel @Inject constructor(
      * 保存编辑后的壁纸
      */
     fun saveEditedWallpaper(onComplete: () -> Unit) {
-        val bitmap = originalBitmap ?: return
+        // 使用裁剪后的图片或原始图片
+        val sourceBitmap = _editState.value.croppedBitmap ?: originalBitmap ?: return
 
         viewModelScope.launch {
             _isSaving.value = true
@@ -173,7 +182,7 @@ class WallpaperEditViewModel @Inject constructor(
                 // 应用当前的编辑效果
                 val finalBitmap = withContext(Dispatchers.Default) {
                     applyEffectsToBitmap(
-                        bitmap,
+                        sourceBitmap,
                         _editState.value.brightness,
                         _editState.value.contrast,
                         _editState.value.saturation,
@@ -182,7 +191,7 @@ class WallpaperEditViewModel @Inject constructor(
                 }
 
                 // 保存到相册
-                saveToGallery(finalBitmap!!)
+                saveToGallery(finalBitmap)
 
                 // 将编辑后的图片保存到缓存
                 EditedImageCache.saveEditedImage(wallpaperId, finalBitmap)
