@@ -130,23 +130,11 @@ fun WallpaperDetailScreen(
         viewModel.refreshEditedImage()
     }
 
-    // 使用Box作为根布局，实现真正的全屏效果
-    Box(modifier = Modifier.fillMaxSize()) {
-        // 显示Snackbar
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
-
-        // 开发模式下显示测试支付按钮
-        if (BuildConfig.IS_DEV_MODE) {
-            // 使用Box包裹FloatingActionButton，并设置高z-index确保在最上层
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-                    .size(56.dp)
-            ) {
+    // 使用Scaffold作为根布局，可以更好地控制浮动按钮
+    androidx.compose.material3.Scaffold(
+        floatingActionButton = {
+            // 开发模式下显示测试支付按钮
+            if (BuildConfig.IS_DEV_MODE) {
                 FloatingActionButton(
                     onClick = {
                         // 调用测试支付方法
@@ -154,17 +142,27 @@ fun WallpaperDetailScreen(
                         // 显示提示
                         Toast.makeText(context, "正在测试支付...", Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = MaterialTheme.colorScheme.tertiary
+                    containerColor = MaterialTheme.colorScheme.error, // 使用错误颜色，更加醒目
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    modifier = Modifier.size(72.dp) // 增大按钮尺寸，更容易点击
                 ) {
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
                         contentDescription = "测试支付",
-                        tint = MaterialTheme.colorScheme.onTertiary
+                        modifier = Modifier.size(32.dp) // 增大图标尺寸
                     )
                 }
             }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
+    ) { paddingValues ->
+        // 使用Box作为内容区域
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+        ) {
         when (wallpaperState) {
             is UiState.Loading -> {
                 // 显示加载中
@@ -283,6 +281,7 @@ fun WallpaperDetailScreen(
                 }
             }
         }
+    }
     }
 
     // 存储权限请求对话框
