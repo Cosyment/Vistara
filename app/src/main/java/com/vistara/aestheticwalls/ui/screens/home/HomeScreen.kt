@@ -13,23 +13,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,9 +53,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
 import coil.compose.AsyncImage
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.BannerActionType
@@ -53,6 +70,7 @@ import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.SearchBar
 import com.vistara.aestheticwalls.ui.components.WallpaperItem
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import kotlinx.coroutines.delay
 
 /**
  * 首页屏幕
@@ -192,15 +210,38 @@ fun HomeScreen(
 
             // 搜索栏
             item {
-                SearchBar(
-                    query = "",
-                    onQueryChange = {},
-                    onSearch = onSearch,
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = "搜索高清壁纸、动态效果...",
-                )
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .clickable { onSearch("") },
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 4.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "搜索图标",
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "搜索高清壁纸、动态效果...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
 
             // 轮播Banner
@@ -234,7 +275,8 @@ fun HomeScreen(
                 CategorySection(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
+                    onWallpaperClick = onWallpaperClick
                 )
             }
 
@@ -322,12 +364,29 @@ fun HomeScreenPreview() {
 
 @Composable
 private fun CategorySection(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onWallpaperClick: (Wallpaper) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     // 临时分类数据
     val demoCategories = listOf(
         "自然风景", "建筑", "动物", "抽象", "太空", "简约"
     )
+
+    // 获取当前上下文
+    val context = LocalContext.current
+
+    // 获取当前选中的分类和分类壁纸
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val categoryWallpapers by viewModel.categoryWallpapers.collectAsState()
+    val isCategoryLoading by viewModel.isCategoryLoading.collectAsState()
+
+    // 默认选择第一个分类
+    LaunchedEffect(Unit) {
+        if (selectedCategory == null && demoCategories.isNotEmpty()) {
+            viewModel.loadWallpapersByCategory(demoCategories.first())
+        }
+    }
 
     Column(modifier = modifier) {
         Text(
@@ -341,18 +400,142 @@ private fun CategorySection(
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(demoCategories) { category ->
+                val isSelected = selectedCategory == category
+
+                // 使用动画效果切换分类标签的颜色
                 Surface(
-                    modifier = Modifier.clip(RoundedCornerShape(16.dp)),
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    onClick = { /* 处理点击 */ }) {
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .animateContentSize(animationSpec = tween(300)), // 添加大小变化动画
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+                    onClick = {
+                        // 处理分类点击，加载对应分类的壁纸
+                        // 直接调用 ViewModel 的方法加载对应分类的壁纸，不显示 Toast
+                        viewModel.loadWallpapersByCategory(category)
+                    }) {
                     Text(
                         text = category,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                     )
                 }
             }
+        }
+
+        // 显示分类壁纸
+        if (selectedCategory != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 使用动画来切换加载状态和壁纸内容
+            // 记录上一次的壁纸列表，用于平滑过渡
+            var previousWallpapers by remember { mutableStateOf(emptyList<Wallpaper>()) }
+            var showPrevious by remember { mutableStateOf(false) }
+
+            // 当分类或加载状态变化时更新
+            LaunchedEffect(selectedCategory, isCategoryLoading) {
+                if (!isCategoryLoading && categoryWallpapers.isNotEmpty()) {
+                    // 如果有新的壁纸数据，先显示上一次的数据，然后渐变切换
+                    if (previousWallpapers.isNotEmpty() && previousWallpapers != categoryWallpapers) {
+                        showPrevious = true
+                        delay(100) // 短暂停后开始渐变
+                        showPrevious = false
+                    }
+                    previousWallpapers = categoryWallpapers
+                }
+            }
+
+            // 加载状态显示
+            AnimatedVisibility(
+                visible = isCategoryLoading,
+                enter = fadeIn(animationSpec = tween(300)),
+                exit = fadeOut(animationSpec = tween(300))
+            ) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            // 壁纸内容显示
+            AnimatedVisibility(
+                visible = !isCategoryLoading && (categoryWallpapers.isNotEmpty() || previousWallpapers.isNotEmpty()),
+                enter = fadeIn(animationSpec = tween(300)),
+                exit = fadeOut(animationSpec = tween(300))
+            ) {
+                // 显示分类壁纸
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    // 根据状态显示当前或上一次的壁纸
+                    val wallpapersToShow = if (showPrevious) previousWallpapers else categoryWallpapers
+
+                    items(wallpapersToShow.take(6)) { wallpaper ->
+                        CategoryWallpaperItem(
+                            wallpaper = wallpaper,
+                            onClick = { onWallpaperClick(wallpaper) },
+                            modifier = Modifier
+                                .width(120.dp)
+                                .height(180.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CategoryWallpaperItem(
+    wallpaper: Wallpaper,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 壁纸图片
+            AsyncImage(
+                model = wallpaper.thumbnailUrl,
+                contentDescription = wallpaper.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // 渐变底部阴影
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .height(60.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.7f)
+                            )
+                        )
+                    )
+            )
+
+            // 壁纸标题
+            Text(
+                text = wallpaper.title ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
+            )
         }
     }
 }

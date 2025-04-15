@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -20,17 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -43,10 +42,9 @@ import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.BannerActionType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 /**
- * 自动轮播Banner组件
+ * 自动轮播 Banner组件
  *
  * @param banners 轮播项目列表
  * @param onBannerClick Banner点击回调
@@ -54,6 +52,7 @@ import kotlin.math.abs
  * @param showIndicator 是否显示指示器
  * @param modifier 组件修饰符
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Carousel(
     banners: List<Banner>,
@@ -65,15 +64,18 @@ fun Carousel(
     if (banners.isEmpty()) return
 
     val coroutineScope = rememberCoroutineScope()
-    var currentPage by remember { mutableStateOf(0) }
     val pageCount = banners.size
+    
+    // 使用 HorizontalPager 的 PagerState
+    val pagerState = rememberPagerState(pageCount = { pageCount })
 
     // 自动滚动
     LaunchedEffect(pageCount) {
         if (pageCount > 1) {
             while (true) {
                 delay(autoScrollDuration)
-                currentPage = (currentPage + 1) % pageCount
+                val nextPage = (pagerState.currentPage + 1) % pageCount
+                pagerState.animateScrollToPage(nextPage)
             }
         }
     }
@@ -83,14 +85,18 @@ fun Carousel(
             .fillMaxWidth()
             .height(200.dp)
     ) {
-        // 主要Banner内容
-        BannerPager(
-            banners = banners,
-            currentPage = currentPage,
-            onPageChange = { page -> currentPage = page },
-            onBannerClick = onBannerClick,
+        // 使用 HorizontalPager 实现可滑动的轮播图
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier.fillMaxSize()
-        )
+        ) { page ->
+            val banner = banners[page]
+            BannerItem(
+                banner = banner,
+                onClick = { onBannerClick(banner) },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
         // 指示器
         if (showIndicator && pageCount > 1) {
@@ -101,7 +107,7 @@ fun Carousel(
                     .padding(bottom = 16.dp)
             ) {
                 repeat(pageCount) { index ->
-                    val isSelected = currentPage == index
+                    val isSelected = pagerState.currentPage == index
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 4.dp)
@@ -116,7 +122,7 @@ fun Carousel(
                                 indication = null
                             ) {
                                 coroutineScope.launch {
-                                    currentPage = index
+                                    pagerState.animateScrollToPage(index)
                                 }
                             }
                     )
@@ -127,63 +133,11 @@ fun Carousel(
 }
 
 /**
- * Banner分页组件
- */
-@Composable
-private fun BannerPager(
-    banners: List<Banner>,
-    currentPage: Int,
-    onPageChange: (Int) -> Unit,
-    onBannerClick: (Banner) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val pageCount = banners.size
-    if (pageCount <= 0) return
-
-    Box(
-        modifier = modifier
-    ) {
-        for (i in 0 until pageCount) {
-            val banner = banners[i]
-            val pageOffset = calculatePageOffset(i, currentPage, pageCount)
-
-            BannerItem(
-                banner = banner,
-                pageOffset = pageOffset,
-                onClick = { onBannerClick(banner) },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        val scale = 0.9f + 0.1f * (1 - pageOffset.coerceIn(0f, 1f))
-                        scaleX = scale
-                        scaleY = scale
-                        alpha = 1 - pageOffset.coerceIn(0f, 1f) * 0.5f
-                    }
-            )
-        }
-    }
-}
-
-/**
- * 计算页面偏移量
- */
-private fun calculatePageOffset(page: Int, currentPage: Int, pageCount: Int): Float {
-    val currentPosition = currentPage % pageCount
-    val offset = minOf(
-        abs(page - currentPosition),
-        abs(page - (currentPosition + pageCount)),
-        abs(page - (currentPosition - pageCount))
-    )
-    return offset.toFloat()
-}
-
-/**
  * Banner项目视图
  */
 @Composable
 private fun BannerItem(
     banner: Banner,
-    pageOffset: Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -191,11 +145,11 @@ private fun BannerItem(
 
     Card(
         modifier = modifier
-            .padding(horizontal = 8.dp * (1 - pageOffset.coerceIn(0f, 1f)))
+            .padding(horizontal = 8.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp * (1 - pageOffset.coerceIn(0f, 1f))
+            defaultElevation = 4.dp
         )
     ) {
         Box(
@@ -228,33 +182,6 @@ private fun BannerItem(
                     )
             )
 
-            // Banner文字
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = banner?.title ?: "",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                banner.subtitle?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.8f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
-                }
-            }
-
             // Premium标记（如果适用）
             if (banner.actionType == BannerActionType.PREMIUM) {
                 Box(
@@ -273,6 +200,33 @@ private fun BannerItem(
                     )
                 }
             }
+            
+            // Banner文字
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = banner.title ?: "",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                banner.subtitle?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.8f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
         }
     }
-} 
+}

@@ -224,11 +224,27 @@ class WallpaperRepositoryImpl @Inject constructor(
     /**
      * 按分类获取壁纸
      */
-    override suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): List<Wallpaper> {
-        // 根据分类ID确定搜索关键词和API源
-        val (apiSource, query) = getCategoryInfo(categoryId)
+    override suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
+        try {
+            // 检查网络连接
+            if (!networkMonitor.isNetworkAvailable()) {
+                // 如果无网络连接，尝试从本地获取数据
+                val localWallpapers = wallpaperDao.getFavoritesList()
+                if (localWallpapers.isNotEmpty()) {
+                    return@withContext ApiResult.Success(localWallpapers)
+                }
+                // 如果本地没有数据，返回错误
+                return@withContext ApiResult.Error(
+                    message = "无网络连接，无法获取分类壁纸",
+                    source = ApiSource.UNSPLASH
+                )
+            }
 
-        return when (apiSource) {
+            // 根据分类ID确定搜索关键词和API源
+            val (apiSource, query) = getCategoryInfo(categoryId)
+
+            // 根据不同的API源获取壁纸
+            val wallpapers = when (apiSource) {
             ApiSource.UNSPLASH -> {
                 val response = safeApiCall(ApiSource.UNSPLASH) {
                     unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
@@ -269,6 +285,77 @@ class WallpaperRepositoryImpl @Inject constructor(
                     else -> emptyList()
                 }
             }
+            }
+
+            // 如果获取到的壁纸为空，生成模拟数据
+            if (wallpapers.isEmpty()) {
+                // 生成模拟数据
+                val mockWallpapers = generateMockWallpapers(categoryId, page, pageSize)
+                return@withContext ApiResult.Success(mockWallpapers)
+            }
+
+            ApiResult.Success(wallpapers)
+        } catch (e: Exception) {
+            Log.e(TAG, "按分类获取壁纸失败", e)
+            ApiResult.Error(
+                message = e.message ?: "获取分类壁纸失败",
+                source = ApiSource.UNSPLASH
+            )
+        }
+    }
+
+    /**
+     * 生成模拟壁纸数据
+     */
+    private fun generateMockWallpapers(categoryId: String, page: Int, pageSize: Int): List<Wallpaper> {
+        val (_, query) = getCategoryInfo(categoryId)
+
+        return List(pageSize) { index ->
+            // 生成随机宽高比
+            val isLandscape = index % 3 != 1 // 大部分是横向
+            val width = if (isLandscape) 1920 else 1080
+            val height = if (isLandscape) 1080 else 1920
+
+            // 生成随机标签
+            val tags = mutableListOf(query)
+
+            // 根据宽高比添加分类标签
+            if (isLandscape) {
+                tags.add("风景")
+            } else {
+                tags.add("人像")
+            }
+
+            // 生成更友好的标题
+            val title = when (query) {
+                "自然风景" -> "自然风光 ${index + 1}"
+                "建筑" -> "建筑之美 ${index + 1}"
+                "动物" -> "动物世界 ${index + 1}"
+                "抽象" -> "抽象艺术 ${index + 1}"
+                "太空" -> "浮游太空 ${index + 1}"
+                "简约" -> "简约设计 ${index + 1}"
+                else -> "$query ${index + 1}"
+            }
+
+            // 使用更真实的缩略图 URL
+            val imageId = (index + page * pageSize) % 1000 + 100
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+
+            Wallpaper(
+                id = "${categoryId}_${page}_$index",
+                title = title,
+                url = "https://picsum.photos/id/$imageId/$width/$height",
+                thumbnailUrl = thumbnailUrl,
+                previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
+                author = "Vistara",
+                source = "Vistara",
+                isPremium = index % 5 == 0, // 每五个壁纸中有一个是高级内容
+                isLive = false,
+                tags = tags,
+                width = width,
+                height = height,
+                resolution = Resolution(width, height)
+            )
         }
     }
 

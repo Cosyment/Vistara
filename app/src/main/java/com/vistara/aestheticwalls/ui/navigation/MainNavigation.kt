@@ -37,6 +37,7 @@ import com.vistara.aestheticwalls.ui.screens.feedback.FeedbackScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
+import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.upgrade.UpgradeScreen
@@ -70,7 +71,9 @@ fun MainNavigation() {
                     onWallpaperClick = { wallpaper ->
                         navController.navigate("wallpaper/${wallpaper.id}")
                     },
-                    onSearch = { /* 暂时不处理 */ },
+                    onSearch = { query ->
+                        navController.navigate("search?query=$query")
+                    },
                     onBannerClick = { /* 暂时不处理 */ }
                 )
             }
@@ -79,7 +82,9 @@ fun MainNavigation() {
                     onWallpaperClick = { wallpaper ->
                         navController.navigate("wallpaper/${wallpaper.id}")
                     },
-                    onSearchClick = { /* 暂时不处理 */ }
+                    onSearchClick = {
+                        navController.navigate("search")
+                    }
                 )
             }
             composable(NavDestination.LiveWallpapers.route) {
@@ -87,7 +92,9 @@ fun MainNavigation() {
                     onWallpaperClick = { wallpaper ->
                         navController.navigate("wallpaper/${wallpaper.id}")
                     },
-                    onSearchClick = { /* 暂时不处理 */ }
+                    onSearchClick = {
+                        navController.navigate("search")
+                    }
                 )
             }
             composable(NavDestination.Mine.route) {
@@ -170,6 +177,23 @@ fun MainNavigation() {
                 UpgradeScreen(
                     onBackPressed = { navController.navigateUp() },
                     onUpgradeSuccess = { navController.navigateUp() }
+                )
+            }
+
+            // 搜索页面
+            composable(
+                route = "search?query={query}",
+                arguments = listOf(navArgument("query") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                })
+            ) { backStackEntry ->
+                val query = backStackEntry.arguments?.getString("query") ?: ""
+                SearchScreen(
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    },
+                    onBackClick = { navController.navigateUp() }
                 )
             }
         }

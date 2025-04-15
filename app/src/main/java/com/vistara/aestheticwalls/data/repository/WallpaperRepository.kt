@@ -32,7 +32,7 @@ interface WallpaperRepository {
     /**
      * 按分类获取壁纸
      */
-    suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): List<Wallpaper>
+    suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): ApiResult<List<Wallpaper>>
 
     /**
      * 搜索壁纸

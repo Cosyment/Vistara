@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.data.model.Banner
-import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.repository.BannerRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.remote.ApiResult
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +21,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val wallpaperRepository: WallpaperRepository
+    private val wallpaperRepository: WallpaperRepository,
+    private val bannerRepository: BannerRepository
 ) : ViewModel() {
 
     // Banner数据
@@ -63,25 +64,26 @@ class HomeViewModel @Inject constructor(
 
             try {
                 // 加载轮播图数据
-                val banners = listOf(
-                    Banner(
-                        id = "1",
-                        imageUrl = "https://example.com/banner1.jpg",
-                        title = "精选壁纸",
-                        subtitle = "发现最新最美壁纸",
-                        actionType = BannerActionType.COLLECTION,
-                        actionTarget = "featured"
-                    ),
-                    Banner(
-                        id = "2",
-                        imageUrl = "https://example.com/banner2.jpg",
-                        title = "高级会员",
-                        subtitle = "解锁所有高清壁纸",
-                        actionType = BannerActionType.PREMIUM,
-                        actionTarget = "premium"
-                    )
-                )
-                _banners.value = banners
+                Log.d(TAG, "开始加载轮播图数据")
+                try {
+                    when (val result = bannerRepository.getHomeBanners()) {
+                        is ApiResult.Success -> {
+                            Log.d(TAG, "轮播图数据加载成功: 获取到${result.data.size}个Banner")
+                            _banners.value = result.data
+                        }
+                        is ApiResult.Error -> {
+                            Log.e(TAG, "轮播图数据加载失败: ${result.message}")
+                            // 仅记录错误，但不中断加载过程
+                        }
+                        is ApiResult.Loading -> {
+                            // 忽略加载状态
+                            Log.d(TAG, "轮播图数据正在加载...")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "轮播图数据加载异常", e)
+                    // 仅记录错误，但不中断加载过程
+                }
                 Log.d(TAG, "轮播图数据加载完成")
 
                 // 加载精选壁纸
@@ -182,5 +184,53 @@ class HomeViewModel @Inject constructor(
      */
     fun loadMoreWallpapers() {
         // TODO: 实现加载更多壁纸的逻辑
+    }
+
+    // 当前选中的分类
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+    val selectedCategory = _selectedCategory.asStateFlow()
+
+    // 分类壁纸
+    private val _categoryWallpapers = MutableStateFlow<List<Wallpaper>>(emptyList())
+    val categoryWallpapers = _categoryWallpapers.asStateFlow()
+
+    // 分类加载状态
+    private val _isCategoryLoading = MutableStateFlow(false)
+    val isCategoryLoading = _isCategoryLoading.asStateFlow()
+
+    /**
+     * 按分类加载壁纸
+     */
+    fun loadWallpapersByCategory(category: String) {
+        _selectedCategory.value = category
+
+        viewModelScope.launch {
+            _isCategoryLoading.value = true
+
+            try {
+                // 根据分类加载壁纸
+                Log.d(TAG, "开始加载分类壁纸: $category")
+
+                when (val result = wallpaperRepository.getWallpapersByCategory(category, 1, 10)) {
+                    is ApiResult.Success -> {
+                        Log.d(TAG, "分类壁纸加载成功: 获取到${result.data.size}个壁纸")
+                        _categoryWallpapers.value = result.data
+                    }
+                    is ApiResult.Error -> {
+                        Log.e(TAG, "分类壁纸加载失败: ${result.message}")
+                        _error.value = result.message
+                    }
+                    is ApiResult.Loading -> {
+                        // 忽略加载状态
+                        Log.d(TAG, "分类壁纸正在加载...")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "分类壁纸加载异常", e)
+                _error.value = e.message ?: "加载分类壁纸时发生未知错误"
+            } finally {
+                _isCategoryLoading.value = false
+            }
+        }
     }
 }

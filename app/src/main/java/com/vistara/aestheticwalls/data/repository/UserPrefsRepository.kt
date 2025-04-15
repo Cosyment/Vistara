@@ -9,17 +9,17 @@ import com.vistara.aestheticwalls.data.model.UserSettings
  * 负责存储和检索用户设置
  */
 interface UserPrefsRepository {
-    
+
     /**
      * 获取用户设置
      */
     suspend fun getUserSettings(): UserSettings
-    
+
     /**
      * 保存用户设置
      */
     suspend fun saveUserSettings(settings: UserSettings)
-    
+
     /**
      * 更新自动壁纸更换设置
      */
@@ -30,7 +30,7 @@ interface UserPrefsRepository {
         source: AutoChangeSource? = null,
         categoryId: String? = null
     )
-    
+
     /**
      * 更新通知设置
      */
@@ -38,7 +38,22 @@ interface UserPrefsRepository {
         showDownloadNotification: Boolean? = null,
         showWallpaperChangeNotification: Boolean? = null
     )
-    
+
+    /**
+     * 获取搜索历史
+     */
+    suspend fun getSearchHistory(): List<String>
+
+    /**
+     * 保存搜索历史
+     */
+    suspend fun saveSearchHistory(history: List<String>)
+
+    /**
+     * 清除搜索历史
+     */
+    suspend fun clearSearchHistory()
+
     /**
      * 清除所有用户设置
      */
