@@ -60,25 +60,25 @@ class AutoWallpaperWorker @Inject constructor(
         const val WORK_NAME = "auto_wallpaper_work"
         private const val NOTIFICATION_ID = 123
         private const val CHANNEL_ID = "auto_wallpaper_channel"
-        
+
         // 输入数据键
         const val KEY_TARGET = "target_screen"
-        
+
         // 间隔类型
         const val INTERVAL_DAILY = "daily"
         const val INTERVAL_12_HOURS = "12_hours"
         const val INTERVAL_6_HOURS = "6_hours"
         const val INTERVAL_1_HOUR = "1_hour"
-        
+
         // 壁纸类型
         const val WALLPAPER_TYPE_HOME = "home"
         const val WALLPAPER_TYPE_LOCK = "lock"
         const val WALLPAPER_TYPE_BOTH = "both"
-        
+
         // 壁纸来源
         const val SOURCE_FAVORITES = "favorites"
         const val SOURCE_CATEGORY = "category"
-        
+
         /**
          * 安排自动更换壁纸任务
          */
@@ -105,8 +105,15 @@ class AutoWallpaperWorker @Inject constructor(
             }
 
             // 创建周期性工作请求
+            val hours = when (frequency) {
+                AutoChangeFrequency.DAILY -> 24L
+                AutoChangeFrequency.TWELVE_HOURS -> 12L
+                AutoChangeFrequency.SIX_HOURS -> 6L
+                AutoChangeFrequency.HOURLY -> 1L
+                AutoChangeFrequency.EACH_UNLOCK -> 24L // 默认值，实际不会使用
+            }
             val workRequest = PeriodicWorkRequestBuilder<AutoWallpaperWorker>(
-                frequency.hours.toLong(), TimeUnit.HOURS
+                hours, TimeUnit.HOURS
             ).setConstraints(constraints).build()
 
             // 将工作排入队列
@@ -114,7 +121,7 @@ class AutoWallpaperWorker @Inject constructor(
                 WORK_NAME, ExistingPeriodicWorkPolicy.REPLACE, workRequest
             )
 
-            Log.d(TAG, "Scheduled auto wallpaper change every ${frequency.hours} hours")
+            Log.d(TAG, "Scheduled auto wallpaper change every $hours hours")
         }
 
         /**
@@ -160,34 +167,34 @@ class AutoWallpaperWorker @Inject constructor(
                 INTERVAL_1_HOUR -> 1
                 else -> 24
             }
-            
+
             val inputData = Data.Builder()
                 .putString("source", source)
                 .putString("category", category)
                 .putString("wallpaperType", wallpaperType)
                 .build()
-            
+
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
                 .build()
-            
+
             val workRequest = PeriodicWorkRequestBuilder<AutoWallpaperWorker>(
                 intervalHours.toLong(), TimeUnit.HOURS
             )
                 .setConstraints(constraints)
                 .setInputData(inputData)
                 .build()
-            
+
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.UPDATE,
                 workRequest
             )
-            
+
             Log.d(TAG, "Scheduled auto wallpaper change - Interval: $interval, Source: $source")
         }
-        
+
         /**
          * 取消自动壁纸更换任务
          */
@@ -390,16 +397,16 @@ class AutoWallpaperWorker @Inject constructor(
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build()
-                
+
             val request = Request.Builder()
                 .url(wallpaperUrl)
                 .build()
-                
+
             val response = client.newCall(request).execute()
             if (!response.isSuccessful) {
                 throw IOException("Failed to download wallpaper: ${response.code}")
             }
-            
+
             response.body?.bytes()?.let { bytes ->
                 BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
             }
@@ -414,7 +421,7 @@ class AutoWallpaperWorker @Inject constructor(
      */
     private suspend fun setWallpaper(bitmap: Bitmap, wallpaperType: String) = withContext(Dispatchers.IO) {
         val wallpaperManager = WallpaperManager.getInstance(context)
-        
+
         when (wallpaperType) {
             WALLPAPER_TYPE_HOME -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -450,11 +457,11 @@ class AutoWallpaperWorker @Inject constructor(
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
             .build()
-        
+
         try {
             NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
         } catch (e: SecurityException) {
             Log.e(TAG, "没有通知权限", e)
         }
     }
-} 
+}

@@ -37,6 +37,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -64,9 +67,13 @@ fun MineScreen(
     onAboutClick: () -> Unit = {},
     onUpgradeClick: () -> Unit = {},
     onTestToolsClick: () -> Unit = {},
-    isPremiumUser: Boolean = false,
-    isDebugMode: Boolean = false
+    viewModel: MineViewModel = hiltViewModel()
 ) {
+    // 从ViewModel获取状态
+    val username by viewModel.username.collectAsState()
+    val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val isDebugMode by viewModel.isDebugMode.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -85,13 +92,18 @@ fun MineScreen(
         ) {
             // 用户信息区域
             ProfileHeader(
-                username = "Vistara 用户", isPremiumUser = isPremiumUser
+                username = username,
+                isPremiumUser = isPremiumUser
             )
 
             // 升级横幅
             if (!isPremiumUser) {
                 UpgradeBanner(
-                    onClick = onUpgradeClick,
+                    onClick = {
+                        // 调用ViewModel的升级方法
+                        viewModel.upgradeToPremium()
+                        onUpgradeClick()
+                    },
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
@@ -317,6 +329,8 @@ private fun FeatureItem(
 @Composable
 fun ProfileScreenPreview() {
     VistaraTheme {
+        // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
+        // 这里只是UI预览
         MineScreen()
     }
 }
@@ -325,6 +339,8 @@ fun ProfileScreenPreview() {
 @Composable
 fun ProfileScreenPremiumPreview() {
     VistaraTheme {
-        MineScreen(isPremiumUser = true)
+        // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
+        // 这里只是UI预览，手动传入isPremiumUser参数
+        MineScreen()
     }
 }

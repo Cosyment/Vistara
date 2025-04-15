@@ -28,13 +28,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.screens.about.AboutScreen
+import com.vistara.aestheticwalls.ui.screens.autochange.AutoChangeScreen
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
 import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
 import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
+import com.vistara.aestheticwalls.ui.screens.feedback.FeedbackScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
+import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
+import com.vistara.aestheticwalls.ui.screens.upgrade.UpgradeScreen
 import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
 import android.content.Intent
 
@@ -90,16 +95,15 @@ fun MainNavigation() {
                 MineScreen(
                     onFavoritesClick = { navController.navigate("favorites") },
                     onDownloadsClick = { navController.navigate("downloads") },
-                    onAutoChangeClick = { /* 暂时不处理 */ },
-                    onSettingsClick = { /* 暂时不处理 */ },
-                    onFeedbackClick = { /* 暂时不处理 */ },
-                    onAboutClick = { /* 暂时不处理 */ },
-                    onUpgradeClick = { /* 暂时不处理 */ },
+                    onAutoChangeClick = { navController.navigate("autochange") },
+                    onSettingsClick = { navController.navigate("settings") },
+                    onFeedbackClick = { navController.navigate("feedback") },
+                    onAboutClick = { navController.navigate("about") },
+                    onUpgradeClick = { navController.navigate("upgrade") },
                     onTestToolsClick = {
                         // 启动测试工具
                         context.startActivity(Intent(context, TestLauncherActivity::class.java))
-                    },
-                    isDebugMode = true // 开发模式下显示测试工具
+                    }
                 )
             }
 
@@ -130,6 +134,42 @@ fun MainNavigation() {
                     onWallpaperClick = { wallpaper ->
                         navController.navigate("wallpaper/${wallpaper.id}")
                     }
+                )
+            }
+
+            // 设置页面
+            composable("settings") {
+                SettingsScreen(
+                    onBackPressed = { navController.navigateUp() }
+                )
+            }
+
+            // 自动更换壁纸页面
+            composable("autochange") {
+                AutoChangeScreen(
+                    onBackPressed = { navController.navigateUp() }
+                )
+            }
+
+            // 评分与反馈页面
+            composable("feedback") {
+                FeedbackScreen(
+                    onBackPressed = { navController.navigateUp() }
+                )
+            }
+
+            // 关于页面
+            composable("about") {
+                AboutScreen(
+                    onBackPressed = { navController.navigateUp() }
+                )
+            }
+
+            // 升级页面
+            composable("upgrade") {
+                UpgradeScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onUpgradeSuccess = { navController.navigateUp() }
                 )
             }
         }
