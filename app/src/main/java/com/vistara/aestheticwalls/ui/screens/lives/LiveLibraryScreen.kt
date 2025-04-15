@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.ui.screens.lives
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,14 +21,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -63,8 +69,38 @@ fun LiveLibraryScreen(
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
     val canLoadMore by viewModel.canLoadMore.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val upgradeResult by viewModel.upgradeResult.collectAsState()
+    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
+
+    // 获取当前Activity
+    val activity = LocalActivity.current
+
+    // 创建SnackbarHostState
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    // 处理升级结果
+    LaunchedEffect(upgradeResult) {
+        upgradeResult?.let { result ->
+            when (result) {
+                is LiveLibraryViewModel.UpgradeResult.Success -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+                is LiveLibraryViewModel.UpgradeResult.Error -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+            }
+            // 清除升级结果，避免重复显示
+            viewModel.clearUpgradeResult()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -171,16 +207,22 @@ fun LiveLibraryScreen(
                                         Spacer(modifier = Modifier.height(8.dp))
 
                                         Button(
-                                            onClick = { viewModel.upgradeToPremium() },
+                                            onClick = { viewModel.upgradeToPremium(activity) },
                                             shape = RoundedCornerShape(8.dp),
-                                            modifier = Modifier.align(Alignment.End)
+                                            modifier = Modifier.align(Alignment.End),
+                                            enabled = billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.Star,
                                                 contentDescription = null,
                                                 modifier = Modifier.padding(end = 4.dp)
                                             )
-                                            Text(text = "升级会员")
+                                            Text(
+                                                text = when {
+                                                    billingConnectionState != com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED -> "正在连接..."
+                                                    else -> "升级会员"
+                                                }
+                                            )
                                         }
                                     }
                                 }
