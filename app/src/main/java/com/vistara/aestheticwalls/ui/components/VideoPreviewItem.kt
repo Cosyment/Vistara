@@ -87,12 +87,10 @@ fun VideoPreviewItem(
                 repeatMode = Player.REPEAT_MODE_ONE
                 // 设置静音
                 volume = 0f
+                // 设置播放时立即播放
+                playWhenReady = true
 
-                wallpaper.url?.let { url ->
-                    Log.d("VideoPreviewItem", "Setting media item: $url")
-                    setMediaItem(MediaItem.fromUri(url))
-                    prepare()
-                }
+                // 不在初始化时加载视频，而是在LaunchedEffect中加载
             }
     }
 
@@ -134,30 +132,58 @@ fun VideoPreviewItem(
     // 监听播放器状态
     LaunchedEffect(exoPlayer) {
         val listener = object : Player.Listener {
+            // 缓冲计数器，用于跟踪缓冲状态切换的频率
+            var bufferingCount = 0
+            var lastBufferingTime = 0L
+
             override fun onPlaybackStateChanged(state: Int) {
+                val currentTime = System.currentTimeMillis()
                 when (state) {
                     Player.STATE_READY -> {
-                        isVideoReady = true
-                        isBuffering = false
+                        Log.d("VideoPreviewItem", "Player state ready for ${wallpaper.id}")
 
-                        // 设置循环范围为前3秒
-                        if (exoPlayer.duration > 3000 && exoPlayer.duration != C.TIME_UNSET) {
-                            exoPlayer.seekTo(0)
+                        // 如果在短时间内频繁切换到缓冲状态，不立即更新UI
+                        if (currentTime - lastBufferingTime > 500) {
+                            // 重置缓冲计数器
+                            bufferingCount = 0
+
+                            isVideoReady = true
+                            isBuffering = false
+
+                            // 设置循环范围为前3秒
+                            if (exoPlayer.duration > 3000 && exoPlayer.duration != C.TIME_UNSET) {
+                                exoPlayer.seekTo(0)
+                            }
+
+                            // 显示播放器
+                            isPlayerVisible = true
+                        } else {
+                            Log.d("VideoPreviewItem", "Ignoring rapid state change to READY for ${wallpaper.id}")
                         }
-
-                        // 显示播放器
-                        isPlayerVisible = true
                     }
                     Player.STATE_BUFFERING -> {
-                        isBuffering = true
+                        Log.d("VideoPreviewItem", "Player buffering for ${wallpaper.id}")
+
+                        // 记录缓冲时间
+                        lastBufferingTime = currentTime
+                        bufferingCount++
+
+                        // 只有当缓冲计数器超过阈值时才显示缓冲指示器
+                        if (bufferingCount > 3) {
+                            isBuffering = true
+                        }
+                        // 不要隐藏播放器，避免闪烁
                     }
                     Player.STATE_ENDED -> {
+                        Log.d("VideoPreviewItem", "Player ended for ${wallpaper.id}")
                         // 视频结束时重新开始
                         exoPlayer.seekTo(0)
                     }
                     Player.STATE_IDLE -> {
+                        Log.d("VideoPreviewItem", "Player idle for ${wallpaper.id}")
                         isVideoReady = false
                         isBuffering = true
+                        // 不要隐藏播放器，避免闪烁
                     }
                 }
             }
@@ -168,13 +194,15 @@ fun VideoPreviewItem(
                 Log.e("VideoPreviewItem", "Player error: ${error.message}")
                 error.cause?.let { Log.e("VideoPreviewItem", "Cause: ${it.message}") }
 
-                // 如果是模拟数据的URL，直接回退到静态图片
+                // 如果是模拟数据的URL，使用替代视频URL
                 wallpaper.url?.let { originalUrl ->
                     if (originalUrl.contains("example.com")) {
-                        Log.d("VideoPreviewItem", "Mock video URL detected, falling back to static image")
-                        isPlayerVisible = false
-                        isVideoReady = false
-                        isBuffering = false
+                        Log.d("VideoPreviewItem", "Mock video URL detected, using fallback video")
+                        // 使用一个真实的视频URL作为替代
+                        // 这里使用Pexels的一个示例视频
+                        val fallbackUrl = "https://player.vimeo.com/external/371845664.sd.mp4?s=3b6a9f5ea3e4e1d9c3279487ea6c74bfccc4edd9&profile_id=139&oauth2_token_id=57447761"
+                        exoPlayer.setMediaItem(MediaItem.fromUri(fallbackUrl))
+                        exoPlayer.prepare()
                         return
                     }
 
@@ -227,12 +255,50 @@ fun VideoPreviewItem(
 
             // 如果仍然可见，则加载视频
             if (isVisible) {
-                Log.e("OptimizedVideoPreviewItem", "Video URL: ${wallpaper.url}")
+                Log.d("VideoPreviewItem", "Loading video URL: ${wallpaper.url}")
                 isVideoInitialized = true
-                exoPlayer.setMediaItem(MediaItem.fromUri(wallpaper.url))
 
-                // 使用低分辨率视频以提高性能
-                exoPlayer.prepare()
+                try {
+                    // 使用壁纸对象中的实际URL
+                    val videoUrl = wallpaper.url
+                    if (videoUrl.isNullOrEmpty()) {
+                        // 如果URL为空，使用备用视频
+                        Log.d("VideoPreviewItem", "Empty video URL for ${wallpaper.id}, using fallback")
+                        val fallbackUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                        exoPlayer.setMediaItem(MediaItem.fromUri(fallbackUrl))
+                    } else {
+                        Log.d("VideoPreviewItem", "Using actual video URL for ${wallpaper.id}: $videoUrl")
+                        // 重置播放器状态
+                        exoPlayer.stop()
+                        exoPlayer.clearMediaItems()
+
+                        // 设置新的媒体项
+                        exoPlayer.setMediaItem(MediaItem.fromUri(videoUrl))
+                    }
+
+                    // 设置播放时立即播放
+                    exoPlayer.playWhenReady = true
+
+                    // 准备并播放
+                    exoPlayer.prepare()
+
+                    // 记录日志
+                    Log.d("VideoPreviewItem", "Video prepared for ${wallpaper.id} with URL $videoUrl")
+
+                    // 延迟一秒检查播放状态
+                    delay(1000)
+                    if (exoPlayer.playbackState != Player.STATE_READY && exoPlayer.playbackState != Player.STATE_BUFFERING) {
+                        Log.d("VideoPreviewItem", "Playback state after 1s: ${exoPlayer.playbackState}")
+                        // 如果仍然不是准备就绪或缓冲状态，尝试重新准备
+                        exoPlayer.seekTo(0)
+                        exoPlayer.play()
+                    }
+                } catch (e: Exception) {
+                    // 处理异常
+                    Log.e("VideoPreviewItem", "Error loading video: ${e.message}")
+                    isVideoReady = false
+                    isBuffering = false
+                }
             }
         }
     }
@@ -243,6 +309,17 @@ fun VideoPreviewItem(
             exoPlayer.play()
         } else {
             exoPlayer.pause()
+
+            // 如果不可见，释放更多资源
+            if (!isVisible) {
+                // 重置播放器状态
+                isPlayerVisible = false
+
+                // 如果视频已经初始化，重置到开始位置
+                if (isVideoInitialized) {
+                    exoPlayer.seekTo(0)
+                }
+            }
         }
     }
 
@@ -250,39 +327,35 @@ fun VideoPreviewItem(
     LaunchedEffect(isVisible, isVideoReady, isBuffering) {
         // 只有当视频可见、准备就绪且不在缓冲时才循环播放
         if (isVisible && isVideoReady && !isBuffering) {
-            val loopDuration = 3000L // 3秒
+            Log.d("VideoPreviewItem", "Starting playback timer for ${wallpaper.id}")
             val playDuration = 6000L // 每个视频播放6秒
             var totalPlayTime = 0L
-            var lastSeekTime = 0L
+            val startTime = System.currentTimeMillis()
 
-            // 循环播放前3秒
+            // 循环播放直到播放时间达到指定时间
             while (isVisible && isVideoReady && !isBuffering) {
                 val currentTime = System.currentTimeMillis()
-
-                // 如果当前播放位置超过3秒，重置到开头
-                if (exoPlayer.currentPosition > loopDuration) {
-                    exoPlayer.seekTo(0)
-                    lastSeekTime = currentTime
-                }
-
-                // 计算总播放时间
-                if (lastSeekTime > 0) {
-                    totalPlayTime += (currentTime - lastSeekTime)
-                    lastSeekTime = currentTime
-                } else {
-                    lastSeekTime = currentTime
-                }
+                totalPlayTime = currentTime - startTime
 
                 // 如果播放时间超过6秒，通知播放完成
                 if (totalPlayTime >= playDuration) {
                     // 通知播放完成
+                    Log.d("VideoPreviewItem", "Video complete: ${wallpaper.id}")
+                    // 播放完成后隐藏播放器，显示缩略图
+                    isPlayerVisible = false
                     onVideoComplete(wallpaper.id)
-                    totalPlayTime = 0L
+                    break
                 }
 
                 // 等待一小段时间再检查
                 delay(500) // 每500毫秒检查一次
             }
+
+            Log.d("VideoPreviewItem", "Playback timer ended for ${wallpaper.id}")
+        } else if (isVisible && !isVideoReady) {
+            // 如果视频可见但还没有准备好，每秒检查一次状态
+            Log.d("VideoPreviewItem", "Waiting for video to be ready: ${wallpaper.id}")
+            delay(1000)
         }
     }
 
@@ -306,32 +379,66 @@ fun VideoPreviewItem(
             )
 
             // 视频播放器，仅在准备就绪后显示
+            // 添加明确的裁剪边界和背景色，确保视频内容不会溢出
             androidx.compose.animation.AnimatedVisibility(
                 visible = isPlayerVisible,
                 enter = fadeIn(animationSpec = tween(500)),
                 exit = fadeOut(animationSpec = tween(300)),
                 modifier = Modifier.fillMaxSize()
             ) {
-                AndroidView(
-                    factory = { ctx ->
-                        PlayerView(ctx).apply {
-                            player = exoPlayer
-                            useController = false
-                            resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(12.dp)) // 确保与卡片形状一致
+                        .background(Color.Black) // 添加背景色防止透明溢出
+                ) {
+                    // 使用key参数确保播放器视图的稳定性
+                    AndroidView(
+                        factory = { ctx ->
+                            PlayerView(ctx).apply {
+                                player = exoPlayer
+                                useController = false
+                                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 
-                            // 优化性能设置
-                            setKeepContentOnPlayerReset(true)
+                                // 优化性能设置
+                                setKeepContentOnPlayerReset(true)
 
-                            // 设置布局参数
-                            layoutParams = android.widget.FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
+                                // 减少重绘频率
+                                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
+                                setUseArtwork(false)
+
+                                // 设置布局参数
+                                layoutParams = android.widget.FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+
+                                // 确保视频内容不会溢出
+                                clipToOutline = true
+                                outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                        update = { view ->
+                            // 仅在需要时更新播放器
+                            if (view.player != exoPlayer) {
+                                view.player = exoPlayer
+                            }
+                        },
+                        // 添加shouldUpdate参数，防止不必要的更新
+                        onReset = { playerView ->
+                            // 释放资源
+                            playerView.player = null
+                        },
+//                        shouldUpdate = { _ -> false } // 始终返回false，防止重组时更新
+                    )
+                }
             }
 
-            // 缓冲指示器
-            if (isBuffering && isVisible) {
+            // 缓冲指示器，使用动画过渡，增加动画时间和延迟以减少闪烁
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isBuffering && isVisible,
+                enter = fadeIn(animationSpec = tween(500, delayMillis = 300)),
+                exit = fadeOut(animationSpec = tween(500)),
+                modifier = Modifier.fillMaxSize()
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

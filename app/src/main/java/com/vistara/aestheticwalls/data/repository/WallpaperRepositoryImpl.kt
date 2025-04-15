@@ -176,10 +176,19 @@ class WallpaperRepositoryImpl @Inject constructor(
                             val imageId = (index + page * pageSize) % 1000 + 100
                             val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
 
+                            // 使用不同的视频URL来确保每个壁纸都有不同的视频
+                            val videoUrl = when (index % 5) {
+                                0 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                                1 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+                                2 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                                3 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+                                else -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+                            }
+
                             Wallpaper(
                                 id = "live_${page}_$index",
                                 title = title,
-                                url = "https://example.com/live_wallpaper${page}_$index.mp4",
+                                url = videoUrl,
                                 thumbnailUrl = thumbnailUrl,
                                 previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
                                 author = "动画师 ${index + 1}",
@@ -688,10 +697,19 @@ class WallpaperRepositoryImpl @Inject constructor(
             val imageId = (index + page * pageSize) % 1000 + 100
             val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
 
+            // 使用不同的视频URL来确保每个壁纸都有不同的视频
+            val videoUrl = when (index % 5) {
+                0 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                1 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+                2 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                3 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+                else -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+            }
+
             return Wallpaper(
                 id = id,
                 title = title,
-                url = "https://example.com/live_wallpaper${page}_$index.mp4",
+                url = videoUrl,
                 thumbnailUrl = thumbnailUrl,
                 previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
                 author = "动画师 ${index + 1}",
@@ -756,10 +774,19 @@ class WallpaperRepositoryImpl @Inject constructor(
             val imageId = videoId % 1000 + 100
             val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}"
 
+            // 使用不同的视频URL来确保每个壁纸都有不同的视频
+            val videoUrl = when (videoId % 5) {
+                0 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                1 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+                2 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                3 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+                else -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+            }
+
             return Wallpaper(
                 id = id,
                 title = title,
-                url = "https://example.com/pexels_video_$videoId.mp4", // 使用本地模拟视频URL
+                url = videoUrl,
                 thumbnailUrl = thumbnailUrl,
                 previewUrl = "https://picsum.photos/id/$imageId/$width/$height",
                 author = "Pexels 作者 $videoId",

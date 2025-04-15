@@ -59,6 +59,12 @@ class VideoPlaybackManager {
     fun removeVisibleVideo(id: String) {
         visibleVideoIds.remove(id)
         playingVideoIds.remove(id)
+
+        // 如果当前正在播放的视频被移除，重置当前播放状态
+        if (id == currentPlayingId) {
+            currentPlayingId = null
+        }
+
         updatePlayingVideos()
     }
 
@@ -148,16 +154,48 @@ class VideoPlaybackManager {
             // 回调通知
             onVideoCompleteListener?.invoke(videoId)
 
-            // 更新播放列表，播放下一个视频
-            updatePlayingVideos()
+            // 在顺序播放模式下，选择下一个视频
+            if (useSequentialPlayback && visibleVideoIds.isNotEmpty()) {
+                // 找到当前视频在可见列表中的索引
+                val currentIndex = visibleVideoIds.indexOf(videoId)
+                if (currentIndex != -1 && currentIndex < visibleVideoIds.size - 1) {
+                    // 如果不是最后一个，选择下一个
+                    currentPlayingId = visibleVideoIds[currentIndex + 1]
+                } else {
+                    // 如果是最后一个，循环到第一个
+                    currentPlayingId = visibleVideoIds.firstOrNull()
+                }
+
+                // 更新播放列表
+                playingVideoIds.clear()
+                if (currentPlayingId != null) {
+                    playingVideoIds.add(currentPlayingId!!)
+                }
+            } else {
+                // 非顺序模式或无可见视频，使用默认更新逻辑
+                updatePlayingVideos()
+            }
         }
     }
+
+    // 最后一次滚动状态更新时间
+    private var lastScrollStateUpdateTime = 0L
 
     /**
      * 设置滚动状态
      * 当滚动时暂停所有视频播放
+     * 增加限流处理，避免频繁更新
      */
     fun setScrolling(scrolling: Boolean) {
+        val currentTime = System.currentTimeMillis()
+
+        // 限制更新频率，避免频繁重组
+        if (currentTime - lastScrollStateUpdateTime < 100) {
+            return
+        }
+
+        lastScrollStateUpdateTime = currentTime
+
         if (isScrolling != scrolling) {
             isScrolling = scrolling
 
@@ -168,7 +206,7 @@ class VideoPlaybackManager {
                 scrollStopTimer?.cancel()
                 scrollStopTimer = null
             } else {
-                // 滚动停止后更新播放列表
+                // 滚动停止后直接更新播放列表
                 updatePlayingVideos()
             }
         }

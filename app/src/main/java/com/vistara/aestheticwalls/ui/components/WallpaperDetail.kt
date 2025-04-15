@@ -56,6 +56,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import android.graphics.Bitmap
 
 @Composable
 fun WallpaperDetail(
@@ -73,7 +74,7 @@ fun WallpaperDetail(
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     isPremiumUser: Boolean = false,
-    editedBitmap: android.graphics.Bitmap? = null
+    editedBitmap: Bitmap? = null
 ) {
     var showControls by remember { mutableStateOf(true) }
     val context = LocalContext.current
@@ -81,12 +82,19 @@ fun WallpaperDetail(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        // 壁纸图片 - 全屏显示，支持缩放
+        // 壁纸图片或视频 - 全屏显示，支持缩放
         if (editedBitmap != null) {
             // 显示编辑后的图片，使用可缩放组件
             ZoomableBitmapImage(
                 bitmap = editedBitmap,
                 contentDescription = wallpaper.title ?: "壁纸",
+                modifier = Modifier.fillMaxSize(),
+                onTap = { showControls = !showControls }
+            )
+        } else if (wallpaper.isLive) {
+            // 显示动态壁纸（视频）
+            LiveVideoPlayer(
+                wallpaper = wallpaper,
                 modifier = Modifier.fillMaxSize(),
                 onTap = { showControls = !showControls }
             )

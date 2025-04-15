@@ -88,9 +88,22 @@ fun LiveVideoGrid(
         }
     }
 
+    // 最后一次滚动状态更新时间
+    var lastScrollStateUpdateTime by remember { mutableStateOf(0L) }
+
     // 监听滚动状态
     LaunchedEffect(gridState) {
-        snapshotFlow { gridState.isScrollInProgress }.collectLatest { scrolling ->
+        snapshotFlow { gridState.isScrollInProgress }
+            .collectLatest { scrolling ->
+                val currentTime = System.currentTimeMillis()
+
+                // 限制更新频率，避免频繁重组
+                if (currentTime - lastScrollStateUpdateTime < 100) {
+                    return@collectLatest
+                }
+
+                lastScrollStateUpdateTime = currentTime
+
                 // 更新滚动状态
                 isScrolling = scrolling
 
@@ -112,16 +125,38 @@ fun LiveVideoGrid(
     }
 
     // 跟踪可见项目，用于视频播放控制
+    // 使用限流和延迟处理减少更新频率
     LaunchedEffect(gridState) {
-        snapshotFlow { gridState.layoutInfo.visibleItemsInfo }.collectLatest { visibleItems ->
+        var lastUpdateTime = 0L
+
+        snapshotFlow { gridState.layoutInfo.visibleItemsInfo }
+            .collectLatest { visibleItems ->
+                val currentTime = System.currentTimeMillis()
+
+                // 限制更新频率，避免频繁重组
+                // 在滚动过程中使用更长的间隔，停止滚动后使用更短的间隔
+                val minInterval = if (isScrolling) 300L else 150L
+                if (currentTime - lastUpdateTime < minInterval) {
+                    return@collectLatest
+                }
+
+                lastUpdateTime = currentTime
+
                 // 清除之前的可见项
                 val oldVisibleIds = visibleWallpaperIds.toList()
-                visibleWallpaperIds.clear()
 
                 // 更新可见项列表
                 val newVisibleIds = visibleItems.mapNotNull { info ->
                     wallpapers.getOrNull(info.index)?.id
                 }
+
+                // 检查是否有变化，如果没有变化则不更新
+                if (oldVisibleIds.size == newVisibleIds.size && oldVisibleIds.containsAll(newVisibleIds)) {
+                    return@collectLatest
+                }
+
+                // 更新可见项列表
+                visibleWallpaperIds.clear()
                 visibleWallpaperIds.addAll(newVisibleIds)
 
                 // 更新视频播放管理器
@@ -135,9 +170,11 @@ fun LiveVideoGrid(
 
                     // 添加新可见的视频
                     newVisibleIds.forEach { id ->
-                        val wallpaper = wallpapers.find { it.id == id }
-                        if (wallpaper?.isLive == true) {
-                            manager.addVisibleVideo(id)
+                        if (id !in oldVisibleIds) {
+                            val wallpaper = wallpapers.find { it.id == id }
+                            if (wallpaper?.isLive == true) {
+                                manager.addVisibleVideo(id)
+                            }
                         }
                     }
                 }
@@ -148,8 +185,8 @@ fun LiveVideoGrid(
         columns = GridCells.Fixed(columns),
         state = gridState,
         contentPadding = contentPadding,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         // 壁纸项
@@ -173,7 +210,7 @@ fun LiveVideoGrid(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(itemHeight)
-                    .padding(4.dp)
+                    .padding(2.dp)
             )
         }
 

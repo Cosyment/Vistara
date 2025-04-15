@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import android.net.Uri
 import android.os.Build
 import com.vistara.aestheticwalls.data.EditedImageCache
@@ -281,42 +282,88 @@ class WallpaperDetailViewModel @Inject constructor(
             _showSetWallpaperOptions.value = false
 
             try {
-                // 检查是否有编辑后的图片
-                val bitmap = if (_editedBitmap.value != null) {
-                    // 使用编辑后的图片
-                    _editedBitmap.value
-                } else {
-                    // 如果没有编辑过，则下载原始图片
-                    withContext(Dispatchers.IO) {
-                        val url = URL(currentWallpaper.url)
-                        BitmapFactory.decodeStream(url.openStream())
-                    }
-                }
-
-                // 设置壁纸操作也可能是耗时操作，使用IO线程
-                withContext(Dispatchers.IO) {
-                    val wallpaperManager = WallpaperManager.getInstance(context)
-                    when (target) {
-                        WallpaperTarget.HOME -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                // 如果是动态壁纸，需要特殊处理
+                if (currentWallpaper.isLive) {
+                    // 对于动态壁纸，目前只能设置静态图片
+                    // 使用缩略图作为静态壁纸
+                    val bitmap = withContext(Dispatchers.IO) {
+                        try {
+                            // 尝试使用预览图或缩略图
+                            val previewUrl = currentWallpaper.previewUrl ?: currentWallpaper.thumbnailUrl
+                            if (previewUrl != null) {
+                                val url = URL(previewUrl)
+                                BitmapFactory.decodeStream(url.openStream())
                             } else {
+                                // 如果没有预览图，创建一个空白图片
+                                Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("WallpaperDetailViewModel", "Error loading preview image: ${e.message}")
+                            // 如果加载失败，创建一个空白图片
+                            Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
+                        }
+                    }
+
+                    // 设置壁纸
+                    withContext(Dispatchers.IO) {
+                        val wallpaperManager = WallpaperManager.getInstance(context)
+                        when (target) {
+                            WallpaperTarget.HOME -> {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                                } else {
+                                    wallpaperManager.setBitmap(bitmap)
+                                }
+                            }
+                            WallpaperTarget.LOCK -> {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                                }
+                            }
+                            WallpaperTarget.BOTH -> {
                                 wallpaperManager.setBitmap(bitmap)
                             }
                         }
-                        WallpaperTarget.LOCK -> {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
-                            }
+                    }
+                } else {
+                    // 对于静态壁纸，使用原来的逻辑
+                    // 检查是否有编辑后的图片
+                    val bitmap = if (_editedBitmap.value != null) {
+                        // 使用编辑后的图片
+                        _editedBitmap.value
+                    } else {
+                        // 如果没有编辑过，则下载原始图片
+                        withContext(Dispatchers.IO) {
+                            val url = URL(currentWallpaper.url)
+                            BitmapFactory.decodeStream(url.openStream())
                         }
-                        WallpaperTarget.BOTH -> {
-                            wallpaperManager.setBitmap(bitmap)
+                    }
+
+                    // 设置壁纸操作也可能是耗时操作，使用IO线程
+                    withContext(Dispatchers.IO) {
+                        val wallpaperManager = WallpaperManager.getInstance(context)
+                        when (target) {
+                            WallpaperTarget.HOME -> {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
+                                } else {
+                                    wallpaperManager.setBitmap(bitmap)
+                                }
+                            }
+                            WallpaperTarget.LOCK -> {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
+                                }
+                            }
+                            WallpaperTarget.BOTH -> {
+                                wallpaperManager.setBitmap(bitmap)
+                            }
                         }
                     }
                 }
-
             } catch (e: IOException) {
                 // 处理错误
+                Log.e("WallpaperDetailViewModel", "Error setting wallpaper: ${e.message}")
                 e.printStackTrace()
             }
         }
