@@ -112,6 +112,10 @@ dependencies {
     // Image Cropping
     implementation(libs.imagecropper)
 
+    // Google Play Billing
+    implementation(libs.google.play.billing)
+    implementation(libs.google.play.billing.ktx)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

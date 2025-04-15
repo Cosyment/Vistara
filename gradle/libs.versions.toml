@@ -24,6 +24,7 @@ ksp = "2.1.20-1.0.31"
 workRuntimeKtx = "2.10.0"
 media3 = "1.6.0"
 glideCompose="1.0.0-beta01"
+billing = "6.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -93,6 +94,10 @@ androidx-material = { group = "androidx.compose.material", name = "material" }
 # Compose
 compose = { group = "androidx.compose.foundation", name = "foundation" }
 compose-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glideCompose" }
+
+# Billing
+google-play-billing = { group = "com.android.billingclient", name = "billing", version.ref = "billing" }
+google-play-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

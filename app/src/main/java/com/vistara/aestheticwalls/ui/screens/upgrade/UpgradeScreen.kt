@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.ui.screens.upgrade
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -63,13 +65,16 @@ fun UpgradeScreen(
     onUpgradeSuccess: () -> Unit = {},
     viewModel: UpgradeViewModel = hiltViewModel()
 ) {
+    val activity = LocalActivity.current
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isUpgrading by viewModel.isUpgrading.collectAsState()
     val upgradeResult by viewModel.upgradeResult.collectAsState()
     val selectedPlan by viewModel.selectedPlan.collectAsState()
-    
+    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
+    val productPrices by viewModel.productPrices.collectAsState()
+
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     // 显示升级结果
     LaunchedEffect(upgradeResult) {
         upgradeResult?.let {
@@ -86,7 +91,7 @@ fun UpgradeScreen(
             }
         }
     }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -118,9 +123,9 @@ fun UpgradeScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 副标题
             Text(
                 text = "享受无限壁纸、自动更换和更多功能",
@@ -129,55 +134,58 @@ fun UpgradeScreen(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 modifier = Modifier.fillMaxWidth()
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // 功能列表
             PremiumFeaturesList()
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // 套餐选择
             Text(
                 text = "选择套餐",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 月度套餐
             PlanCard(
                 plan = UpgradePlan.MONTHLY,
                 isSelected = selectedPlan == UpgradePlan.MONTHLY,
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY] ?: "加载中...",
                 onClick = { viewModel.selectPlan(UpgradePlan.MONTHLY) }
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 年度套餐
             PlanCard(
                 plan = UpgradePlan.YEARLY,
                 isSelected = selectedPlan == UpgradePlan.YEARLY,
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY] ?: "加载中...",
                 onClick = { viewModel.selectPlan(UpgradePlan.YEARLY) }
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 终身套餐
             PlanCard(
                 plan = UpgradePlan.LIFETIME,
                 isSelected = selectedPlan == UpgradePlan.LIFETIME,
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME] ?: "加载中...",
                 onClick = { viewModel.selectPlan(UpgradePlan.LIFETIME) }
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // 升级按钮
             Button(
-                onClick = { viewModel.upgrade() },
+                onClick = { viewModel.upgrade(activity) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isUpgrading && !isPremiumUser
+                enabled = !isUpgrading && !isPremiumUser && billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED
             ) {
                 if (isUpgrading) {
                     CircularProgressIndicator(
@@ -187,15 +195,38 @@ fun UpgradeScreen(
                     )
                 } else {
                     Text(
-                        text = if (isPremiumUser) "您已是高级用户" else "立即升级",
+                        text = when {
+                            isPremiumUser -> "您已是高级用户"
+                            billingConnectionState != com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED -> "正在连接支付服务..."
+                            else -> "立即升级"
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 恢复购买按钮
+            Button(
+                onClick = { viewModel.restorePurchases() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isUpgrading && billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "恢复购买",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text(
+                    text = "恢复购买",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // 说明文字
             Text(
                 text = "支付成功后，您将立即获得高级功能。订阅可随时取消。",
@@ -237,9 +268,9 @@ private fun PremiumFeatureItem(text: String) {
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(24.dp)
         )
-        
+
         Spacer(modifier = Modifier.width(16.dp))
-        
+
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge
@@ -254,6 +285,7 @@ private fun PremiumFeatureItem(text: String) {
 private fun PlanCard(
     plan: UpgradePlan,
     isSelected: Boolean,
+    price: String,
     onClick: () -> Unit
 ) {
     val borderModifier = if (isSelected) {
@@ -265,7 +297,7 @@ private fun PlanCard(
     } else {
         Modifier
     }
-    
+
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -290,9 +322,9 @@ private fun PlanCard(
                 selected = isSelected,
                 onClick = onClick
             )
-            
+
             Spacer(modifier = Modifier.width(8.dp))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -300,10 +332,10 @@ private fun PlanCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    
+
                     plan.discount?.let {
                         Spacer(modifier = Modifier.width(8.dp))
-                        
+
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(4.dp))
@@ -318,18 +350,18 @@ private fun PlanCard(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = plan.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             Text(
-                text = plan.price,
+                text = price,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
