@@ -6,6 +6,7 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -109,25 +110,28 @@ fun WallpaperDetailScreen(
         }
     }
 
-    // 设置沉浸式状态栏和导航栏
-    val systemUiController = rememberSystemUiController()
-
-    // 设置状态栏和导航栏为完全透明
-    systemUiController.setStatusBarColor(
-        color = Color.Transparent,
-        darkIcons = false // 使用白色图标，因为背景可能是深色
-    )
-    systemUiController.setNavigationBarColor(
-        color = Color.Transparent,
-        darkIcons = false
-    )
-
-    // 设置系统栏可见性
-    systemUiController.systemBarsDarkContentEnabled = false
-
     // 当页面变为可见时，刷新编辑后的图片
     LaunchedEffect(Unit) {
         viewModel.refreshEditedImage()
+    }
+
+    // 设置沉浸式状态栏和导航栏
+    val systemUiController = rememberSystemUiController()
+
+    // 使用LaunchedEffect确保系统栏设置在每次重组时都生效
+    LaunchedEffect(Unit) {
+        // 设置状态栏和导航栏为完全透明
+        systemUiController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = false // 使用白色图标，因为背景可能是深色
+        )
+        systemUiController.setNavigationBarColor(
+            color = Color.Transparent,
+            darkIcons = false
+        )
+
+        // 设置系统栏可见性
+        systemUiController.systemBarsDarkContentEnabled = false
     }
 
     // 使用Scaffold作为根布局，可以更好地控制浮动按钮
@@ -156,13 +160,15 @@ fun WallpaperDetailScreen(
         },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
-        }
+        },
+        // 设置Scaffold的内容颜色为透明，确保不影响背景
+        containerColor = Color.Transparent,
+        contentColor = Color.White,
+        // 移除所有的内容填充，确保全屏效果
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
-        // 使用Box作为内容区域
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-        ) {
+        // 使用Box作为内容区域，不添加填充，保持全屏效果
+        Box(modifier = Modifier.fillMaxSize()) {
         when (wallpaperState) {
             is UiState.Loading -> {
                 // 显示加载中
