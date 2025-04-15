@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.ui.screens.detail
 
 import android.Manifest
+import android.app.Activity
 import android.app.WallpaperManager
 import android.content.ContentValues
 import android.content.Context
@@ -24,6 +25,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.billing.BillingConnectionState
+import com.vistara.aestheticwalls.billing.BillingManager
+import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
@@ -35,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -50,6 +55,7 @@ import javax.inject.Inject
 class WallpaperDetailViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
+    private val billingManager: BillingManager,
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -100,6 +106,14 @@ class WallpaperDetailViewModel @Inject constructor(
     private val _isInfoExpanded = mutableStateOf(false)
     val isInfoExpanded: State<Boolean> = _isInfoExpanded
 
+    // 计费连接状态
+    private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
+    val billingConnectionState: StateFlow<BillingConnectionState> = _billingConnectionState.asStateFlow()
+
+    // 升级结果
+    private val _upgradeResult = MutableStateFlow<UpgradeResult?>(null)
+    val upgradeResult: StateFlow<UpgradeResult?> = _upgradeResult.asStateFlow()
+
     init {
         // 从SavedStateHandle获取壁纸ID
         val wallpaperId = savedStateHandle.get<String>("wallpaperId") ?: ""
@@ -110,6 +124,44 @@ class WallpaperDetailViewModel @Inject constructor(
             checkForEditedImage(wallpaperId)
         }
         checkPremiumStatus()
+        observeBillingState()
+        observePurchaseState()
+    }
+
+    /**
+     * 观察计费状态
+     */
+    private fun observeBillingState() {
+        viewModelScope.launch {
+            billingManager.connectionState.collectLatest { state ->
+                _billingConnectionState.value = state
+            }
+        }
+    }
+
+    /**
+     * 观察购买状态
+     */
+    private fun observePurchaseState() {
+        viewModelScope.launch {
+            billingManager.purchaseState.collectLatest { state ->
+                when (state) {
+                    is PurchaseState.Completed -> {
+                        _isPremiumUser.value = true
+                        _upgradeResult.value = UpgradeResult.Success("升级成功！感谢您的支持")
+                    }
+                    is PurchaseState.Failed -> {
+                        _upgradeResult.value = UpgradeResult.Error("升级失败: ${state.message}")
+                    }
+                    is PurchaseState.Cancelled -> {
+                        _upgradeResult.value = UpgradeResult.Error("升级已取消")
+                    }
+                    else -> {
+                        // 其他状态不处理
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -562,5 +614,38 @@ class WallpaperDetailViewModel @Inject constructor(
             val editedImage = EditedImageCache.getEditedImage(currentWallpaperId)
             _editedBitmap.value = editedImage
         }
+    }
+
+    /**
+     * 升级到高级版
+     */
+    fun upgradeToPremium(activity: Activity?) {
+        if (_isPremiumUser.value) {
+            _upgradeResult.value = UpgradeResult.Error("您已经是高级用户")
+            return
+        }
+
+        if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
+            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
+            return
+        }
+
+        // 默认使用月度订阅
+        billingManager.launchBillingFlow(activity, BillingManager.SUBSCRIPTION_MONTHLY)
+    }
+
+    /**
+     * 清除升级结果
+     */
+    fun clearUpgradeResult() {
+        _upgradeResult.value = null
+    }
+
+    /**
+     * 升级结果
+     */
+    sealed class UpgradeResult {
+        data class Success(val message: String) : UpgradeResult()
+        data class Error(val message: String) : UpgradeResult()
     }
 }

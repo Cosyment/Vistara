@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.ui.screens.detail
 
 import android.Manifest
 import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -10,11 +11,14 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -25,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.components.PremiumWallpaperPrompt
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
@@ -52,8 +57,35 @@ fun WallpaperDetailScreen(
     val downloadProgress by viewModel.downloadProgress.collectAsState()
     val isInfoExpanded by viewModel.isInfoExpanded
     val needStoragePermission by viewModel.needStoragePermission
+    val upgradeResult by viewModel.upgradeResult.collectAsState()
+    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
+
     val context = LocalContext.current
+    val activity = LocalActivity.current
     val coroutineScope = rememberCoroutineScope()
+
+    // 创建SnackbarHostState
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // 处理升级结果
+    LaunchedEffect(upgradeResult) {
+        upgradeResult?.let { result ->
+            when (result) {
+                is WallpaperDetailViewModel.UpgradeResult.Success -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+                is WallpaperDetailViewModel.UpgradeResult.Error -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+            }
+            // 清除升级结果，避免重复显示
+            viewModel.clearUpgradeResult()
+        }
+    }
 
     // 权限请求器
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -92,6 +124,11 @@ fun WallpaperDetailScreen(
 
     // 使用Box作为根布局，实现真正的全屏效果
     Box(modifier = Modifier.fillMaxSize()) {
+        // 显示Snackbar
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
         when (wallpaperState) {
             is UiState.Loading -> {
                 // 显示加载中
@@ -200,10 +237,11 @@ fun WallpaperDetailScreen(
                     ) {
                         PremiumWallpaperPrompt(
                             onUpgrade = {
-                                // TODO: 实现升级逻辑
+                                viewModel.upgradeToPremium(activity)
                                 viewModel.hidePremiumPrompt()
                             },
-                            onDismiss = { viewModel.hidePremiumPrompt() }
+                            onDismiss = { viewModel.hidePremiumPrompt() },
+                            isConnected = billingConnectionState == BillingConnectionState.CONNECTED
                         )
                     }
                 }

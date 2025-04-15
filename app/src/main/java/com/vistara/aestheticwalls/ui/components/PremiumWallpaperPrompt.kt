@@ -41,6 +41,7 @@ import com.vistara.aestheticwalls.R
 fun PremiumWallpaperPrompt(
     onUpgrade: () -> Unit,
     onDismiss: () -> Unit,
+    isConnected: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -66,9 +67,9 @@ fun PremiumWallpaperPrompt(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 皇冠图标
             Box(
                 modifier = Modifier
@@ -89,9 +90,9 @@ fun PremiumWallpaperPrompt(
                     style = MaterialTheme.typography.headlineLarge
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // 描述
             Text(
                 text = "升级到高级版，解锁所有壁纸和功能",
@@ -99,9 +100,9 @@ fun PremiumWallpaperPrompt(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             // 功能列表
             Column(
                 modifier = Modifier
@@ -114,28 +115,29 @@ fun PremiumWallpaperPrompt(
                 PremiumFeatureItem(text = "高级编辑功能")
                 PremiumFeatureItem(text = "自动更换壁纸")
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // 按钮
             Button(
                 onClick = onUpgrade,
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFFD700)
-                )
+                ),
+                enabled = isConnected
             ) {
                 Text(
-                    text = "立即升级",
+                    text = if (isConnected) "立即升级" else "正在连接支付服务...",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = Color.Black
+                    color = if (isConnected) Color.Black else Color.DarkGray
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             TextButton(
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth()
@@ -171,7 +173,7 @@ private fun PremiumFeatureItem(
             color = Color(0xFFFFD700),
             modifier = Modifier.padding(end = 8.dp)
         )
-        
+
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
