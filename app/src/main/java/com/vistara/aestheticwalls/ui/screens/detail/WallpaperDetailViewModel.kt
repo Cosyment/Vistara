@@ -8,20 +8,27 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
+import com.vistara.aestheticwalls.data.EditedImageCache
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.compose.runtime.State
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
-import com.vistara.aestheticwalls.data.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -53,6 +60,13 @@ class WallpaperDetailViewModel @Inject constructor(
     // 壁纸详情状态
     private val _wallpaperState = MutableStateFlow<UiState<Wallpaper>>(UiState.Loading)
     val wallpaperState: StateFlow<UiState<Wallpaper>> = _wallpaperState.asStateFlow()
+
+    // 编辑后的图片
+    private val _editedBitmap = mutableStateOf<Bitmap?>(null)
+    val editedBitmap: State<Bitmap?> = _editedBitmap
+
+    // 当前壁纸ID
+    private var currentWallpaperId: String = ""
 
     // 收藏状态
     private val _isFavorite = mutableStateOf(false)
@@ -87,8 +101,25 @@ class WallpaperDetailViewModel @Inject constructor(
     val isInfoExpanded: State<Boolean> = _isInfoExpanded
 
     init {
-        loadWallpaper()
+        // 从SavedStateHandle获取壁纸ID
+        val wallpaperId = savedStateHandle.get<String>("wallpaperId") ?: ""
+        if (wallpaperId.isNotEmpty()) {
+            currentWallpaperId = wallpaperId
+            loadWallpaper()
+            // 检查是否有编辑后的图片
+            checkForEditedImage(wallpaperId)
+        }
         checkPremiumStatus()
+    }
+
+    /**
+     * 检查是否有编辑后的图片
+     */
+    private fun checkForEditedImage(wallpaperId: String) {
+        val editedImage = EditedImageCache.getEditedImage(wallpaperId)
+        if (editedImage != null) {
+            _editedBitmap.value = editedImage
+        }
     }
 
     /**
@@ -174,6 +205,13 @@ class WallpaperDetailViewModel @Inject constructor(
     }
 
     /**
+     * 显示高级提示
+     */
+    fun showPremiumPrompt() {
+        _showPremiumPrompt.value = true
+    }
+
+    /**
      * 隐藏高级提示
      */
     fun hidePremiumPrompt() {
@@ -187,11 +225,20 @@ class WallpaperDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
+            // 立即隐藏选项对话框，提供即时反馈
+            _showSetWallpaperOptions.value = false
+
             try {
-                // 在IO线程上下载和处理图片
-                val bitmap = withContext(Dispatchers.IO) {
-                    val url = URL(currentWallpaper.url)
-                    BitmapFactory.decodeStream(url.openStream())
+                // 检查是否有编辑后的图片
+                val bitmap = if (_editedBitmap.value != null) {
+                    // 使用编辑后的图片
+                    _editedBitmap.value
+                } else {
+                    // 如果没有编辑过，则下载原始图片
+                    withContext(Dispatchers.IO) {
+                        val url = URL(currentWallpaper.url)
+                        BitmapFactory.decodeStream(url.openStream())
+                    }
                 }
 
                 // 设置壁纸操作也可能是耗时操作，使用IO线程
@@ -216,11 +263,9 @@ class WallpaperDetailViewModel @Inject constructor(
                     }
                 }
 
-                // 隐藏选项对话框 - 这个操作在主线程上执行
-                _showSetWallpaperOptions.value = false
-
             } catch (e: IOException) {
                 // 处理错误
+                e.printStackTrace()
             }
         }
     }
@@ -364,30 +409,127 @@ class WallpaperDetailViewModel @Inject constructor(
                     "\u5206辨率: ${currentWallpaper.resolution?.width} x ${currentWallpaper.resolution?.height}\n" +
                     "\u4e0b载 Vistara 壁纸应用以获取更多精美壁纸!"
 
-            // 创建分享意图
-            val shareIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, shareText)
-                type = "text/plain"
-
-                // 如果有壁纸URL，添加到分享内容
-                if (currentWallpaper.sourceUrl != null) {
-                    putExtra(Intent.EXTRA_STREAM, Uri.parse(currentWallpaper.sourceUrl))
-                    type = "image/*"
-                }
-            }
-
-            // 创建选择器对话框
-            val chooserIntent = Intent.createChooser(shareIntent, "分享壁纸")
-            chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-            // 启动分享选择器 - 在主线程上执行
             try {
+                // 下载图片并生成分享图
+                val bitmap = withContext(Dispatchers.IO) {
+                    try {
+                        // 下载原始图片
+                        val url = URL(currentWallpaper.url)
+                        val originalBitmap = BitmapFactory.decodeStream(url.openStream())
+
+                        // 生成带水印的分享图
+                        createShareImage(originalBitmap, currentWallpaper)
+                    } catch (e: Exception) {
+                        null // 如果下载失败，返回null
+                    }
+                }
+
+                // 创建分享意图
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+
+                    if (bitmap != null) {
+                        // 将位图保存到缓存目录并分享
+                        val cachePath = File(context.cacheDir, "shared_images")
+                        cachePath.mkdirs()
+
+                        val shareImageFile = File(cachePath, "share_${System.currentTimeMillis()}.jpg")
+                        val outputStream = FileOutputStream(shareImageFile)
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                        outputStream.close()
+
+                        // 使用FileProvider获取URI
+                        val contentUri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            shareImageFile
+                        )
+
+                        putExtra(Intent.EXTRA_STREAM, contentUri)
+                        type = "image/jpeg"
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    } else {
+                        // 如果无法生成分享图，则只分享文本
+                        type = "text/plain"
+                    }
+                }
+
+                // 创建选择器对话框
+                val chooserIntent = Intent.createChooser(shareIntent, "分享壁纸")
+                chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                // 启动分享选择器
                 context.startActivity(chooserIntent)
             } catch (e: Exception) {
-                // 处理异常情况
+                // 如果分享失败，尝试简单的文本分享
+                try {
+                    val simpleShareIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                        type = "text/plain"
+                    }
+                    val chooserIntent = Intent.createChooser(simpleShareIntent, "分享壁纸")
+                    chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(chooserIntent)
+                } catch (e2: Exception) {
+                    // 处理异常情况
+                }
             }
         }
+    }
+
+    /**
+     * 创建带水印的分享图片
+     */
+    private fun createShareImage(originalBitmap: Bitmap, wallpaper: Wallpaper): Bitmap {
+        // 创建一个新的位图，底部添加水印区域
+        val watermarkHeight = 150 // 水印区域高度
+
+        // 计算新图片尺寸，保持原始宽度，增加水印高度
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+
+        // 如果原图太大，进行缩放
+        val maxWidth = 1080
+        val scale = if (width > maxWidth) maxWidth.toFloat() / width else 1f
+
+        val scaledWidth = (width * scale).toInt()
+        val scaledHeight = (height * scale).toInt()
+        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+
+        // 创建最终图片，包含水印区域
+        val result = Bitmap.createBitmap(scaledWidth, scaledHeight + watermarkHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(result)
+
+        // 绘制原始图片
+        canvas.drawBitmap(scaledBitmap, 0f, 0f, null)
+
+        // 绘制水印背景
+        val paint = Paint()
+        paint.color = Color.WHITE
+        canvas.drawRect(0f, scaledHeight.toFloat(), scaledWidth.toFloat(), (scaledHeight + watermarkHeight).toFloat(), paint)
+
+        // 绘制水印文字
+        paint.color = Color.BLACK
+        paint.textSize = 30f
+        paint.isFakeBoldText = true
+
+        // 绘制壁纸标题
+        val title = wallpaper.title ?: "精美壁纸"
+        canvas.drawText(title, 20f, scaledHeight + 40f, paint)
+
+        // 绘制来源信息
+        paint.isFakeBoldText = false
+        paint.textSize = 25f
+        val sourceText = "${wallpaper.author} | ${wallpaper.source}"
+        canvas.drawText(sourceText, 20f, scaledHeight + 80f, paint)
+
+        // 绘制应用名称
+        val appText = "Vistara壁纸应用"
+        canvas.drawText(appText, 20f, scaledHeight + 120f, paint)
+
+        return result
     }
 
     /**
@@ -409,29 +551,16 @@ class WallpaperDetailViewModel @Inject constructor(
                 _showPremiumPrompt.value = true
                 return@launch
             }
+        }
+    }
 
-            // 创建编辑意图
-            try {
-                // 这里可以启动编辑器或其他图片处理应用
-                val editIntent = Intent(Intent.ACTION_EDIT).apply {
-                    setDataAndType(Uri.parse(currentWallpaper.url), "image/*")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-
-                // 检查是否有应用可以处理这个意图
-                if (editIntent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(editIntent)
-                } else {
-                    // 如果没有应用可以处理，尝试使用查看意图
-                    val viewIntent = Intent(Intent.ACTION_VIEW).apply {
-                        setDataAndType(Uri.parse(currentWallpaper.url), "image/*")
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    context.startActivity(viewIntent)
-                }
-            } catch (e: Exception) {
-                // 处理异常情况
-            }
+    /**
+     * 刷新编辑后的图片
+     */
+    fun refreshEditedImage() {
+        if (currentWallpaperId.isNotEmpty()) {
+            val editedImage = EditedImageCache.getEditedImage(currentWallpaperId)
+            _editedBitmap.value = editedImage
         }
     }
 }

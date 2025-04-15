@@ -72,7 +72,8 @@ fun WallpaperDetail(
     onShare: () -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
-    isPremiumUser: Boolean = false
+    isPremiumUser: Boolean = false,
+    editedBitmap: android.graphics.Bitmap? = null
 ) {
     var showControls by remember { mutableStateOf(true) }
     val context = LocalContext.current
@@ -81,11 +82,23 @@ fun WallpaperDetail(
         modifier = modifier.fillMaxSize()
     ) {
         // 壁纸图片 - 全屏显示，支持缩放
-        ZoomableImage(
-            imageUrl = wallpaper.url ?: "",
-            contentDescription = wallpaper.title ?: "壁纸",
-            modifier = Modifier.fillMaxSize(),
-            onTap = { showControls = !showControls })
+        if (editedBitmap != null) {
+            // 显示编辑后的图片，使用可缩放组件
+            ZoomableBitmapImage(
+                bitmap = editedBitmap,
+                contentDescription = wallpaper.title ?: "壁纸",
+                modifier = Modifier.fillMaxSize(),
+                onTap = { showControls = !showControls }
+            )
+        } else {
+            // 显示原始图片
+            ZoomableImage(
+                imageUrl = wallpaper.url ?: "",
+                contentDescription = wallpaper.title ?: "壁纸",
+                modifier = Modifier.fillMaxSize(),
+                onTap = { showControls = !showControls }
+            )
+        }
 
         // 顶部控制栏 (状态栏区域) - 半透明渐变背景
         AnimatedVisibility(

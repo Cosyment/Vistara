@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -32,6 +33,7 @@ import com.vistara.aestheticwalls.ui.screens.about.AboutScreen
 import com.vistara.aestheticwalls.ui.screens.autochange.AutoChangeScreen
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
 import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
+import com.vistara.aestheticwalls.ui.screens.edit.WallpaperEditScreen
 import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
 import com.vistara.aestheticwalls.ui.screens.feedback.FeedbackScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
@@ -42,15 +44,16 @@ import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.upgrade.UpgradeScreen
 import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
+import android.content.Context
 import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 
 /**
  * 主导航组件
  * 包含底部导航栏和导航宿主
  */
 @Composable
-fun MainNavigation() {
-    val navController = rememberNavController()
+fun MainNavigation(navController: NavHostController = rememberNavController()) {
 
     // 获取当前导航状态
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -98,7 +101,7 @@ fun MainNavigation() {
                 )
             }
             composable(NavDestination.Mine.route) {
-                val context = navController.context
+                val context = LocalContext.current
                 MineScreen(
                     onFavoritesClick = { navController.navigate("favorites") },
                     onDownloadsClick = { navController.navigate("downloads") },
@@ -120,7 +123,10 @@ fun MainNavigation() {
                 arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
             ) {
                 WallpaperDetailScreen(
-                    onBackPressed = { navController.navigateUp() }
+                    onBackPressed = { navController.navigateUp() },
+                    onNavigateToEdit = { wallpaperId ->
+                        navController.navigate("edit/$wallpaperId")
+                    }
                 )
             }
 
@@ -194,6 +200,22 @@ fun MainNavigation() {
                         navController.navigate("wallpaper/${wallpaper.id}")
                     },
                     onBackClick = { navController.navigateUp() }
+                )
+            }
+
+            // 壁纸编辑页面
+            composable(
+                route = "edit/{wallpaperId}",
+                arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
+            ) {
+                val wallpaperId = it.arguments?.getString("wallpaperId") ?: ""
+
+                WallpaperEditScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onSaveComplete = {
+                        // 返回详情页面
+                        navController.navigateUp()
+                    }
                 )
             }
         }

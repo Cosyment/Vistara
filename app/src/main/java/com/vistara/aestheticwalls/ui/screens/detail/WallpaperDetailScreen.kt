@@ -12,9 +12,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +40,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 @Composable
 fun WallpaperDetailScreen(
     onBackPressed: () -> Unit,
+    onNavigateToEdit: (String) -> Unit,
     viewModel: WallpaperDetailViewModel = hiltViewModel()
 ) {
     val wallpaperState by viewModel.wallpaperState.collectAsState()
@@ -49,6 +53,7 @@ fun WallpaperDetailScreen(
     val isInfoExpanded by viewModel.isInfoExpanded
     val needStoragePermission by viewModel.needStoragePermission
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     // 权限请求器
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -80,6 +85,11 @@ fun WallpaperDetailScreen(
     // 设置系统栏可见性
     systemUiController.systemBarsDarkContentEnabled = false
 
+    // 当页面变为可见时，刷新编辑后的图片
+    LaunchedEffect(Unit) {
+        viewModel.refreshEditedImage()
+    }
+
     // 使用Box作为根布局，实现真正的全屏效果
     Box(modifier = Modifier.fillMaxSize()) {
         when (wallpaperState) {
@@ -102,6 +112,9 @@ fun WallpaperDetailScreen(
                 // 显示壁纸详情
                 val wallpaper = (wallpaperState as UiState.Success).data
 
+                // 获取编辑后的图片
+                val editedBitmap by viewModel.editedBitmap
+
                 WallpaperDetail(
                     wallpaper = wallpaper,
                     isFavorite = isFavorite,
@@ -117,8 +130,16 @@ fun WallpaperDetailScreen(
                         Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
                     },
                     onShare = { viewModel.shareWallpaper() },
-                    onEdit = { viewModel.editWallpaper() },
-                    isPremiumUser = isPremiumUser
+                    onEdit = {
+                        val wallpaperId = wallpaper.id
+                        if (wallpaper.isPremium && !isPremiumUser) {
+                            viewModel.showPremiumPrompt()
+                        } else {
+                            onNavigateToEdit(wallpaperId)
+                        }
+                    },
+                    isPremiumUser = isPremiumUser,
+                    editedBitmap = editedBitmap
                 )
 
                 // 设置壁纸选项对话框 - 使用半透明背景
@@ -133,16 +154,34 @@ fun WallpaperDetailScreen(
                     ) {
                         WallpaperSetOptions(
                             onSetHomeScreen = {
+                                // 先显示提示，然后设置壁纸
+                                Toast.makeText(context, "正在设置主屏幕壁纸...", Toast.LENGTH_SHORT).show()
                                 viewModel.setWallpaper(context, WallpaperTarget.HOME)
-                                Toast.makeText(context, "已设置为主屏幕壁纸", Toast.LENGTH_SHORT).show()
+                                // 在后台完成设置后再显示成功提示
+                                coroutineScope.launch {
+                                    delay(500) // 等待一下，避免提示重叠
+                                    Toast.makeText(context, "已设置为主屏幕壁纸", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             onSetLockScreen = {
+                                // 先显示提示，然后设置壁纸
+                                Toast.makeText(context, "正在设置锁屏壁纸...", Toast.LENGTH_SHORT).show()
                                 viewModel.setWallpaper(context, WallpaperTarget.LOCK)
-                                Toast.makeText(context, "已设置为锁屏壁纸", Toast.LENGTH_SHORT).show()
+                                // 在后台完成设置后再显示成功提示
+                                coroutineScope.launch {
+                                    delay(500) // 等待一下，避免提示重叠
+                                    Toast.makeText(context, "已设置为锁屏壁纸", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             onSetBoth = {
+                                // 先显示提示，然后设置壁纸
+                                Toast.makeText(context, "正在设置壁纸...", Toast.LENGTH_SHORT).show()
                                 viewModel.setWallpaper(context, WallpaperTarget.BOTH)
-                                Toast.makeText(context, "已设置为主屏幕和锁屏壁纸", Toast.LENGTH_SHORT).show()
+                                // 在后台完成设置后再显示成功提示
+                                coroutineScope.launch {
+                                    delay(500) // 等待一下，避免提示重叠
+                                    Toast.makeText(context, "已设置为主屏幕和锁屏壁纸", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             onDismiss = { viewModel.hideSetWallpaperOptions() }
                         )
