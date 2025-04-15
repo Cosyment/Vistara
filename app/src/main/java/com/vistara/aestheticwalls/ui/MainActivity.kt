@@ -1,11 +1,19 @@
 package com.vistara.aestheticwalls.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.vistara.aestheticwalls.ui.navigation.MainNavigation
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,14 +24,59 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    // 保存当前导航路径
+    private var initialNavigation: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // 处理导航意图
+        handleNavigationIntent(intent)
+
         setContent {
             VistaraTheme {
-                MainNavigation()
+                val navController = rememberNavController()
+                var startDestination by rememberSaveable { mutableStateOf(initialNavigation) }
+
+                // 如果有初始导航路径，导航到该路径
+                if (startDestination != null) {
+                    android.util.Log.d("MainActivity", "准备导航到: $startDestination")
+                    LaunchedEffect(startDestination) {
+                        android.util.Log.d("MainActivity", "执行导航到: $startDestination")
+                        navController.navigate(startDestination!!) {
+                            launchSingleTop = true
+                        }
+                        // 重置初始导航，避免重复导航
+                        startDestination = null
+                        initialNavigation = null
+                        android.util.Log.d("MainActivity", "导航完成并重置")
+                    }
+                } else {
+                    android.util.Log.d("MainActivity", "没有初始导航路径")
+                }
+
+                MainNavigation(navController = navController)
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleNavigationIntent(intent)
+    }
+
+    /**
+     * 处理导航意图
+     */
+    private fun handleNavigationIntent(intent: Intent) {
+        // 从意图中获取导航路径
+        val navigation = intent.getStringExtra("navigation")
+        if (!navigation.isNullOrEmpty()) {
+            android.util.Log.d("MainActivity", "接收到导航路径: $navigation")
+            initialNavigation = navigation
+        } else {
+            android.util.Log.d("MainActivity", "没有接收到导航路径")
         }
     }
 }

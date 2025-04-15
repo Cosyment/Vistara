@@ -4,13 +4,19 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -107,11 +113,19 @@ class ApiTestActivity : ComponentActivity() {
                         logApiResult("getWallpapersByCollection", collectionWallpapersResult)
                     } catch (e: Exception) {
                         Log.e("ApiTest", "获取集合壁纸失败", e)
-                        Toast.makeText(this@ApiTestActivity, "获取集合壁纸失败: ${e.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@ApiTestActivity,
+                            "获取集合壁纸失败: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
-                Toast.makeText(this@ApiTestActivity, "Pexels API测试完成，请查看日志", Toast.LENGTH_LONG)
+                Toast.makeText(
+                    this@ApiTestActivity,
+                    "Pexels API测试完成，请查看日志",
+                    Toast.LENGTH_LONG
+                )
                     .show()
             } catch (e: Exception) {
                 Log.e("ApiTest", "测试过程中发生错误", e)
@@ -156,7 +170,11 @@ class ApiTestActivity : ComponentActivity() {
                         logApiResult("getWallpapersByCollection", collectionWallpapersResult)
                     } catch (e: Exception) {
                         Log.e("ApiTest", "获取集合壁纸失败", e)
-                        Toast.makeText(this@ApiTestActivity, "获取集合壁纸失败: ${e.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@ApiTestActivity,
+                            "获取集合壁纸失败: ${e.message}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
 
@@ -167,7 +185,11 @@ class ApiTestActivity : ComponentActivity() {
                     logApiResult("trackDownload", trackResult)
                 }
 
-                Toast.makeText(this@ApiTestActivity, "Unsplash API测试完成，请查看日志", Toast.LENGTH_LONG)
+                Toast.makeText(
+                    this@ApiTestActivity,
+                    "Unsplash API测试完成，请查看日志",
+                    Toast.LENGTH_LONG
+                )
                     .show()
             } catch (e: Exception) {
                 Log.e("ApiTest", "测试过程中发生错误", e)
@@ -209,10 +231,21 @@ fun ApiTestScreen(
 ) {
     var testResults by remember { mutableStateOf<List<String>>(emptyList()) }
 
+    val context = LocalActivity.current
+    val onBackPressed: () -> Unit = { context?.finish() }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("API测试工具") })
+                title = { Text("API测试工具") },
+                navigationIcon = {
+                    IconButton(onClick = onBackPressed) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回"
+                        )
+                    }
+                })
         }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -239,7 +272,11 @@ fun ApiTestScreen(
                 Text("测试Unsplash API")
             }
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
             Text(
                 text = "测试结果将显示在Logcat中",

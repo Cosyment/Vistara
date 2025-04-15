@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.ui.screens.mine
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.BuildConfig
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,7 +74,7 @@ class MineViewModel @Inject constructor(
     private fun checkDebugMode() {
         // 这里可以根据实际需求实现调试模式的检测逻辑
         // 例如，可以检查BuildConfig.DEBUG或特定的开发者选项
-        _isDebugMode.value = true // 开发阶段默认启用
+        _isDebugMode.value = BuildConfig.DEBUG // 开发阶段默认启用
     }
 
     /**

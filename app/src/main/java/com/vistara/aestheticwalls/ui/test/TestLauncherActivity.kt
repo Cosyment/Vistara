@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.ui.test
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,9 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,10 +61,19 @@ class TestLauncherActivity : ComponentActivity() {
 fun TestLauncherScreen(
     onLaunchApiTest: () -> Unit
 ) {
+    val context = LocalActivity.current
+    val onBackPressed: () -> Unit = { context?.finish() }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("测试工具") })
+            TopAppBar(title = { Text("测试工具") }, navigationIcon = {
+                IconButton(onClick = onBackPressed) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "返回"
+                    )
+                }
+            })
         }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -80,7 +95,11 @@ fun TestLauncherScreen(
                 Text("启动Pexels API测试")
             }
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
             // 可以在这里添加更多测试入口
         }
