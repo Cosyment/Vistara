@@ -49,7 +49,7 @@ fun WallpaperGrid(
             WallpaperItem(
                 wallpaper = wallpaper,
                 onClick = { onWallpaperClick(wallpaper) },
-                modifier = Modifier.aspectRatio(0.75f) // 设置宽高比为3:4
+                modifier = Modifier.aspectRatio(0.85f) // 设置宽高比为3:4
             )
         }
     }

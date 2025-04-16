@@ -947,9 +947,12 @@ class WallpaperRepositoryImpl @Inject constructor(
 
     override suspend fun favoriteWallpaper(wallpaper: Wallpaper): Boolean = withContext(Dispatchers.IO) {
         try {
-            wallpaperDao.insertFavorite(wallpaper)
+            // 创建一个新的Wallpaper对象，将isFavorite设置为true
+            val favoriteWallpaper = wallpaper.copy(isFavorite = true)
+            wallpaperDao.insertFavorite(favoriteWallpaper)
             true
         } catch (e: Exception) {
+            Log.e(TAG, "Error favoriting wallpaper: ${e.message}")
             false
         }
     }

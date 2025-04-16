@@ -312,7 +312,6 @@ fun WallpaperDetail(
 
                     // 下载按钮
                     val canDownload = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
-                    val isPremiumWallpaper = wallpaper.isPremium && !isPremiumUser
                     Box(
                         contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp)
                     ) {
@@ -349,7 +348,7 @@ fun WallpaperDetail(
                         }
 
                         // 添加皇冠图标
-                        if (isPremiumWallpaper) {
+                        if (!canDownload) {
                             Text(
                                 text = "👑",
                                 style = MaterialTheme.typography.labelSmall,
@@ -498,17 +497,17 @@ fun WallpaperDetailPreview() {
     VistaraTheme {
         WallpaperDetail(
             wallpaper = Wallpaper(
-            id = "1",
-            title = "Beautiful Landscape",
-            url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
-            thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
-            author = "John Doe",
-            source = "Unsplash",
-            isPremium = true,
-            isLive = false,
-            tags = listOf("nature", "landscape"),
-            resolution = Resolution(1920, 1080)
-        ),
+                id = "1",
+                title = "Beautiful Landscape",
+                url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+                thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+                author = "John Doe",
+                source = "Unsplash",
+                isPremium = true,
+                isLive = false,
+                tags = listOf("nature", "landscape"),
+                resolution = Resolution(1920, 1080)
+            ),
             onBackPressed = {},
             onToggleInfo = {},
             onDownload = {},

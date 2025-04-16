@@ -30,10 +30,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
-// import com.vistara.aestheticwalls.ui.components.PremiumWallpaperPrompt - 不再使用弹框
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
 import kotlinx.coroutines.launch
@@ -54,14 +52,12 @@ fun WallpaperDetailScreen(
     val isFavorite by viewModel.isFavorite
     val isPremiumUser by viewModel.isPremiumUser
     val showSetWallpaperOptions by viewModel.showSetWallpaperOptions
-    val showPremiumPrompt by viewModel.showPremiumPrompt
     val navigateToUpgrade by viewModel.navigateToUpgrade
     val isDownloading by viewModel.isDownloading
     val downloadProgress by viewModel.downloadProgress.collectAsState()
     val isInfoExpanded by viewModel.isInfoExpanded
     val needStoragePermission by viewModel.needStoragePermission
     val upgradeResult by viewModel.upgradeResult.collectAsState()
-    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
 
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -230,7 +226,6 @@ fun WallpaperDetailScreen(
                     // 高级壁纸提示对话框 - 使用半透明背景
                 }
             }
-            // 移除了PremiumWallpaperPrompt弹框，改为直接导航到UpgradeScreen
         }
     }
 
