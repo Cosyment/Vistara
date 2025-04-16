@@ -3,19 +3,13 @@ package com.vistara.aestheticwalls.ui.screens.lives
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,7 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -184,46 +177,6 @@ fun LiveLibraryScreen(
                                     columns = 2,
                                     modifier = Modifier.fillMaxSize(),
                                 )
-                            }
-
-                            // 高级版提示
-                            if (!isPremiumUser) {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f),
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Text(
-                                            text = "动态壁纸为高级功能，升级会员即可解锁全部内容",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
-
-                                        Spacer(modifier = Modifier.height(8.dp))
-
-                                        Button(
-                                            onClick = { viewModel.upgradeToPremium(activity) },
-                                            shape = RoundedCornerShape(8.dp),
-                                            modifier = Modifier.align(Alignment.End),
-                                            enabled = billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Star,
-                                                contentDescription = null,
-                                                modifier = Modifier.padding(end = 4.dp)
-                                            )
-                                            Text(
-                                                text = when {
-                                                    billingConnectionState != com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED -> "正在连接..."
-                                                    else -> "升级会员"
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
                             }
                         }
                     }

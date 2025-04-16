@@ -1,14 +1,18 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
+import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -17,7 +21,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userPrefsRepository: UserPrefsRepository
+    private val userPrefsRepository: UserPrefsRepository,
+    private val wallpaperRepository: WallpaperRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
@@ -44,8 +50,22 @@ class SettingsViewModel @Inject constructor(
     private val _downloadOriginalQuality = MutableStateFlow(true)
     val downloadOriginalQuality: StateFlow<Boolean> = _downloadOriginalQuality.asStateFlow()
 
+    // 缓存大小
+    private val _cacheSize = MutableStateFlow("0 MB")
+    val cacheSize: StateFlow<String> = _cacheSize.asStateFlow()
+
+    // 清除缓存状态
+    private val _isClearingCache = MutableStateFlow(false)
+    val isClearingCache: StateFlow<Boolean> = _isClearingCache.asStateFlow()
+
+    // 应用版本
+    private val _appVersion = MutableStateFlow("1.0.0")
+    val appVersion: StateFlow<String> = _appVersion.asStateFlow()
+
     init {
         loadUserSettings()
+        calculateCacheSize()
+        loadAppVersion()
     }
 
     /**
@@ -55,14 +75,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val userSettings = userPrefsRepository.getUserSettings()
-                
+
                 // 更新状态
                 _darkTheme.value = userSettings.darkTheme
                 _dynamicColors.value = userSettings.dynamicColors
                 _showDownloadNotification.value = userSettings.showDownloadNotification
                 _showWallpaperChangeNotification.value = userSettings.showWallpaperChangeNotification
                 _downloadOriginalQuality.value = userSettings.downloadOriginalQuality
-                
+
                 Log.d(TAG, "User settings loaded successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading user settings: ${e.message}")
@@ -111,6 +131,114 @@ class SettingsViewModel @Inject constructor(
     }
 
     /**
+     * 计算缓存大小
+     */
+    private fun calculateCacheSize() {
+        viewModelScope.launch {
+            try {
+                val cacheDir = context.cacheDir
+                val externalCacheDir = context.externalCacheDir
+
+                var size = getDirSize(cacheDir)
+                if (externalCacheDir != null) {
+                    size += getDirSize(externalCacheDir)
+                }
+
+                _cacheSize.value = formatSize(size)
+                Log.d(TAG, "Cache size calculated: ${_cacheSize.value}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error calculating cache size: ${e.message}")
+                _cacheSize.value = "0 MB"
+            }
+        }
+    }
+
+    /**
+     * 清除缓存
+     */
+    fun clearCache() {
+        viewModelScope.launch {
+            try {
+                _isClearingCache.value = true
+
+                // 清除应用缓存
+                clearDir(context.cacheDir)
+                context.externalCacheDir?.let { clearDir(it) }
+
+                // 重新计算缓存大小
+                calculateCacheSize()
+
+                Log.d(TAG, "Cache cleared successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error clearing cache: ${e.message}")
+            } finally {
+                _isClearingCache.value = false
+            }
+        }
+    }
+
+    /**
+     * 获取目录大小
+     */
+    private fun getDirSize(dir: File): Long {
+        var size: Long = 0
+
+        dir.listFiles()?.forEach { file ->
+            size += if (file.isDirectory) {
+                getDirSize(file)
+            } else {
+                file.length()
+            }
+        }
+
+        return size
+    }
+
+    /**
+     * 清除目录
+     */
+    private fun clearDir(dir: File) {
+        dir.listFiles()?.forEach { file ->
+            if (file.isDirectory) {
+                clearDir(file)
+            } else {
+                file.delete()
+            }
+        }
+    }
+
+    /**
+     * 格式化大小
+     */
+    private fun formatSize(size: Long): String {
+        val kb = 1024.0
+        val mb = kb * 1024
+        val gb = mb * 1024
+
+        return when {
+            size >= gb -> String.format("%.2f GB", size / gb)
+            size >= mb -> String.format("%.2f MB", size / mb)
+            size >= kb -> String.format("%.2f KB", size / kb)
+            else -> "$size B"
+        }
+    }
+
+    /**
+     * 加载应用版本
+     */
+    private fun loadAppVersion() {
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val versionName = packageInfo.versionName ?: "1.0.0"
+            _appVersion.value = versionName
+            Log.d(TAG, "App version loaded: ${_appVersion.value}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading app version: ${e.message}")
+            _appVersion.value = "1.0.0"
+        }
+    }
+
+    /**
      * 保存所有设置
      */
     private fun saveSettings() {
@@ -118,7 +246,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 // 获取当前设置
                 val currentSettings = userPrefsRepository.getUserSettings()
-                
+
                 // 创建更新后的设置对象
                 val updatedSettings = currentSettings.copy(
                     darkTheme = _darkTheme.value,
@@ -127,7 +255,7 @@ class SettingsViewModel @Inject constructor(
                     showWallpaperChangeNotification = _showWallpaperChangeNotification.value,
                     downloadOriginalQuality = _downloadOriginalQuality.value
                 )
-                
+
                 // 保存设置
                 userPrefsRepository.saveUserSettings(updatedSettings)
                 Log.d(TAG, "Settings saved successfully")

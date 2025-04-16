@@ -13,9 +13,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,10 +30,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -55,6 +64,12 @@ fun SettingsScreen(
     val showDownloadNotification by viewModel.showDownloadNotification.collectAsState()
     val showWallpaperChangeNotification by viewModel.showWallpaperChangeNotification.collectAsState()
     val downloadOriginalQuality by viewModel.downloadOriginalQuality.collectAsState()
+    val cacheSize by viewModel.cacheSize.collectAsState()
+    val isClearingCache by viewModel.isClearingCache.collectAsState()
+    val appVersion by viewModel.appVersion.collectAsState()
+
+    // 对话框状态
+    var showClearCacheDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -138,7 +153,60 @@ fun SettingsScreen(
                 onCheckedChange = { viewModel.updateDownloadOriginalQuality(it) }
             )
 
+            SettingsActionItem(
+                icon = Icons.Default.Delete,
+                title = "清除缓存",
+                subtitle = "当前缓存大小: $cacheSize",
+                onClick = { showClearCacheDialog = true },
+                trailingContent = if (isClearingCache) {
+                    { CircularProgressIndicator(modifier = Modifier.width(24.dp).height(24.dp)) }
+                } else null
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
+
+            // 关于应用
+            SettingsCategory(title = "关于应用")
+
+            SettingsActionItem(
+                icon = Icons.Default.Info,
+                title = "应用版本",
+                subtitle = "$appVersion",
+                onClick = {}
+            )
+
             Spacer(modifier = Modifier.height(16.dp))
+
+            // 清除缓存对话框
+            if (showClearCacheDialog) {
+                AlertDialog(
+                    onDismissRequest = { showClearCacheDialog = false },
+                    title = { Text("清除缓存") },
+                    text = { Text("确定要清除应用缓存吗？这将删除所有缓存的图片和数据。") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                viewModel.clearCache()
+                                showClearCacheDialog = false
+                            },
+                            enabled = !isClearingCache
+                        ) {
+                            Text("清除")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showClearCacheDialog = false }
+                        ) {
+                            Text("取消")
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -210,6 +278,59 @@ private fun SettingsToggleItem(
                 checked = checked,
                 onCheckedChange = onCheckedChange
             )
+        }
+    }
+}
+
+/**
+ * 设置操作项
+ */
+@Composable
+private fun SettingsActionItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String? = null,
+    onClick: () -> Unit,
+    trailingContent: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            if (trailingContent != null) {
+                trailingContent()
+            }
         }
     }
 }

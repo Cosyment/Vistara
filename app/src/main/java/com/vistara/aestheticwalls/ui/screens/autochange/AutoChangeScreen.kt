@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
+import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -64,7 +66,9 @@ fun AutoChangeScreen(
     val autoChangeFrequency by viewModel.autoChangeFrequency.collectAsState()
     val autoChangeWifiOnly by viewModel.autoChangeWifiOnly.collectAsState()
     val autoChangeSource by viewModel.autoChangeSource.collectAsState()
+    val autoChangeTarget by viewModel.autoChangeTarget.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val isChangingWallpaper by viewModel.isChangingWallpaper.collectAsState()
 
     Scaffold(
         topBar = {
@@ -169,6 +173,32 @@ fun AutoChangeScreen(
                     onSourceSelected = { viewModel.updateAutoChangeSource(it) },
                     isPremiumUser = isPremiumUser
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 壁纸目标屏幕
+                Text(
+                    text = "壁纸目标",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                TargetSelector(
+                    currentTarget = autoChangeTarget,
+                    onTargetSelected = { viewModel.updateAutoChangeTarget(it) }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // 应用设置按钮
+                Button(
+                    onClick = { viewModel.applyAutoChangeSettings() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isChangingWallpaper
+                ) {
+                    Text("应用设置")
+                }
             }
         }
     }
@@ -427,6 +457,85 @@ private fun getSourceText(source: AutoChangeSource): String {
         AutoChangeSource.DOWNLOADED -> "已下载壁纸"
         AutoChangeSource.CATEGORY -> "指定分类"
         AutoChangeSource.TRENDING -> "热门壁纸"
+    }
+}
+
+/**
+ * 目标屏幕选择器
+ */
+@Composable
+private fun TargetSelector(
+    currentTarget: WallpaperTarget,
+    onTargetSelected: (WallpaperTarget) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Surface(
+        onClick = { expanded = true },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 16.dp)
+            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "壁纸目标",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = getTargetText(currentTarget),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                WallpaperTarget.values().forEach { target ->
+                    DropdownMenuItem(
+                        text = { Text(getTargetText(target)) },
+                        onClick = {
+                            onTargetSelected(target)
+                            expanded = false
+                        },
+                        trailingIcon = {
+                            if (target == currentTarget) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 获取目标文本
+ */
+private fun getTargetText(target: WallpaperTarget): String {
+    return when (target) {
+        WallpaperTarget.HOME -> "仅主屏幕"
+        WallpaperTarget.LOCK -> "仅锁屏"
+        WallpaperTarget.BOTH -> "主屏幕和锁屏"
     }
 }
 

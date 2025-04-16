@@ -18,6 +18,7 @@ data class UserSettings(
     val autoChangeWifiOnly: Boolean = true,
     val autoChangeSource: AutoChangeSource = AutoChangeSource.FAVORITES,
     val autoChangeCategory: String? = null,
+    val autoChangeTarget: WallpaperTarget = WallpaperTarget.BOTH,
 
     // 通知设置
     val showDownloadNotification: Boolean = true,
