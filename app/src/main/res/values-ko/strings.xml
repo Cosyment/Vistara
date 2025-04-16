@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vistara</string>
+    <string name="search_hint">배경화면 검색...</string>
+
+    <!-- 알림 관련 문자열 -->
+    <string name="notification_channel_wallpaper">배경화면 변경 알림</string>
+    <string name="notification_channel_wallpaper_desc">배경화면 자동 변경 상태에 대한 알림</string>
+    <string name="notification_channel_download">다운로드 알림</string>
+    <string name="notification_channel_download_desc">배경화면 다운로드 진행 상황 및 완료 상태에 대한 알림</string>
+
+    <string name="notification_wallpaper_changed_title">배경화면이 변경되었습니다</string>
+    <string name="notification_wallpaper_changed_text">배경화면이 성공적으로 변경되었습니다</string>
+
+    <string name="notification_download_progress_title">배경화면 다운로드 중</string>
+    <string name="notification_download_progress_text">배경화면을 다운로드 중입니다</string>
+
+    <string name="notification_download_complete_title">배경화면 다운로드 완료</string>
+    <string name="notification_download_complete_text">배경화면이 기기에 성공적으로 다운로드되었습니다</string>
+
+    <!-- 비디오 배경화면 관련 문자열 -->
+    <string name="video_wallpaper_description">비디오를 라이브 배경화면으로 사용</string>
+    <string name="video_wallpaper_set_success">비디오 배경화면 설정 성공</string>
+    <string name="video_wallpaper_set_failed">비디오 배경화면 설정 실패</string>
+    <string name="video_wallpaper_download_failed">비디오 다운로드 실패</string>
+    <string name="video_wallpaper_select_guide">\"Vistara 비디오 배경화면\"을 선택하고 \"배경화면 설정\"을 클릭하세요</string>
+
+    <!-- 설정 화면 -->
+    <string name="settings">설정</string>
+    <string name="back">뒤로</string>
+    <string name="theme_settings">테마 설정</string>
+    <string name="dark_theme">다크 테마</string>
+    <string name="dark_theme_desc">앱의 다크 테마 활성화</string>
+    <string name="dynamic_colors">동적 색상</string>
+    <string name="dynamic_colors_desc">시스템 동적 색상 사용 (Android 12+ 전용)</string>
+    <string name="notification_settings">알림 설정</string>
+    <string name="download_notification">다운로드 알림</string>
+    <string name="download_notification_desc">배경화면 다운로드 완료 알림 표시</string>
+    <string name="wallpaper_change_notification">배경화면 변경 알림</string>
+    <string name="wallpaper_change_notification_desc">자동 배경화면 변경 알림 표시</string>
+    <string name="download_settings">다운로드 설정</string>
+    <string name="original_quality">원본 품질</string>
+    <string name="original_quality_desc">원본 품질의 배경화면 다운로드 (더 큰 파일)</string>
+    <string name="clear_cache">캐시 지우기</string>
+    <string name="current_cache_size">현재 캐시 크기: %1$s</string>
+    <string name="about_app">앱 정보</string>
+    <string name="app_version">앱 버전</string>
+    <string name="account_settings">계정 설정</string>
+    <string name="sign_out">로그아웃</string>
+    <string name="sign_out_desc">현재 계정에서 로그아웃</string>
+    <string name="clear_cache_title">캐시 지우기</string>
+    <string name="clear_cache_message">앱 캐시를 지우시겠습니까? 이렇게 하면 캐시된 모든 이미지와 데이터가 삭제됩니다.</string>
+    <string name="clear">지우기</string>
+    <string name="cancel">취소</string>
+    <string name="language_settings">언어 설정</string>
+    <string name="language">언어</string>
+    <string name="language_desc">앱 언어 변경</string>
+    <string name="system_default">시스템 기본값</string>
+    <string name="english">영어</string>
+    <string name="chinese">중국어</string>
+    <string name="japanese">일본어</string>
+    <string name="korean">한국어</string>
+    <string name="indonesian">인도네시아어</string>
+
+    <!-- 내 화면 -->
+    <string name="my_favorites">내 즐겨찾기</string>
+    <string name="my_favorites_desc">모든 즐겨찾기 배경화면 보기</string>
+    <string name="my_downloads">내 다운로드</string>
+    <string name="my_downloads_desc">모든 다운로드한 배경화면 보기</string>
+    <string name="auto_change_wallpaper">자동 배경화면 변경</string>
+    <string name="auto_change_wallpaper_desc">자동 배경화면 변경 빈도 및 소스 설정</string>
+    <string name="settings_desc">앱 환경설정 및 알림 조정</string>
+    <string name="rate_feedback">평가 및 피드백</string>
+    <string name="rate_feedback_desc">앱 개선에 도움 주기</string>
+    <string name="about_credits">정보 및 크레딧</string>
+    <string name="about_credits_desc">앱 정보 및 저작권 보기</string>
+    <string name="test_tools">테스트 도구</string>
+    <string name="test_tools_desc">API 인터페이스 및 기타 기능 테스트</string>
+    <string name="not_logged_in">로그인하지 않음</string>
+    <string name="login">로그인</string>
+    <string name="premium_user">프리미엄 사용자</string>
+    <string name="premium_banner">✨ 모든 특권을 잠금 해제하고 HD 경험을 즐기세요 ✨</string>
+    <string name="favorites_login_required">즐겨찾기 목록을 사용하려면 로그인해야 합니다</string>
+    <string name="downloads_login_required">다운로드 목록을 사용하려면 로그인해야 합니다</string>
+    <string name="auto_wallpaper_login_required">자동 배경화면 변경을 사용하려면 로그인해야 합니다</string>
+
+    <!-- 정보 화면 -->
+    <string name="app_description">Vistara 배경화면은 고품질의 정적 및 라이브 배경화면을 제공하여 기기를 새롭게 만들어주는 아름다운 배경화면 앱입니다.</string>
+    <string name="user_agreement">사용자 계약</string>
+    <string name="privacy_policy">개인정보 처리방침</string>
+    <string name="terms_of_service">서비스 약관</string>
+    <!-- 배경화면 카테고리 -->
+    <string name="category_all">전체</string>
+    <string name="category_abstract">추상</string>
+    <string name="category_tech">테크노로지</string>
+    <string name="category_nature">자연</string>
+    <string name="category_cyberpunk">사이버펑크</string>
+    <string name="category_particle">입자</string>
+    <string name="category_fluid">유체</string>
+    <string name="category_landscape">풍경</string>
+    <string name="category_portrait">인물</string>
+    <string name="category_city">도시</string>
+    <string name="category_illustration">일러스트</string>
+    <string name="category_minimal">미니멀</string>
+    <string name="category_animal">동물</string>
+    <string name="category_food">음식</string>
+    <string name="category_static">정적 배경화면</string>
+    <string name="category_live">동적 배경화면</string>
+
+    <!-- 오류 메시지 -->
+    <string name="error_loading_wallpapers">배경화면을 불러오지 못했습니다</string>
+    <string name="error_filtering_wallpapers">배경화면 필터링에 실패했습니다</string>
+    <string name="error_already_premium">이미 프리미엄 사용자입니다</string>
+    <string name="error_billing_not_connected">결제 서비스가 연결되지 않았습니다. 나중에 다시 시도해주세요</string>
+</resources>

@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 /**
@@ -20,33 +21,33 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun CategorySelector(
-    categories: List<String>,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit,
+    categories: List<Int>,
+    selectedCategory: Int,
+    onCategorySelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // 使用remember缓存分类列表，避免不必要的重组
     val rememberedCategories = remember(categories) { categories }
-    
+
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         items(
             items = rememberedCategories,
-            key = { it } // 使用分类名称作为key，确保在重组时保持正确的状态
-        ) { category ->
-            val isSelected = category == selectedCategory
+            key = { it } // 使用分类资源ID作为key，确保在重组时保持正确的状态
+        ) { categoryResId ->
+            val isSelected = categoryResId == selectedCategory
 
             Surface(
-                onClick = { onCategorySelected(category) },
+                onClick = { onCategorySelected(categoryResId) },
                 color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
             ) {
                 Text(
-                    text = category,
+                    text = stringResource(categoryResId),
                     style = MaterialTheme.typography.labelMedium,
                     color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
                     else MaterialTheme.colorScheme.onSurfaceVariant,

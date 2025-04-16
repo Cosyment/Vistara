@@ -17,10 +17,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.vistara.aestheticwalls.R
 
 /**
  * 登录提示对话框
@@ -35,8 +37,8 @@ import androidx.compose.ui.window.Dialog
 fun LoginPromptDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    title: String = "需要登录",
-    message: String = "该功能需要登录后才能使用，是否前往登录页面？"
+    title: String = stringResource(R.string.login_required),
+    message: String = stringResource(R.string.login_required_message)
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -60,9 +62,9 @@ fun LoginPromptDialog(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // 消息
                 Text(
                     text = message,
@@ -70,23 +72,23 @@ fun LoginPromptDialog(
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // 按钮
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("取消")
+                        Text(stringResource(R.string.cancel))
                     }
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     TextButton(onClick = onConfirm) {
                         Text(
-                            text = "去登录",
+                            text = stringResource(R.string.go_to_login),
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
                         )

@@ -32,7 +32,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.CategorySelector
@@ -97,14 +99,14 @@ fun LiveLibraryScreen(
         TopAppBar(
             title = {
             Text(
-                "动态壁纸", style = MaterialTheme.typography.titleLarge.copy(
+                stringResource(R.string.category_live), style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.SemiBold
                 )
             )
         }, actions = {
             IconButton(onClick = onSearchClick) {
                 Icon(
-                    imageVector = Icons.Default.Search, contentDescription = "搜索"
+                    imageVector = Icons.Default.Search, contentDescription = stringResource(R.string.search_hint)
                 )
             }
         }, colors = TopAppBarDefaults.topAppBarColors(
@@ -124,8 +126,8 @@ fun LiveLibraryScreen(
             CategorySelector(
                 categories = categories,
                 selectedCategory = selectedCategory,
-                onCategorySelected = { category: String ->
-                    viewModel.filterByCategory(category)
+                onCategorySelected = { categoryResId: Int ->
+                    viewModel.filterByCategory(categoryResId)
                 })
             // 将整个when表达式包裹在一个组合函数中
             val content = @Composable {

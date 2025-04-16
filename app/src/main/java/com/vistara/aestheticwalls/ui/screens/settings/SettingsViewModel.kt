@@ -7,9 +7,11 @@ import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.data.model.AppLanguage
 import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
+import com.vistara.aestheticwalls.manager.LocaleManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,7 @@ class SettingsViewModel @Inject constructor(
     private val userPrefsRepository: UserPrefsRepository,
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
+    private val localeManager: LocaleManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -42,6 +45,10 @@ class SettingsViewModel @Inject constructor(
     // 动态颜色
     private val _dynamicColors = MutableStateFlow(true)
     val dynamicColors: StateFlow<Boolean> = _dynamicColors.asStateFlow()
+
+    // 应用语言
+    private val _appLanguage = MutableStateFlow(AppLanguage.SYSTEM)
+    val appLanguage: StateFlow<AppLanguage> = _appLanguage.asStateFlow()
 
     // 下载通知
     private val _showDownloadNotification = MutableStateFlow(true)
@@ -152,6 +159,7 @@ class SettingsViewModel @Inject constructor(
                 // 更新状态
                 _darkTheme.value = userSettings.darkTheme
                 _dynamicColors.value = userSettings.dynamicColors
+                _appLanguage.value = userSettings.appLanguage
                 _showDownloadNotification.value = userSettings.showDownloadNotification
                 _showWallpaperChangeNotification.value = userSettings.showWallpaperChangeNotification
                 _downloadOriginalQuality.value = userSettings.downloadOriginalQuality
@@ -177,6 +185,18 @@ class SettingsViewModel @Inject constructor(
     fun updateDynamicColors(enabled: Boolean) {
         _dynamicColors.value = enabled
         saveSettings()
+    }
+
+    /**
+     * 更新应用语言设置
+     */
+    fun updateAppLanguage(language: AppLanguage) {
+        _appLanguage.value = language
+        saveSettings()
+        // 应用语言设置
+        viewModelScope.launch {
+            localeManager.updateAppLanguage(language)
+        }
     }
 
     /**
@@ -381,6 +401,7 @@ class SettingsViewModel @Inject constructor(
                 val updatedSettings = currentSettings.copy(
                     darkTheme = _darkTheme.value,
                     dynamicColors = _dynamicColors.value,
+                    appLanguage = _appLanguage.value,
                     showDownloadNotification = _showDownloadNotification.value,
                     showWallpaperChangeNotification = _showWallpaperChangeNotification.value,
                     downloadOriginalQuality = _downloadOriginalQuality.value

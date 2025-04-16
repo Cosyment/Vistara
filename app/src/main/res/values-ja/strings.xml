@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vistara</string>
+    <string name="search_hint">壁紙を検索...</string>
+
+    <!-- 通知関連の文字列 -->
+    <string name="notification_channel_wallpaper">壁紙変更通知</string>
+    <string name="notification_channel_wallpaper_desc">壁紙の自動変更状態に関する通知</string>
+    <string name="notification_channel_download">ダウンロード通知</string>
+    <string name="notification_channel_download_desc">壁紙のダウンロード進行状況と完了状態に関する通知</string>
+
+    <string name="notification_wallpaper_changed_title">壁紙が変更されました</string>
+    <string name="notification_wallpaper_changed_text">壁紙が正常に変更されました</string>
+
+    <string name="notification_download_progress_title">壁紙をダウンロード中</string>
+    <string name="notification_download_progress_text">壁紙をダウンロード中です</string>
+
+    <string name="notification_download_complete_title">壁紙のダウンロードが完了しました</string>
+    <string name="notification_download_complete_text">壁紙がデバイスに正常にダウンロードされました</string>
+
+    <!-- ビデオ壁紙関連の文字列 -->
+    <string name="video_wallpaper_description">ビデオをライブ壁紙として使用</string>
+    <string name="video_wallpaper_set_success">ビデオ壁紙の設定に成功しました</string>
+    <string name="video_wallpaper_set_failed">ビデオ壁紙の設定に失敗しました</string>
+    <string name="video_wallpaper_download_failed">ビデオのダウンロードに失敗しました</string>
+    <string name="video_wallpaper_select_guide">「Vistaraビデオ壁紙」を選択して「壁紙を設定」をクリックしてください</string>
+
+    <!-- 設定画面 -->
+    <string name="settings">設定</string>
+    <string name="back">戻る</string>
+    <string name="theme_settings">テーマ設定</string>
+    <string name="dark_theme">ダークテーマ</string>
+    <string name="dark_theme_desc">アプリのダークテーマを有効にする</string>
+    <string name="dynamic_colors">ダイナミックカラー</string>
+    <string name="dynamic_colors_desc">システムのダイナミックカラーを使用（Android 12+のみ）</string>
+    <string name="notification_settings">通知設定</string>
+    <string name="download_notification">ダウンロード通知</string>
+    <string name="download_notification_desc">壁紙のダウンロード完了通知を表示</string>
+    <string name="wallpaper_change_notification">壁紙変更通知</string>
+    <string name="wallpaper_change_notification_desc">自動壁紙変更通知を表示</string>
+    <string name="download_settings">ダウンロード設定</string>
+    <string name="original_quality">オリジナル品質</string>
+    <string name="original_quality_desc">オリジナル品質の壁紙をダウンロード（大きいファイル）</string>
+    <string name="clear_cache">キャッシュを消去</string>
+    <string name="current_cache_size">現在のキャッシュサイズ: %1$s</string>
+    <string name="about_app">アプリについて</string>
+    <string name="app_version">アプリバージョン</string>
+    <string name="account_settings">アカウント設定</string>
+    <string name="sign_out">ログアウト</string>
+    <string name="sign_out_desc">現在のアカウントからログアウト</string>
+    <string name="clear_cache_title">キャッシュを消去</string>
+    <string name="clear_cache_message">アプリのキャッシュを消去してもよろしいですか？これにより、キャッシュされたすべての画像とデータが削除されます。</string>
+    <string name="clear">消去</string>
+    <string name="cancel">キャンセル</string>
+    <string name="language_settings">言語設定</string>
+    <string name="language">言語</string>
+    <string name="language_desc">アプリの言語を変更</string>
+    <string name="system_default">システムデフォルト</string>
+    <string name="english">英語</string>
+    <string name="chinese">中国語</string>
+    <string name="japanese">日本語</string>
+    <string name="korean">韓国語</string>
+    <string name="indonesian">インドネシア語</string>
+
+    <!-- マイページ -->
+    <string name="my_favorites">お気に入り</string>
+    <string name="my_favorites_desc">お気に入りの壁紙をすべて表示</string>
+    <string name="my_downloads">ダウンロード</string>
+    <string name="my_downloads_desc">ダウンロードした壁紙をすべて表示</string>
+    <string name="auto_change_wallpaper">壁紙自動変更</string>
+    <string name="auto_change_wallpaper_desc">壁紙自動変更の頻度とソースを設定</string>
+    <string name="settings_desc">アプリの設定と通知を調整</string>
+    <string name="rate_feedback">評価とフィードバック</string>
+    <string name="rate_feedback_desc">アプリの改善にご協力ください</string>
+    <string name="about_credits">アプリ情報と謝辞</string>
+    <string name="about_credits_desc">アプリ情報と著作権を表示</string>
+    <string name="test_tools">テストツール</string>
+    <string name="test_tools_desc">APIインターフェースとその他の機能をテスト</string>
+    <string name="not_logged_in">ログインしていません</string>
+    <string name="login">ログイン</string>
+    <string name="premium_user">プレミアムユーザー</string>
+    <string name="premium_banner">✨ すべての特典をアンロックし、HD体験をお楽しみください ✨</string>
+    <string name="favorites_login_required">お気に入りリストを使用するにはログインが必要です</string>
+    <string name="downloads_login_required">ダウンロードリストを使用するにはログインが必要です</string>
+    <string name="auto_wallpaper_login_required">壁紙自動変更を使用するにはログインが必要です</string>
+
+    <!-- アプリについて画面 -->
+    <string name="app_description">Vistara壁紙は、高品質の静止画と動画の壁紙を提供する美しい壁紙アプリで、あなたのデバイスを新鮮に保ちます。</string>
+    <string name="user_agreement">ユーザー契約</string>
+    <string name="privacy_policy">プライバシーポリシー</string>
+    <string name="terms_of_service">利用規約</string>
+    <!-- 壁紙カテゴリー -->
+    <string name="category_all">すべて</string>
+    <string name="category_abstract">抽象的</string>
+    <string name="category_tech">テクノロジー</string>
+    <string name="category_nature">自然</string>
+    <string name="category_cyberpunk">サイバーパンク</string>
+    <string name="category_particle">パーティクル</string>
+    <string name="category_fluid">流体</string>
+    <string name="category_landscape">風景</string>
+    <string name="category_portrait">ポートレート</string>
+    <string name="category_city">都市</string>
+    <string name="category_illustration">イラスト</string>
+    <string name="category_minimal">ミニマル</string>
+    <string name="category_animal">動物</string>
+    <string name="category_food">食べ物</string>
+    <string name="category_static">静止壁紙</string>
+    <string name="category_live">ライブ壁紙</string>
+
+    <!-- エラーメッセージ -->
+    <string name="error_loading_wallpapers">壁紙の読み込みに失敗しました</string>
+    <string name="error_filtering_wallpapers">壁紙のフィルタリングに失敗しました</string>
+    <string name="error_already_premium">あなたはすでにプレミアムユーザーです</string>
+    <string name="error_billing_not_connected">決済サービスに接続されていません。後でもう一度お試しください</string>
+</resources>

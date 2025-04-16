@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.vistara.aestheticwalls.ui.theme.AppColors
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
+import com.vistara.aestheticwalls.R
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -61,7 +64,6 @@ fun WallpaperDetailScreen(
     val isInfoExpanded by viewModel.isInfoExpanded
     val needStoragePermission by viewModel.needStoragePermission
     val upgradeResult by viewModel.upgradeResult.collectAsState()
-    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
 
     // 登录相关状态
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
@@ -102,10 +104,10 @@ fun WallpaperDetailScreen(
         if (isGranted) {
             // 权限已授予，继续下载
             viewModel.continueDownloadAfterPermissionGranted()
-            Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.start_download_wallpaper, Toast.LENGTH_SHORT).show()
         } else {
             // 权限被拒绝
-            Toast.makeText(context, "无法下载壁纸：存储权限被拒绝", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.download_failed_permission_denied, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -202,7 +204,7 @@ fun WallpaperDetailScreen(
                                 viewModel.showPremiumPrompt()
                             } else {
                                 viewModel.downloadWallpaper()
-                                Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.start_download_wallpaper, Toast.LENGTH_SHORT).show()
                             }
                         },
                         onShare = { viewModel.shareWallpaper() },
@@ -254,19 +256,19 @@ fun WallpaperDetailScreen(
     if (needStoragePermission) {
         AlertDialog(
             onDismissRequest = { /* 不允许通过点击外部关闭 */ },
-            title = { Text("需要存储权限") },
-            text = { Text("为了将壁纸保存到相册，需要获取存储权限。请允许此权限以便下载壁纸。") },
+            title = { Text(stringResource(R.string.storage_permission_required)) },
+            text = { Text(stringResource(R.string.storage_permission_rationale)) },
             confirmButton = {
                 Button(onClick = { permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE) }) {
-                    Text("授予权限")
+                    Text(stringResource(R.string.grant_permission))
                 }
             },
             dismissButton = {
                 Button(onClick = {
-                    Toast.makeText(context, "无法下载壁纸：需要存储权限", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.download_failed_permission_required, Toast.LENGTH_SHORT).show()
                     viewModel.resetPermissionRequest()
                 }) {
-                    Text("取消")
+                    Text(stringResource(R.string.cancel))
                 }
             })
     }
@@ -274,10 +276,10 @@ fun WallpaperDetailScreen(
     // 登录提示对话框
     needLoginAction?.let { action ->
         val message = when (action) {
-            WallpaperDetailViewModel.LoginAction.FAVORITE -> "收藏壁纸需要登录后才能使用"
-            WallpaperDetailViewModel.LoginAction.DOWNLOAD -> "下载壁纸需要登录后才能使用"
-            WallpaperDetailViewModel.LoginAction.SET_WALLPAPER -> "设置壁纸需要登录后才能使用"
-            WallpaperDetailViewModel.LoginAction.EDIT -> "编辑壁纸需要登录后才能使用"
+            WallpaperDetailViewModel.LoginAction.FAVORITE -> stringResource(R.string.favorite_login_required)
+            WallpaperDetailViewModel.LoginAction.DOWNLOAD -> stringResource(R.string.download_login_required)
+            WallpaperDetailViewModel.LoginAction.SET_WALLPAPER -> stringResource(R.string.set_wallpaper_login_required)
+            WallpaperDetailViewModel.LoginAction.EDIT -> stringResource(R.string.edit_login_required)
         }
 
         LoginPromptDialog(

@@ -56,6 +56,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
@@ -117,7 +119,7 @@ fun PremiumWallpaperPrompt(
             ) {
                 // 标题 - 带动画效果
                 Text(
-                    text = if (isPremiumUser) "您已是高级会员" else "解锁高级功能",
+                    text = if (isPremiumUser) stringResource(R.string.premium_user_title) else stringResource(R.string.premium_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -174,8 +176,8 @@ fun PremiumWallpaperPrompt(
 
                 // 描述
                 Text(
-                    text = if (isPremiumUser) "感谢您的支持，您可以使用所有高级功能"
-                    else "升级到高级版，解锁所有壁纸和功能",
+                    text = if (isPremiumUser) stringResource(R.string.premium_user_description)
+                    else stringResource(R.string.premium_description),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface
@@ -189,11 +191,11 @@ fun PremiumWallpaperPrompt(
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 ) {
-                    PremiumFeatureItem(text = "无限下载高清壁纸")
-                    PremiumFeatureItem(text = "去除所有广告")
-                    PremiumFeatureItem(text = "专属高级壁纸")
-                    PremiumFeatureItem(text = "高级编辑功能")
-                    PremiumFeatureItem(text = "自动更换壁纸")
+                    PremiumFeatureItem(text = stringResource(R.string.premium_feature_1))
+                    PremiumFeatureItem(text = stringResource(R.string.premium_feature_2))
+                    PremiumFeatureItem(text = stringResource(R.string.premium_feature_3))
+                    PremiumFeatureItem(text = stringResource(R.string.premium_feature_4))
+                    PremiumFeatureItem(text = stringResource(R.string.premium_feature_5))
                 }
 
                 // 只有非高级用户才显示订阅选项
@@ -202,7 +204,7 @@ fun PremiumWallpaperPrompt(
 
                     // 订阅计划选择
                     Text(
-                        text = "选择订阅计划",
+                        text = stringResource(R.string.select_subscription),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.align(Alignment.Start)
@@ -219,8 +221,8 @@ fun PremiumWallpaperPrompt(
 
                         // 月会员
                         SubscriptionPlanItem(
-                            title = "月会员",
-                            price = "¥18.99",
+                            title = stringResource(R.string.monthly_plan),
+                            price = stringResource(R.string.monthly_price),
                             isSelected = selectedPlan == BillingManager.SUBSCRIPTION_MONTHLY,
                             onClick = { selectedPlan = BillingManager.SUBSCRIPTION_MONTHLY },
                             modifier = Modifier
@@ -232,11 +234,11 @@ fun PremiumWallpaperPrompt(
 
                         // 季度会员
                         SubscriptionPlanItem(
-                            title = "季度会员",
-                            price = "¥49.99",
+                            title = stringResource(R.string.quarterly_plan),
+                            price = stringResource(R.string.quarterly_price),
                             isSelected = selectedPlan == BillingManager.SUBSCRIPTION_QUARTERLY,
                             onClick = { selectedPlan = BillingManager.SUBSCRIPTION_QUARTERLY },
-                            discount = "省17%",
+                            discount = stringResource(R.string.quarterly_discount),
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 4.dp)
@@ -246,11 +248,11 @@ fun PremiumWallpaperPrompt(
 
                         // 年会员
                         SubscriptionPlanItem(
-                            title = "年会员",
-                            price = "¥168.99",
+                            title = stringResource(R.string.yearly_plan),
+                            price = stringResource(R.string.yearly_price),
                             isSelected = selectedPlan == BillingManager.SUBSCRIPTION_YEARLY,
                             onClick = { selectedPlan = BillingManager.SUBSCRIPTION_YEARLY },
-                            discount = "省27%",
+                            discount = stringResource(R.string.yearly_discount),
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(horizontal = 4.dp)
@@ -298,7 +300,7 @@ fun PremiumWallpaperPrompt(
                                     Spacer(modifier = Modifier.width(8.dp))
                                 }
                                 Text(
-                                    text = if (isConnected) "立即升级" else "正在连接支付服务...",
+                                    text = if (isConnected) stringResource(R.string.upgrade_now) else stringResource(R.string.connecting_payment),
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         fontWeight = FontWeight.Bold
                                     ),
@@ -335,7 +337,7 @@ fun PremiumWallpaperPrompt(
                             Spacer(modifier = Modifier.width(8.dp))
 
                             Text(
-                                text = "已解锁全部高级功能",
+                                text = stringResource(R.string.all_premium_features_unlocked),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White
@@ -350,7 +352,7 @@ fun PremiumWallpaperPrompt(
                     onClick = onDismiss, modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (isPremiumUser) "关闭" else "稍后再说",
+                        text = if (isPremiumUser) stringResource(R.string.close) else stringResource(R.string.maybe_later),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

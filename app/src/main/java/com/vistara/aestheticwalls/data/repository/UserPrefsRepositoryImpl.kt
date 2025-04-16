@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.vistara.aestheticwalls.data.model.AppLanguage
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.UserSettings
@@ -29,6 +30,7 @@ class UserPrefsRepositoryImpl @Inject constructor(
         // 通用设置
         private val DARK_THEME = booleanPreferencesKey("dark_theme")
         private val DYNAMIC_COLORS = booleanPreferencesKey("dynamic_colors")
+        private val APP_LANGUAGE = stringPreferencesKey("app_language")
 
         // 自动更换壁纸设置
         private val AUTO_CHANGE_ENABLED = booleanPreferencesKey("auto_change_enabled")
@@ -70,6 +72,13 @@ class UserPrefsRepositoryImpl @Inject constructor(
                 // 通用设置
                 darkTheme = preferences[DARK_THEME] ?: false,
                 dynamicColors = preferences[DYNAMIC_COLORS] ?: true,
+                appLanguage = preferences[APP_LANGUAGE]?.let {
+                    try {
+                        AppLanguage.valueOf(it)
+                    } catch (e: Exception) {
+                        AppLanguage.SYSTEM
+                    }
+                } ?: AppLanguage.SYSTEM,
 
                 // 自动更换壁纸设置
                 autoChangeEnabled = preferences[AUTO_CHANGE_ENABLED] ?: false,
@@ -113,6 +122,7 @@ class UserPrefsRepositoryImpl @Inject constructor(
             // 通用设置
             preferences[DARK_THEME] = settings.darkTheme
             preferences[DYNAMIC_COLORS] = settings.dynamicColors
+            preferences[APP_LANGUAGE] = settings.appLanguage.name
 
             // 自动更换壁纸设置
             preferences[AUTO_CHANGE_ENABLED] = settings.autoChangeEnabled

@@ -11,6 +11,7 @@ data class UserSettings(
     // 通用设置
     val darkTheme: Boolean = false,
     val dynamicColors: Boolean = true,
+    val appLanguage: AppLanguage = AppLanguage.SYSTEM,
 
     // 自动更换壁纸设置
     val autoChangeEnabled: Boolean = false,

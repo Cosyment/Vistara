@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -96,9 +97,7 @@ fun WallpaperDetail(
             // 使用remember确保在wallpaper.id变化时重建组件
             val videoKey = remember { wallpaper.id }
             LiveVideoPlayer(
-                wallpaper = wallpaper,
-                modifier = Modifier.fillMaxSize(),
-                onTap = { showControls = !showControls })
+                wallpaper = wallpaper, modifier = Modifier.fillMaxSize(), onTap = { showControls = !showControls })
         } else {
             // 显示原始图片
             ZoomableImage(
@@ -125,9 +124,7 @@ fun WallpaperDetail(
                     .background(
                         brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                             colors = listOf(
-                                Color.Black.copy(alpha = 0.7f),
-                                Color.Black.copy(alpha = 0.4f),
-                                Color.Transparent
+                                Color.Black.copy(alpha = 0.7f), Color.Black.copy(alpha = 0.4f), Color.Transparent
                             )
                         )
                     )
@@ -135,16 +132,13 @@ fun WallpaperDetail(
                     .height(56.dp)
             ) {
                 IconButton(
-                    onClick = onBackPressed,
-                    modifier = Modifier
+                    onClick = onBackPressed, modifier = Modifier
                         .align(Alignment.CenterStart)
                         .padding(start = 8.dp)
                         .size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "返回",
-                        tint = Color.White
+                        imageVector = Icons.Default.ArrowBack, contentDescription = "返回", tint = Color.White
                     )
                 }
 
@@ -181,9 +175,7 @@ fun WallpaperDetail(
                     .background(
                         brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                             colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.5f),
-                                Color.Black.copy(alpha = 0.8f)
+                                Color.Transparent, Color.Black.copy(alpha = 0.5f), Color.Black.copy(alpha = 0.8f)
                             )
                         )
                     )
@@ -202,13 +194,13 @@ fun WallpaperDetail(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = "作者: ${wallpaper.author}",
+                            text = stringResource(R.string.author, wallpaper.author ?: ""),
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White
                         )
 
                         Text(
-                            text = "来源: ${wallpaper.source}",
+                            text = stringResource(R.string.source, wallpaper.source ?: ""),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.7f)
                         )
@@ -224,22 +216,23 @@ fun WallpaperDetail(
                     ) {
                         // 分辨率
                         Text(
-                            text = "分辨率: ${wallpaper.resolution?.width} x ${wallpaper.resolution?.height}",
+                            text = stringResource(R.string.resolution, wallpaper.resolution?.width ?: 0, wallpaper.resolution?.height ?: 0),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.White.copy(alpha = 0.7f)
                         )
 
                         // 壁纸类型
                         Text(
-                            text = "类型: ${if (wallpaper.isLive) "动态壁纸" else "静态壁纸"}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.7f)
+                            text = stringResource(
+                                R.string.wallpaper_type,
+                                if (wallpaper.isLive) stringResource(R.string.live_wallpaper) else stringResource(R.string.static_wallpaper)
+                            ), style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.7f)
                         )
 
                         // 标签显示
                         if (wallpaper.tags.isNotEmpty()) {
                             Text(
-                                text = "标签:",
+                                text = stringResource(R.string.tags),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color.White.copy(alpha = 0.7f),
                                 modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
@@ -273,13 +266,11 @@ fun WallpaperDetail(
 
                 // 操作按钮行
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     // 收藏按钮
                     IconButton(
-                        onClick = onToggleFavorite,
-                        modifier = Modifier
+                        onClick = onToggleFavorite, modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f))
@@ -304,7 +295,7 @@ fun WallpaperDetail(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
-                                contentDescription = "编辑",
+                                contentDescription = stringResource(R.string.edit),
                                 tint = if (canEdit) Color.White else Color.White.copy(alpha = 0.5f)
                             )
                         }
@@ -339,7 +330,7 @@ fun WallpaperDetail(
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_download),
-                                    contentDescription = "下载",
+                                    contentDescription = stringResource(R.string.download),
                                     tint = if (canDownload && !isDownloading) Color.White else Color.White.copy(
                                         alpha = 0.5f
                                     )
@@ -361,30 +352,26 @@ fun WallpaperDetail(
 
                     // 分享按钮
                     IconButton(
-                        onClick = onShare,
-                        modifier = Modifier
+                        onClick = onShare, modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f))
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "分享",
-                            tint = Color.White
+                            imageVector = Icons.Default.Share, contentDescription = stringResource(R.string.share), tint = Color.White
                         )
                     }
 
                     // 信息展开/收起按钮
                     IconButton(
-                        onClick = onToggleInfo,
-                        modifier = Modifier
+                        onClick = onToggleInfo, modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.2f))
                     ) {
                         Icon(
                             imageVector = if (isInfoExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = if (isInfoExpanded) "收起信息" else "展开信息",
+                            contentDescription = if (isInfoExpanded) stringResource(R.string.collapse_info) else stringResource(R.string.expand_info),
                             tint = Color.White
                         )
                     }
@@ -395,29 +382,25 @@ fun WallpaperDetail(
                 Button(
                     onClick = onSetWallpaper,
                     // 始终启用按钮，但对于高级壁纸和非高级用户，点击会显示升级提示
-                    enabled = true,
-                    modifier = Modifier
+                    enabled = true, modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(
+                        .height(48.dp), colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
                     ) {
                         if (!canSetWallpaper) {
                             // 对于高级壁纸和非高级用户，显示皇冠图标
                             Text(
                                 text = "👑", // 皇冠emoji
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.padding(end = 4.dp)
+                                style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 4.dp)
                             )
                         }
                         Text(
-                            text = if (canSetWallpaper) "设置为壁纸" else "升级解锁此壁纸",
+                            text = if (canSetWallpaper) stringResource(R.string.set_as_wallpaper) else stringResource(R.string.upgrade_to_unlock),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -431,10 +414,7 @@ fun WallpaperDetail(
 
 @Composable
 fun WallpaperSetOptions(
-    onSetHomeScreen: () -> Unit,
-    onSetLockScreen: () -> Unit,
-    onSetBoth: () -> Unit,
-    onDismiss: () -> Unit
+    onSetHomeScreen: () -> Unit, onSetLockScreen: () -> Unit, onSetBoth: () -> Unit, onDismiss: () -> Unit
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -449,27 +429,23 @@ fun WallpaperSetOptions(
                 .padding(16.dp)
         ) {
             Text(
-                text = "设置为",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
+                text = stringResource(R.string.set_as), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 16.dp)
             )
 
             Button(
-                onClick = onSetHomeScreen,
-                modifier = Modifier
+                onClick = onSetHomeScreen, modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
-                Text(text = "主屏幕壁纸")
+                Text(text = stringResource(R.string.home_screen_wallpaper))
             }
 
             Button(
-                onClick = onSetLockScreen,
-                modifier = Modifier
+                onClick = onSetLockScreen, modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
-                Text(text = "锁屏壁纸")
+                Text(text = stringResource(R.string.lock_screen_wallpaper))
             }
 
             Button(
@@ -477,7 +453,7 @@ fun WallpaperSetOptions(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
-                Text(text = "主屏幕和锁屏")
+                Text(text = stringResource(R.string.home_and_lock_screen))
             }
 
             TextButton(
@@ -485,7 +461,7 @@ fun WallpaperSetOptions(
                     .fillMaxWidth()
                     .padding(vertical = 4.dp)
             ) {
-                Text(text = "取消")
+                Text(text = stringResource(R.string.cancel))
             }
         }
     }
@@ -497,17 +473,17 @@ fun WallpaperDetailPreview() {
     VistaraTheme {
         WallpaperDetail(
             wallpaper = Wallpaper(
-                id = "1",
-                title = "Beautiful Landscape",
-                url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
-                thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
-                author = "John Doe",
-                source = "Unsplash",
-                isPremium = true,
-                isLive = false,
-                tags = listOf("nature", "landscape"),
-                resolution = Resolution(1920, 1080)
-            ),
+            id = "1",
+            title = "Beautiful Landscape",
+            url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+            thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+            author = "John Doe",
+            source = "Unsplash",
+            isPremium = true,
+            isLive = false,
+            tags = listOf("nature", "landscape"),
+            resolution = Resolution(1920, 1080)
+        ),
             onBackPressed = {},
             onToggleInfo = {},
             onDownload = {},

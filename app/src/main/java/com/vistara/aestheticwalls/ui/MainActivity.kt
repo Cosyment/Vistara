@@ -15,10 +15,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.vistara.aestheticwalls.manager.LocaleManager
 import com.vistara.aestheticwalls.manager.ThemeManager
 import com.vistara.aestheticwalls.ui.navigation.MainNavigation
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -33,9 +37,17 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var themeManager: ThemeManager
 
+    @Inject
+    lateinit var localeManager: LocaleManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // 应用语言设置
+        CoroutineScope(Dispatchers.Main).launch {
+            localeManager.applyCurrentLanguage()
+        }
 
         // 处理导航意图
         handleNavigationIntent(intent)

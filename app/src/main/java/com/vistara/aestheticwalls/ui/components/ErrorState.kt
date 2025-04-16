@@ -16,15 +16,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
  * 错误状态组件
  * 显示错误消息和重试按钮
- * 
+ *
  * @param message 错误消息
  * @param onRetry 重试操作回调
  * @param modifier 可选的修饰符
@@ -49,9 +51,9 @@ fun ErrorState(
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.error
         ) */
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // 错误消息
         Text(
             text = message,
@@ -59,14 +61,14 @@ fun ErrorState(
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         // 重试按钮
         Button(
             onClick = onRetry
         ) {
-            Text("重试")
+            Text(stringResource(R.string.retry))
         }
     }
 }
@@ -77,7 +79,7 @@ fun ErrorStatePreview() {
     VistaraTheme {
         Surface {
             ErrorState(
-                message = "加载失败，请检查网络连接",
+                message = stringResource(R.string.error_network_check),
                 onRetry = {}
             )
         }

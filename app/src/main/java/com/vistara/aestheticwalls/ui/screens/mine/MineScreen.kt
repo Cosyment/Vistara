@@ -53,9 +53,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
@@ -113,9 +115,9 @@ fun MineScreen(
     // 登录提示对话框
     needLoginAction?.let { action ->
         val message = when (action) {
-            MineViewModel.LoginAction.FAVORITES -> "收藏列表需要登录后才能使用"
-            MineViewModel.LoginAction.DOWNLOADS -> "下载列表需要登录后才能使用"
-            MineViewModel.LoginAction.AUTO_WALLPAPER -> "自动更换壁纸需要登录后才能使用"
+            MineViewModel.LoginAction.FAVORITES -> stringResource(R.string.favorites_login_required)
+            MineViewModel.LoginAction.DOWNLOADS -> stringResource(R.string.downloads_login_required)
+            MineViewModel.LoginAction.AUTO_WALLPAPER -> stringResource(R.string.auto_wallpaper_login_required)
         }
 
         LoginPromptDialog(
@@ -162,21 +164,30 @@ fun MineScreen(
 
             // 功能列表
             FeatureItem(
-                icon = Icons.Default.Favorite, title = "我的收藏", subtitle = "查看所有收藏的壁纸", onClick = {
+                icon = Icons.Default.Favorite,
+                title = stringResource(R.string.my_favorites),
+                subtitle = stringResource(R.string.my_favorites_desc),
+                onClick = {
                     viewModel.checkLoginAndExecute(MineViewModel.LoginAction.FAVORITES) {
                         onFavoritesClick()
                     }
                 })
 
             FeatureItem(
-                icon = Icons.Default.Star, title = "我的下载", subtitle = "查看所有下载的壁纸", onClick = {
+                icon = Icons.Default.Star,
+                title = stringResource(R.string.my_downloads),
+                subtitle = stringResource(R.string.my_downloads_desc),
+                onClick = {
                     viewModel.checkLoginAndExecute(MineViewModel.LoginAction.DOWNLOADS) {
                         onDownloadsClick()
                     }
                 })
 
             FeatureItem(
-                icon = Icons.Default.Refresh, title = "自动更换壁纸", subtitle = "设置自动更换壁纸的频率和来源", onClick = {
+                icon = Icons.Default.Refresh,
+                title = stringResource(R.string.auto_change_wallpaper),
+                subtitle = stringResource(R.string.auto_change_wallpaper_desc),
+                onClick = {
                     viewModel.checkLoginAndExecute(MineViewModel.LoginAction.AUTO_WALLPAPER) {
                         onAutoChangeClick()
                     }
@@ -187,15 +198,24 @@ fun MineScreen(
             )
 
             FeatureItem(
-                icon = Icons.Default.Settings, title = "设置", subtitle = "调整应用偏好和通知", onClick = onSettingsClick
+                icon = Icons.Default.Settings,
+                title = stringResource(R.string.settings),
+                subtitle = stringResource(R.string.settings_desc),
+                onClick = onSettingsClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Star, title = "评分与反馈", subtitle = "帮助我们改进应用", onClick = onFeedbackClick
+                icon = Icons.Default.Star,
+                title = stringResource(R.string.rate_feedback),
+                subtitle = stringResource(R.string.rate_feedback_desc),
+                onClick = onFeedbackClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Info, title = "关于与致谢", subtitle = "查看应用信息和版权", onClick = onAboutClick
+                icon = Icons.Default.Info,
+                title = stringResource(R.string.about_credits),
+                subtitle = stringResource(R.string.about_credits_desc),
+                onClick = onAboutClick
             )
 
             // 开发者模式下显示测试工具入口
@@ -206,7 +226,10 @@ fun MineScreen(
                 )
 
                 FeatureItem(
-                    icon = Icons.Default.Build, title = "测试工具", subtitle = "测试API接口和其他功能", onClick = onTestToolsClick
+                    icon = Icons.Default.Build,
+                    title = stringResource(R.string.test_tools),
+                    subtitle = stringResource(R.string.test_tools_desc),
+                    onClick = onTestToolsClick
                 )
             }
         }
@@ -253,7 +276,7 @@ private fun MineHeader(
             // 会员状态
             if (isPremiumUser) {
                 Text(
-                    text = "高级会员",
+                    text = stringResource(R.string.premium_user),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 4.dp)
@@ -262,7 +285,7 @@ private fun MineHeader(
         } else {
             // 未登录状态
             Text(
-                text = "未登录", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
+                text = stringResource(R.string.not_logged_in), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -274,7 +297,7 @@ private fun MineHeader(
                 ), shape = RoundedCornerShape(20.dp), modifier = Modifier.padding(top = 8.dp)
             ) {
                 Text(
-                    text = "点击登录",
+                    text = stringResource(R.string.login),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -311,7 +334,7 @@ private fun PremiumBanner(
                 .padding(16.dp), contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "✨ 解锁全部特权，畅享高清视界 ✨",
+                text = stringResource(R.string.premium_banner),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White

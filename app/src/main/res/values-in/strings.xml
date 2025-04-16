@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vistara</string>
+    <string name="search_hint">Cari wallpaper...</string>
+
+    <!-- String terkait notifikasi -->
+    <string name="notification_channel_wallpaper">Notifikasi Perubahan Wallpaper</string>
+    <string name="notification_channel_wallpaper_desc">Notifikasi tentang status perubahan otomatis wallpaper</string>
+    <string name="notification_channel_download">Notifikasi Unduhan</string>
+    <string name="notification_channel_download_desc">Notifikasi tentang kemajuan unduhan dan penyelesaian wallpaper</string>
+
+    <string name="notification_wallpaper_changed_title">Wallpaper Telah Diubah</string>
+    <string name="notification_wallpaper_changed_text">Wallpaper Anda telah berhasil diubah</string>
+
+    <string name="notification_download_progress_title">Mengunduh Wallpaper</string>
+    <string name="notification_download_progress_text">Wallpaper sedang diunduh</string>
+
+    <string name="notification_download_complete_title">Unduhan Wallpaper Selesai</string>
+    <string name="notification_download_complete_text">Wallpaper telah berhasil diunduh ke perangkat Anda</string>
+
+    <!-- String terkait wallpaper video -->
+    <string name="video_wallpaper_description">Gunakan video sebagai wallpaper hidup</string>
+    <string name="video_wallpaper_set_success">Wallpaper video berhasil diatur</string>
+    <string name="video_wallpaper_set_failed">Gagal mengatur wallpaper video</string>
+    <string name="video_wallpaper_download_failed">Unduhan video gagal</string>
+    <string name="video_wallpaper_select_guide">Silakan pilih \"Vistara Video Wallpaper\" dan klik \"Atur Wallpaper\"</string>
+
+    <!-- Layar pengaturan -->
+    <string name="settings">Pengaturan</string>
+    <string name="back">Kembali</string>
+    <string name="theme_settings">Pengaturan Tema</string>
+    <string name="dark_theme">Tema Gelap</string>
+    <string name="dark_theme_desc">Aktifkan tema gelap untuk aplikasi</string>
+    <string name="dynamic_colors">Warna Dinamis</string>
+    <string name="dynamic_colors_desc">Gunakan warna dinamis sistem (hanya Android 12+)</string>
+    <string name="notification_settings">Pengaturan Notifikasi</string>
+    <string name="download_notification">Notifikasi Unduhan</string>
+    <string name="download_notification_desc">Tampilkan notifikasi penyelesaian unduhan wallpaper</string>
+    <string name="wallpaper_change_notification">Notifikasi Perubahan Wallpaper</string>
+    <string name="wallpaper_change_notification_desc">Tampilkan notifikasi perubahan wallpaper otomatis</string>
+    <string name="download_settings">Pengaturan Unduhan</string>
+    <string name="original_quality">Kualitas Asli</string>
+    <string name="original_quality_desc">Unduh wallpaper dalam kualitas asli (file lebih besar)</string>
+    <string name="clear_cache">Bersihkan Cache</string>
+    <string name="current_cache_size">Ukuran cache saat ini: %1$s</string>
+    <string name="about_app">Tentang Aplikasi</string>
+    <string name="app_version">Versi Aplikasi</string>
+    <string name="account_settings">Pengaturan Akun</string>
+    <string name="sign_out">Keluar</string>
+    <string name="sign_out_desc">Keluar dari akun saat ini</string>
+    <string name="clear_cache_title">Bersihkan Cache</string>
+    <string name="clear_cache_message">Apakah Anda yakin ingin membersihkan cache aplikasi? Ini akan menghapus semua gambar dan data yang di-cache.</string>
+    <string name="clear">Bersihkan</string>
+    <string name="cancel">Batal</string>
+    <string name="language_settings">Pengaturan Bahasa</string>
+    <string name="language">Bahasa</string>
+    <string name="language_desc">Ubah bahasa aplikasi</string>
+    <string name="system_default">Default Sistem</string>
+    <string name="english">Bahasa Inggris</string>
+    <string name="chinese">Bahasa Mandarin</string>
+    <string name="japanese">Bahasa Jepang</string>
+    <string name="korean">Bahasa Korea</string>
+    <string name="indonesian">Bahasa Indonesia</string>
+
+    <!-- Layar Saya -->
+    <string name="my_favorites">Favorit Saya</string>
+    <string name="my_favorites_desc">Lihat semua wallpaper favorit Anda</string>
+    <string name="my_downloads">Unduhan Saya</string>
+    <string name="my_downloads_desc">Lihat semua wallpaper yang diunduh</string>
+    <string name="auto_change_wallpaper">Perubahan Wallpaper Otomatis</string>
+    <string name="auto_change_wallpaper_desc">Atur frekuensi dan sumber untuk perubahan wallpaper otomatis</string>
+    <string name="settings_desc">Sesuaikan preferensi aplikasi dan notifikasi</string>
+    <string name="rate_feedback">Nilai &amp; Umpan Balik</string>
+    <string name="rate_feedback_desc">Bantu kami meningkatkan aplikasi</string>
+    <string name="about_credits">Tentang &amp; Kredit</string>
+    <string name="about_credits_desc">Lihat informasi aplikasi dan hak cipta</string>
+    <string name="test_tools">Alat Uji</string>
+    <string name="test_tools_desc">Uji antarmuka API dan fitur lainnya</string>
+    <string name="not_logged_in">Belum Masuk</string>
+    <string name="login">Masuk</string>
+    <string name="premium_user">Pengguna Premium</string>
+    <string name="premium_banner">✨ Buka semua hak istimewa, nikmati pengalaman HD ✨</string>
+    <string name="favorites_login_required">Anda perlu masuk untuk menggunakan daftar favorit</string>
+    <string name="downloads_login_required">Anda perlu masuk untuk menggunakan daftar unduhan</string>
+    <string name="auto_wallpaper_login_required">Anda perlu masuk untuk menggunakan perubahan wallpaper otomatis</string>
+
+    <!-- Layar Tentang -->
+    <string name="app_description">Vistara Wallpaper adalah aplikasi wallpaper yang indah yang menyediakan wallpaper statis dan hidup berkualitas tinggi untuk menyegarkan perangkat Anda.</string>
+    <string name="user_agreement">Perjanjian Pengguna</string>
+    <string name="privacy_policy">Kebijakan Privasi</string>
+    <string name="terms_of_service">Ketentuan Layanan</string>
+    <!-- Kategori Wallpaper -->
+    <string name="category_all">Semua</string>
+    <string name="category_abstract">Abstrak</string>
+    <string name="category_tech">Teknologi</string>
+    <string name="category_nature">Alam</string>
+    <string name="category_cyberpunk">Cyberpunk</string>
+    <string name="category_particle">Partikel</string>
+    <string name="category_fluid">Fluida</string>
+    <string name="category_landscape">Pemandangan</string>
+    <string name="category_portrait">Potret</string>
+    <string name="category_city">Kota</string>
+    <string name="category_illustration">Ilustrasi</string>
+    <string name="category_minimal">Minimalis</string>
+    <string name="category_animal">Hewan</string>
+    <string name="category_food">Makanan</string>
+    <string name="category_static">Wallpaper Statis</string>
+    <string name="category_live">Wallpaper Hidup</string>
+
+    <!-- Pesan kesalahan -->
+    <string name="error_loading_wallpapers">Gagal memuat wallpaper</string>
+    <string name="error_filtering_wallpapers">Gagal memfilter wallpaper</string>
+    <string name="error_already_premium">Anda sudah menjadi pengguna premium</string>
+    <string name="error_billing_not_connected">Layanan pembayaran tidak terhubung, silakan coba lagi nanti</string>
+</resources>

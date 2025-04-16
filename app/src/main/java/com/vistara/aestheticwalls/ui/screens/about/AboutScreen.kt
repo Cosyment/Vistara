@@ -43,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -109,7 +110,7 @@ private fun AppInfoSection(
                 .background(MaterialTheme.colorScheme.primary)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = "应用图标", modifier = Modifier.fillMaxSize()
+                painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = stringResource(R.string.app_name), modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -117,7 +118,7 @@ private fun AppInfoSection(
 
         // 应用名称
         Text(
-            text = "Vistara壁纸", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold
+            text = stringResource(R.string.app_name), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -131,7 +132,7 @@ private fun AppInfoSection(
 
         // 应用描述
         Text(
-            text = "Vistara壁纸是一款精美的壁纸应用，提供高质量的静态和动态壁纸，让您的设备焕然一新。",
+            text = stringResource(R.string.app_description),
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -140,16 +141,16 @@ private fun AppInfoSection(
         Spacer(modifier = Modifier.height(16.dp))
 
         LinkItem(
-            title = "用户协议", onClick = onGitHubRepoClick
+            title = stringResource(R.string.user_agreement), onClick = onGitHubRepoClick
         )
 
         // 链接
         LinkItem(
-            title = "隐私政策", onClick = onPrivacyPolicyClick
+            title = stringResource(R.string.privacy_policy), onClick = onPrivacyPolicyClick
         )
 
         LinkItem(
-            title = "服务条款", onClick = onTermsOfServiceClick
+            title = stringResource(R.string.terms_of_service), onClick = onTermsOfServiceClick
         )
     }
 }

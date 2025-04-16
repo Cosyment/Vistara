@@ -24,4 +24,162 @@
     <string name="video_wallpaper_set_failed">视频壁纸设置失败</string>
     <string name="video_wallpaper_download_failed">视频下载失败</string>
     <string name="video_wallpaper_select_guide">请选择「Vistara视频壁纸」并点击「设置壁纸」</string>
+
+    <!-- 设置页面 -->
+    <string name="settings">设置</string>
+    <string name="back">返回</string>
+    <string name="theme_settings">主题设置</string>
+    <string name="dark_theme">深色主题</string>
+    <string name="dark_theme_desc">启用应用深色主题</string>
+    <string name="dynamic_colors">动态颜色</string>
+    <string name="dynamic_colors_desc">使用系统动态颜色（仅Android 12+）</string>
+    <string name="notification_settings">通知设置</string>
+    <string name="download_notification">下载通知</string>
+    <string name="download_notification_desc">显示壁纸下载完成通知</string>
+    <string name="wallpaper_change_notification">壁纸更换通知</string>
+    <string name="wallpaper_change_notification_desc">显示自动壁纸更换通知</string>
+    <string name="download_settings">下载设置</string>
+    <string name="original_quality">原始质量</string>
+    <string name="original_quality_desc">下载原始质量的壁纸（较大文件）</string>
+    <string name="clear_cache">清除缓存</string>
+    <string name="current_cache_size">当前缓存大小: %1$s</string>
+    <string name="about_app">关于应用</string>
+    <string name="app_version">应用版本</string>
+    <string name="account_settings">账户设置</string>
+    <string name="sign_out">退出登录</string>
+    <string name="sign_out_desc">退出当前账户</string>
+    <string name="clear_cache_title">清除缓存</string>
+    <string name="clear_cache_message">确定要清除应用缓存吗？这将删除所有缓存的图片和数据。</string>
+    <string name="clear">清除</string>
+    <string name="language_settings">语言设置</string>
+    <string name="language">语言</string>
+    <string name="language_desc">更改应用语言</string>
+    <string name="system_default">系统默认</string>
+    <string name="english">英文</string>
+    <string name="chinese">中文</string>
+    <string name="japanese">日文</string>
+    <string name="korean">韩文</string>
+    <string name="indonesian">印尼文</string>
+
+    <!-- 个人中心页面 -->
+    <string name="my_favorites">我的收藏</string>
+    <string name="my_favorites_desc">查看所有收藏的壁纸</string>
+    <string name="my_downloads">我的下载</string>
+    <string name="my_downloads_desc">查看所有下载的壁纸</string>
+    <string name="auto_change_wallpaper">自动更换壁纸</string>
+    <string name="auto_change_wallpaper_desc">设置自动更换壁纸的频率和来源</string>
+    <string name="settings_desc">调整应用偏好和通知</string>
+    <string name="rate_feedback">评分与反馈</string>
+    <string name="rate_feedback_desc">帮助我们改进应用</string>
+    <string name="about_credits">关于与致谢</string>
+    <string name="about_credits_desc">查看应用信息和版权</string>
+    <string name="test_tools">测试工具</string>
+    <string name="test_tools_desc">测试API接口和其他功能</string>
+    <string name="not_logged_in">未登录</string>
+    <string name="login">点击登录</string>
+    <string name="premium_user">高级会员</string>
+    <string name="premium_banner">✨ 解锁全部特权，畅享高清视界 ✨</string>
+    <string name="favorites_login_required">收藏列表需要登录后才能使用</string>
+    <string name="downloads_login_required">下载列表需要登录后才能使用</string>
+    <string name="auto_wallpaper_login_required">自动更换壁纸需要登录后才能使用</string>
+
+    <!-- 关于页面 -->
+    <string name="app_description">Vistara壁纸是一款精美的壁纸应用，提供高质量的静态和动态壁纸，让您的设备焕然一新。</string>
+    <string name="user_agreement">用户协议</string>
+    <string name="privacy_policy">隐私政策</string>
+    <string name="terms_of_service">服务条款</string>
+
+    <!-- 壁纸分类 -->
+    <string name="category_all">全部</string>
+    <string name="category_abstract">抽象</string>
+    <string name="category_tech">科技感</string>
+    <string name="category_nature">自然</string>
+    <string name="category_cyberpunk">赛博朋克</string>
+    <string name="category_particle">粒子</string>
+    <string name="category_fluid">流体</string>
+    <string name="category_landscape">风景</string>
+    <string name="category_portrait">人像</string>
+    <string name="category_city">城市</string>
+    <string name="category_illustration">插画</string>
+    <string name="category_minimal">简约</string>
+    <string name="category_animal">动物</string>
+    <string name="category_food">食物</string>
+    <string name="category_static">静态壁纸</string>
+    <string name="category_live">动态壁纸</string>
+
+    <!-- 错误消息 -->
+    <string name="error_loading_wallpapers">加载壁纸失败</string>
+    <string name="error_filtering_wallpapers">筛选壁纸失败</string>
+    <string name="error_already_premium">您已经是高级用户</string>
+    <string name="error_billing_not_connected">支付服务未连接，请稍后再试</string>
+    <string name="error_network_check">加载失败，请检查网络连接</string>
+
+    <!-- 通用按钮和提示 -->
+    <string name="retry">重试</string>
+    <string name="loading">加载中...</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确认</string>
+    <string name="login_required">需要登录</string>
+    <string name="login_required_message">该功能需要登录后才能使用，是否前往登录页面？</string>
+    <string name="go_to_login">去登录</string>
+    <string name="close">关闭</string>
+    <string name="maybe_later">稍后再说</string>
+
+    <!-- 高级会员相关 -->
+    <string name="premium_title">解锁高级功能</string>
+    <string name="premium_user_title">您已是高级会员</string>
+    <string name="premium_description">升级到高级版，解锁所有壁纸和功能</string>
+    <string name="premium_user_description">感谢您的支持，您可以使用所有高级功能</string>
+    <string name="premium_feature_1">无限下载高清壁纸</string>
+    <string name="premium_feature_2">去除所有广告</string>
+    <string name="premium_feature_3">专属高级壁纸</string>
+    <string name="premium_feature_4">高级编辑功能</string>
+    <string name="premium_feature_5">自动更换壁纸</string>
+    <string name="select_subscription">选择订阅计划</string>
+    <string name="monthly_plan">月会员</string>
+    <string name="quarterly_plan">季度会员</string>
+    <string name="yearly_plan">年会员</string>
+    <string name="monthly_price">¥18.99</string>
+    <string name="quarterly_price">¥49.99</string>
+    <string name="yearly_price">¥168.99</string>
+    <string name="quarterly_discount">省17%</string>
+    <string name="yearly_discount">省27%</string>
+    <string name="upgrade_now">立即升级</string>
+    <string name="connecting_payment">正在连接支付服务...</string>
+    <string name="all_premium_features_unlocked">已解锁全部高级功能</string>
+
+    <!-- 壁纸详情页面 -->
+    <string name="start_download_wallpaper">开始下载壁纸</string>
+    <string name="download_failed_permission_denied">无法下载壁纸：存储权限被拒绝</string>
+    <string name="storage_permission_required">需要存储权限</string>
+    <string name="storage_permission_rationale">为了将壁纸保存到相册，需要获取存储权限。请允许此权限以便下载壁纸。</string>
+    <string name="grant_permission">授予权限</string>
+    <string name="download_failed_permission_required">无法下载壁纸：需要存储权限</string>
+    <string name="favorite_login_required">收藏壁纸需要登录后才能使用</string>
+    <string name="download_login_required">下载壁纸需要登录后才能使用</string>
+    <string name="set_wallpaper_login_required">设置壁纸需要登录后才能使用</string>
+    <string name="edit_login_required">编辑壁纸需要登录后才能使用</string>
+
+    <!-- 壁纸详情组件 -->
+    <string name="author">作者: %1$s</string>
+    <string name="source">来源: %1$s</string>
+    <string name="resolution">分辨率: %1$d x %2$d</string>
+    <string name="wallpaper_type">类型: %1$s</string>
+    <string name="static_wallpaper">静态壁纸</string>
+    <string name="live_wallpaper">动态壁纸</string>
+    <string name="tags">标签:</string>
+    <string name="set_as_wallpaper">设置为壁纸</string>
+    <string name="download">下载</string>
+    <string name="share">分享</string>
+    <string name="edit">编辑</string>
+    <string name="set_home_screen">设置为主屏幕</string>
+    <string name="set_lock_screen">设置为锁屏</string>
+    <string name="set_both_screens">同时设置</string>
+    <string name="collapse_info">收起信息</string>
+    <string name="expand_info">展开信息</string>
+    <string name="set_as">设置为</string>
+    <string name="home_screen_wallpaper">主屏幕壁纸</string>
+    <string name="lock_screen_wallpaper">锁屏壁纸</string>
+    <string name="home_and_lock_screen">主屏幕和锁屏</string>
+    <string name="upgrade_to_unlock">升级解锁此壁纸</string>
 </resources>

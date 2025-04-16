@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.ui.screens.lives
 
 import android.app.Activity
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,7 +14,9 @@ import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.vistara.aestheticwalls.R
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -29,7 +32,8 @@ import javax.inject.Inject
 class LiveLibraryViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userRepository: UserRepository,
-    private val billingManager: BillingManager
+    private val billingManager: BillingManager,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
@@ -43,12 +47,20 @@ class LiveLibraryViewModel @Inject constructor(
 
     // 分类数据
     val categories = listOf(
-        "全部", "抽象", "科技感", "自然", "赛博朋克", "粒子", "流体", "风景", "人像"
+        R.string.category_all,
+        R.string.category_abstract,
+        R.string.category_tech,
+        R.string.category_nature,
+        R.string.category_cyberpunk,
+        R.string.category_particle,
+        R.string.category_fluid,
+        R.string.category_landscape,
+        R.string.category_portrait
     )
 
     // 当前选中的分类
-    private val _selectedCategory = MutableStateFlow("全部")
-    val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
+    private val _selectedCategory = MutableStateFlow(R.string.category_all)
+    val selectedCategory: StateFlow<Int> = _selectedCategory.asStateFlow()
 
     // 分页加载相关状态
     private val _currentPage = MutableStateFlow(1)
@@ -165,7 +177,7 @@ class LiveLibraryViewModel @Inject constructor(
 
             try {
                 // 根据是否有分类筛选决定调用哪个API
-                val result = if (categoryFilter != null && categoryFilter != "全部") {
+                val result = if (categoryFilter != null) {
                     // 使用分类ID格式："pexels_分类名称"
                     val categoryId = "pexels_${categoryFilter.lowercase()}"
                     wallpaperRepository.getWallpapersByCategory(
@@ -211,7 +223,7 @@ class LiveLibraryViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Exception during loading: ${e.message}", e)
-                _wallpapersState.value = UiState.Error(e.message ?: "加载壁纸失败")
+                _wallpapersState.value = UiState.Error(e.message ?: context.getString(R.string.error_loading_wallpapers))
             } finally {
                 // 无论成功失败，都重置加载状态
                 _isRefreshing.value = false
@@ -222,16 +234,17 @@ class LiveLibraryViewModel @Inject constructor(
 
     /**
      * 根据分类筛选壁纸
-     * @param category 分类名称
+     * @param categoryResId 分类资源ID
      */
-    fun filterByCategory(category: String) {
+    fun filterByCategory(categoryResId: Int) {
         // 如果当前已经是这个分类，不需要重复筛选
-        if (_selectedCategory.value == category) return
+        if (_selectedCategory.value == categoryResId) return
 
-        Log.d(TAG, "Filtering by category: $category")
+        val categoryName = context.getString(categoryResId)
+        Log.d(TAG, "Filtering by category: $categoryName")
 
         // 先更新选中的分类，这样UI可以立即响应
-        _selectedCategory.value = category
+        _selectedCategory.value = categoryResId
 
         // 在单独的协程中处理数据加载，避免阻塞UI线程
         viewModelScope.launch {
@@ -240,7 +253,7 @@ class LiveLibraryViewModel @Inject constructor(
             _canLoadMore.value = true
 
             // 如果选择"全部"，则重新加载所有壁纸
-            if (category == "全部") {
+            if (categoryResId == R.string.category_all) {
                 // 先设置加载状态，然后再清空列表，避免闪烁
                 _wallpapersState.value = UiState.Loading
                 _wallpapers.value = emptyList()
@@ -258,8 +271,9 @@ class LiveLibraryViewModel @Inject constructor(
                     _wallpapersState.value = UiState.Loading
 
                     // 在后台进行筛选，不会阻塞UI
+                    val categoryName = context.getString(categoryResId)
                     val filtered = allWallpapers.filter { wallpaper ->
-                        wallpaper.tags.any { it.contains(category, ignoreCase = true) }
+                        wallpaper.tags.any { it.contains(categoryName, ignoreCase = true) }
                     }
 
                     if (filtered.isNotEmpty()) {
@@ -267,20 +281,21 @@ class LiveLibraryViewModel @Inject constructor(
                         _wallpapersState.value = UiState.Success(filtered)
                     } else {
                         // 如果筛选后没有数据，尝试从服务器按分类加载
-                        Log.d(TAG, "No filtered results, loading from server with category: $category")
+                        Log.d(TAG, "No filtered results, loading from server with category: $categoryName")
                         _wallpapers.value = emptyList()
-                        loadWallpapers(true, category)
+                        loadWallpapers(true, categoryName)
                     }
                 } else {
                     // 如果没有数据，按分类从服务器加载
-                    Log.d(TAG, "No existing data, loading from server with category: $category")
+                    val categoryName = context.getString(categoryResId)
+                    Log.d(TAG, "No existing data, loading from server with category: $categoryName")
                     _wallpapersState.value = UiState.Loading
                     _wallpapers.value = emptyList()
-                    loadWallpapers(true, category)
+                    loadWallpapers(true, categoryName)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error filtering by category: ${e.message}", e)
-                _wallpapersState.value = UiState.Error(e.message ?: "筛选壁纸失败")
+                _wallpapersState.value = UiState.Error(e.message ?: context.getString(R.string.error_filtering_wallpapers))
             }
         }
     }
@@ -291,8 +306,10 @@ class LiveLibraryViewModel @Inject constructor(
     fun refresh() {
         Log.d(TAG, "refresh called")
         // 使用当前选中的分类进行刷新
-        val currentCategory = _selectedCategory.value
-        val categoryFilter = if (currentCategory != "全部") currentCategory else null
+        val currentCategoryResId = _selectedCategory.value
+        val categoryFilter = if (currentCategoryResId != R.string.category_all) {
+            context.getString(currentCategoryResId)
+        } else null
         loadWallpapers(true, categoryFilter)
     }
 
@@ -307,8 +324,10 @@ class LiveLibraryViewModel @Inject constructor(
         }
         Log.d(TAG, "loadMore executing loadWallpapers(false)")
         // 使用当前选中的分类加载更多
-        val currentCategory = _selectedCategory.value
-        val categoryFilter = if (currentCategory != "全部") currentCategory else null
+        val currentCategoryResId = _selectedCategory.value
+        val categoryFilter = if (currentCategoryResId != R.string.category_all) {
+            context.getString(currentCategoryResId)
+        } else null
         loadWallpapers(false, categoryFilter)
     }
 
@@ -317,12 +336,12 @@ class LiveLibraryViewModel @Inject constructor(
      */
     fun upgradeToPremium(activity: Activity?) {
         if (_isPremiumUser.value) {
-            _upgradeResult.value = UpgradeResult.Error("您已经是高级用户")
+            _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.error_already_premium))
             return
         }
 
         if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
+            _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.error_billing_not_connected))
             return
         }
 

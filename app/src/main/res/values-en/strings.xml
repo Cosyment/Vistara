@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vistara</string>
+    <string name="search_hint">Search wallpapers...</string>
+
+    <!-- Notification related strings -->
+    <string name="notification_channel_wallpaper">Wallpaper Change Notification</string>
+    <string name="notification_channel_wallpaper_desc">Notifications about wallpaper auto-change status</string>
+    <string name="notification_channel_download">Download Notification</string>
+    <string name="notification_channel_download_desc">Notifications about wallpaper download progress and completion</string>
+
+    <string name="notification_wallpaper_changed_title">Wallpaper Changed</string>
+    <string name="notification_wallpaper_changed_text">Your wallpaper has been successfully changed</string>
+
+    <string name="notification_download_progress_title">Downloading Wallpaper</string>
+    <string name="notification_download_progress_text">Wallpaper is downloading</string>
+
+    <string name="notification_download_complete_title">Wallpaper Download Complete</string>
+    <string name="notification_download_complete_text">Wallpaper has been successfully downloaded to your device</string>
+
+    <!-- Video wallpaper related strings -->
+    <string name="video_wallpaper_description">Use video as live wallpaper</string>
+    <string name="video_wallpaper_set_success">Video wallpaper set successfully</string>
+    <string name="video_wallpaper_set_failed">Failed to set video wallpaper</string>
+    <string name="video_wallpaper_download_failed">Video download failed</string>
+    <string name="video_wallpaper_select_guide">Please select \"Vistara Video Wallpaper\" and click \"Set Wallpaper\"</string>
+
+    <!-- Settings screen -->
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="theme_settings">Theme Settings</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="dark_theme_desc">Enable dark theme for the app</string>
+    <string name="dynamic_colors">Dynamic Colors</string>
+    <string name="dynamic_colors_desc">Use system dynamic colors (Android 12+ only)</string>
+    <string name="notification_settings">Notification Settings</string>
+    <string name="download_notification">Download Notification</string>
+    <string name="download_notification_desc">Show wallpaper download completion notification</string>
+    <string name="wallpaper_change_notification">Wallpaper Change Notification</string>
+    <string name="wallpaper_change_notification_desc">Show auto wallpaper change notification</string>
+    <string name="download_settings">Download Settings</string>
+    <string name="original_quality">Original Quality</string>
+    <string name="original_quality_desc">Download wallpapers in original quality (larger files)</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="current_cache_size">Current cache size: %1$s</string>
+    <string name="about_app">About App</string>
+    <string name="app_version">App Version</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="sign_out_desc">Sign out from current account</string>
+    <string name="clear_cache_title">Clear Cache</string>
+    <string name="clear_cache_message">Are you sure you want to clear the app cache? This will delete all cached images and data.</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="language_settings">Language Settings</string>
+    <string name="language">Language</string>
+    <string name="language_desc">Change app language</string>
+    <string name="system_default">System Default</string>
+    <string name="english">English</string>
+    <string name="chinese">Chinese</string>
+    <string name="japanese">Japanese</string>
+    <string name="korean">Korean</string>
+    <string name="indonesian">Indonesian</string>
+
+    <!-- Mine screen -->
+    <string name="my_favorites">My Favorites</string>
+    <string name="my_favorites_desc">View all your favorite wallpapers</string>
+    <string name="my_downloads">My Downloads</string>
+    <string name="my_downloads_desc">View all your downloaded wallpapers</string>
+    <string name="auto_change_wallpaper">Auto Change Wallpaper</string>
+    <string name="auto_change_wallpaper_desc">Set frequency and source for auto wallpaper changes</string>
+    <string name="settings_desc">Adjust app preferences and notifications</string>
+    <string name="rate_feedback">Rate &amp; Feedback</string>
+    <string name="rate_feedback_desc">Help us improve the app</string>
+    <string name="about_credits">About &amp; Credits</string>
+    <string name="about_credits_desc">View app information and copyright</string>
+    <string name="test_tools">Test Tools</string>
+    <string name="test_tools_desc">Test API interfaces and other features</string>
+    <string name="not_logged_in">Not Logged In</string>
+    <string name="login">Login</string>
+    <string name="premium_user">Premium User</string>
+    <string name="premium_banner">✨ Unlock all privileges, enjoy HD experience ✨</string>
+    <string name="favorites_login_required">You need to log in to use favorites list</string>
+    <string name="downloads_login_required">You need to log in to use downloads list</string>
+    <string name="auto_wallpaper_login_required">You need to log in to use auto wallpaper change</string>
+
+    <!-- About screen -->
+    <string name="app_description">Vistara Wallpaper is a beautiful wallpaper app that provides high-quality static and live wallpapers to refresh your device.</string>
+    <string name="user_agreement">User Agreement</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <!-- Wallpaper categories -->
+    <string name="category_all">All</string>
+    <string name="category_abstract">Abstract</string>
+    <string name="category_tech">Tech</string>
+    <string name="category_nature">Nature</string>
+    <string name="category_cyberpunk">Cyberpunk</string>
+    <string name="category_particle">Particle</string>
+    <string name="category_fluid">Fluid</string>
+    <string name="category_landscape">Landscape</string>
+    <string name="category_portrait">Portrait</string>
+    <string name="category_city">City</string>
+    <string name="category_illustration">Illustration</string>
+    <string name="category_minimal">Minimal</string>
+    <string name="category_animal">Animal</string>
+    <string name="category_food">Food</string>
+    <string name="category_static">Static Wallpapers</string>
+    <string name="category_live">Live Wallpapers</string>
+
+    <!-- Error messages -->
+    <string name="error_loading_wallpapers">Failed to load wallpapers</string>
+    <string name="error_filtering_wallpapers">Failed to filter wallpapers</string>
+    <string name="error_already_premium">You are already a premium user</string>
+    <string name="error_billing_not_connected">Payment service not connected, please try again later</string>
+</resources>

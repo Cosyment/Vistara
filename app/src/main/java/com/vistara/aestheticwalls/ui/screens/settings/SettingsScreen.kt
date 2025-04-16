@@ -1,8 +1,10 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
 import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,10 +51,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.components.LanguageSelector
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsViewModel.NotificationType
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
@@ -63,16 +68,12 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onBackPressed: () -> Unit,
-    onNavigateToLogin: () -> Unit = {},
-    onNavigateToFavorites: () -> Unit = {},
-    onNavigateToDownloads: () -> Unit = {},
-    onNavigateToAutoChange: () -> Unit = {},
-    viewModel: SettingsViewModel = hiltViewModel()
+    onBackPressed: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()
 ) {
     // 从ViewModel获取状态
     val darkTheme by viewModel.darkTheme.collectAsState()
     val dynamicColors by viewModel.dynamicColors.collectAsState()
+    val appLanguage by viewModel.appLanguage.collectAsState()
     val showDownloadNotification by viewModel.showDownloadNotification.collectAsState()
     val showWallpaperChangeNotification by viewModel.showWallpaperChangeNotification.collectAsState()
     val downloadOriginalQuality by viewModel.downloadOriginalQuality.collectAsState()
@@ -83,7 +84,6 @@ fun SettingsScreen(
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val isLoggingOut by viewModel.isLoggingOut.collectAsState()
     val operationResult by viewModel.operationResult.collectAsState()
-    val needLoginAction by viewModel.needLoginAction.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // 当前请求的通知类型
@@ -107,7 +107,9 @@ fun SettingsScreen(
     LaunchedEffect(needNotificationPermission) {
         if (needNotificationPermission) {
             // 请求通知权限
-            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
@@ -123,10 +125,10 @@ fun SettingsScreen(
     }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-        TopAppBar(title = { Text("设置") }, navigationIcon = {
+        TopAppBar(title = { Text(stringResource(R.string.settings)) }, navigationIcon = {
             IconButton(onClick = onBackPressed) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回"
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
                 )
             }
         })
@@ -138,19 +140,19 @@ fun SettingsScreen(
                 .padding(paddingValues)
         ) {
             // 主题设置
-            SettingsCategory(title = "主题设置")
+            SettingsCategory(title = stringResource(R.string.theme_settings))
 
             SettingsToggleItem(
                 icon = Icons.Default.Info,
-                title = "深色主题",
-                subtitle = "启用应用深色主题",
+                title = stringResource(R.string.dark_theme),
+                subtitle = stringResource(R.string.dark_theme_desc),
                 checked = darkTheme,
                 onCheckedChange = { viewModel.updateDarkTheme(it) })
 
             SettingsToggleItem(
                 icon = Icons.Default.Settings,
-                title = "动态颜色",
-                subtitle = "使用系统动态颜色（仅Android 12+）",
+                title = stringResource(R.string.dynamic_colors),
+                subtitle = stringResource(R.string.dynamic_colors_desc),
                 checked = dynamicColors,
                 onCheckedChange = { viewModel.updateDynamicColors(it) })
 
@@ -158,13 +160,23 @@ fun SettingsScreen(
                 modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
             )
 
+            // 语言设置
+            SettingsCategory(title = stringResource(R.string.language_settings))
+
+            LanguageSelector(
+                currentLanguage = appLanguage, onLanguageSelected = { viewModel.updateAppLanguage(it) })
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+            )
+
             // 通知设置
-            SettingsCategory(title = "通知设置")
+            SettingsCategory(title = stringResource(R.string.notification_settings))
 
             SettingsToggleItem(
                 icon = Icons.Default.Notifications,
-                title = "下载通知",
-                subtitle = "显示壁纸下载完成通知",
+                title = stringResource(R.string.download_notification),
+                subtitle = stringResource(R.string.download_notification_desc),
                 checked = showDownloadNotification,
                 onCheckedChange = {
                     currentNotificationType = NotificationType.DOWNLOAD
@@ -173,8 +185,8 @@ fun SettingsScreen(
 
             SettingsToggleItem(
                 icon = Icons.Default.Notifications,
-                title = "壁纸更换通知",
-                subtitle = "显示自动壁纸更换通知",
+                title = stringResource(R.string.wallpaper_change_notification),
+                subtitle = stringResource(R.string.wallpaper_change_notification_desc),
                 checked = showWallpaperChangeNotification,
                 onCheckedChange = {
                     currentNotificationType = NotificationType.WALLPAPER_CHANGE
@@ -186,21 +198,25 @@ fun SettingsScreen(
             )
 
             // 下载设置
-            SettingsCategory(title = "下载设置")
+            SettingsCategory(title = stringResource(R.string.download_settings))
 
             SettingsToggleItem(
                 icon = Icons.Default.Settings,
-                title = "原始质量",
-                subtitle = "下载原始质量的壁纸（较大文件）",
+                title = stringResource(R.string.original_quality),
+                subtitle = stringResource(R.string.original_quality_desc),
                 checked = downloadOriginalQuality,
                 onCheckedChange = {
                     viewModel.updateDownloadOriginalQuality(it)
                 })
 
             SettingsActionItem(
-                icon = Icons.Default.Delete, title = "清除缓存", subtitle = "当前缓存大小: $cacheSize", onClick = {
+                icon = Icons.Default.Delete,
+                title = stringResource(R.string.clear_cache),
+                subtitle = stringResource(R.string.current_cache_size, cacheSize),
+                onClick = {
                     showClearCacheDialog = true
-                }, trailingContent = if (isClearingCache) {
+                },
+                trailingContent = if (isClearingCache) {
                     {
                         CircularProgressIndicator(
                             modifier = Modifier
@@ -215,10 +231,13 @@ fun SettingsScreen(
             )
 
             // 关于应用
-            SettingsCategory(title = "关于应用")
+            SettingsCategory(title = stringResource(R.string.about_app))
 
             SettingsActionItem(
-                icon = Icons.Default.Info, title = "应用版本", subtitle = "$appVersion", onClick = {})
+                icon = Icons.Default.Info,
+                title = stringResource(R.string.app_version),
+                subtitle = "$appVersion",
+                onClick = {})
 
             // 账户设置
             if (isLoggedIn) {
@@ -226,12 +245,12 @@ fun SettingsScreen(
                     modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
                 )
 
-                SettingsCategory(title = "账户设置")
+                SettingsCategory(title = stringResource(R.string.account_settings))
 
                 SettingsActionItem(
                     icon = Icons.Default.ExitToApp,
-                    title = "退出登录",
-                    subtitle = "退出当前账户",
+                    title = stringResource(R.string.sign_out),
+                    subtitle = stringResource(R.string.sign_out_desc),
                     onClick = { viewModel.signOut() },
                     iconTint = MaterialTheme.colorScheme.error,
                     trailingContent = if (isLoggingOut) {
@@ -251,8 +270,8 @@ fun SettingsScreen(
             if (showClearCacheDialog) {
                 AlertDialog(
                     onDismissRequest = { showClearCacheDialog = false },
-                    title = { Text("清除缓存") },
-                    text = { Text("确定要清除应用缓存吗？这将删除所有缓存的图片和数据。") },
+                    title = { Text(stringResource(R.string.clear_cache_title)) },
+                    text = { Text(stringResource(R.string.clear_cache_message)) },
                     confirmButton = {
                         Button(
                             onClick = {
@@ -260,13 +279,13 @@ fun SettingsScreen(
                                 showClearCacheDialog = false
                             }, enabled = !isClearingCache
                         ) {
-                            Text("清除")
+                            Text(stringResource(R.string.clear))
                         }
                     },
                     dismissButton = {
                         TextButton(
                             onClick = { showClearCacheDialog = false }) {
-                            Text("取消")
+                            Text(stringResource(R.string.cancel))
                         }
                     })
             }

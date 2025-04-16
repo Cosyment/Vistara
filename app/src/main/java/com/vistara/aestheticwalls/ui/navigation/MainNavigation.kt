@@ -183,11 +183,7 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
             // 设置页面
             composable("settings") {
                 SettingsScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onNavigateToLogin = { navController.navigate("auth") },
-                    onNavigateToFavorites = { navController.navigate("favorites") },
-                    onNavigateToDownloads = { navController.navigate("downloads") },
-                    onNavigateToAutoChange = { navController.navigate("autochange") })
+                    onBackPressed = { navController.navigateUp() })
             }
 
             // 自动更换壁纸页面
