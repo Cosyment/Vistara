@@ -7,8 +7,9 @@ import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
-import com.vistara.aestheticwalls.data.repository.WallpaperRepository
+import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userPrefsRepository: UserPrefsRepository,
-    private val wallpaperRepository: WallpaperRepository,
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -69,10 +71,74 @@ class SettingsViewModel @Inject constructor(
     private val _needNotificationPermission = MutableStateFlow(false)
     val needNotificationPermission: StateFlow<Boolean> = _needNotificationPermission.asStateFlow()
 
+    // 登录状态
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
+    // 退出登录状态
+    private val _isLoggingOut = MutableStateFlow(false)
+    val isLoggingOut: StateFlow<Boolean> = _isLoggingOut.asStateFlow()
+
+    // 需要登录的操作类型
+    private val _needLoginAction = MutableStateFlow<LoginAction?>(null)
+    val needLoginAction: StateFlow<LoginAction?> = _needLoginAction.asStateFlow()
+
+    // 操作结果
+    private val _operationResult = MutableStateFlow<String?>(null)
+    val operationResult: StateFlow<String?> = _operationResult.asStateFlow()
+
     init {
         loadUserSettings()
         calculateCacheSize()
         loadAppVersion()
+        checkLoginStatus()
+    }
+
+    /**
+     * 检查登录状态
+     */
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            try {
+                _isLoggedIn.value = userRepository.checkUserLoggedIn()
+                Log.d(TAG, "Login status: ${_isLoggedIn.value}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking login status: ${e.message}")
+                _isLoggedIn.value = false
+            }
+        }
+    }
+
+    /**
+     * 退出登录
+     */
+    fun signOut() {
+        viewModelScope.launch {
+            try {
+                _isLoggingOut.value = true
+
+                // 调用AuthRepository的signOut方法
+                authRepository.signOut()
+
+                // 更新登录状态
+                _isLoggedIn.value = false
+                _operationResult.value = "退出登录成功"
+
+                Log.d(TAG, "User signed out successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error signing out: ${e.message}")
+                _operationResult.value = "退出登录失败: ${e.message}"
+            } finally {
+                _isLoggingOut.value = false
+            }
+        }
+    }
+
+    /**
+     * 清除操作结果
+     */
+    fun clearOperationResult() {
+        _operationResult.value = null
     }
 
     /**
@@ -156,6 +222,7 @@ class SettingsViewModel @Inject constructor(
                 _showDownloadNotification.value = true
                 saveSettings()
             }
+
             NotificationType.WALLPAPER_CHANGE -> {
                 _showWallpaperChangeNotification.value = true
                 saveSettings()
@@ -175,8 +242,14 @@ class SettingsViewModel @Inject constructor(
      * 通知类型
      */
     enum class NotificationType {
-        DOWNLOAD,
-        WALLPAPER_CHANGE
+        DOWNLOAD, WALLPAPER_CHANGE
+    }
+
+    /**
+     * 需要登录的操作类型
+     */
+    enum class LoginAction {
+        FAVORITES, DOWNLOADS, AUTO_WALLPAPER, SETTINGS, RATE_APP
     }
 
     /**

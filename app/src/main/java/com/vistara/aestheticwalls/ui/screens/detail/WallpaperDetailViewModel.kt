@@ -69,12 +69,24 @@ class WallpaperDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    companion object {
+        private const val TAG = "WallpaperDetailViewModel"
+    }
+
     // 壁纸ID
     private val wallpaperId: String = checkNotNull(savedStateHandle["wallpaperId"])
 
     // 壁纸详情状态
     private val _wallpaperState = MutableStateFlow<UiState<Wallpaper>>(UiState.Loading)
     val wallpaperState: StateFlow<UiState<Wallpaper>> = _wallpaperState.asStateFlow()
+
+    // 登录状态
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
+    // 需要登录的操作类型
+    private val _needLoginAction = MutableStateFlow<LoginAction?>(null)
+    val needLoginAction: StateFlow<LoginAction?> = _needLoginAction.asStateFlow()
 
     // 编辑后的图片
     private val _editedBitmap = mutableStateOf<Bitmap?>(null)
@@ -101,7 +113,6 @@ class WallpaperDetailViewModel @Inject constructor(
 
     // 高级壁纸提示对话框状态
     private val _showPremiumPrompt = mutableStateOf(false)
-    val showPremiumPrompt: State<Boolean> = _showPremiumPrompt
 
     // 导航到升级页面的状态
     private val _navigateToUpgrade = mutableStateOf(false)
@@ -125,8 +136,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
     // 计费连接状态
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
-    val billingConnectionState: StateFlow<BillingConnectionState> =
-        _billingConnectionState.asStateFlow()
+    val billingConnectionState: StateFlow<BillingConnectionState> = _billingConnectionState.asStateFlow()
 
     // 升级结果
     private val _upgradeResult = MutableStateFlow<UpgradeResult?>(null)
@@ -142,8 +152,24 @@ class WallpaperDetailViewModel @Inject constructor(
             checkForEditedImage(wallpaperId)
         }
         checkPremiumStatus()
+        checkLoginStatus()
         observeBillingState()
         observePurchaseState()
+    }
+
+    /**
+     * 检查登录状态
+     */
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            try {
+                _isLoggedIn.value = userRepository.checkUserLoggedIn()
+                Log.d(TAG, "User login status: ${_isLoggedIn.value}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking login status", e)
+                _isLoggedIn.value = false
+            }
+        }
     }
 
     /**
@@ -241,8 +267,13 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun toggleFavorite() {
         viewModelScope.launch {
-            val currentWallpaper =
-                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            // 检查登录状态
+            if (!_isLoggedIn.value) {
+                _needLoginAction.value = LoginAction.FAVORITE
+                return@launch
+            }
+
+            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             if (_isFavorite.value) {
                 // 取消收藏
@@ -255,6 +286,20 @@ class WallpaperDetailViewModel @Inject constructor(
             // 更新状态
             _isFavorite.value = !_isFavorite.value
         }
+    }
+
+    /**
+     * 清除需要登录的操作
+     */
+    fun clearNeedLoginAction() {
+        _needLoginAction.value = null
+    }
+
+    /**
+     * 设置需要登录的操作
+     */
+    fun setNeedLoginAction(action: LoginAction) {
+        _needLoginAction.value = action
     }
 
     /**
@@ -331,6 +376,12 @@ class WallpaperDetailViewModel @Inject constructor(
      * 根据壁纸类型和目标位置设置壁纸
      */
     fun setWallpaper(context: Activity?, target: WallpaperTarget) {
+        // 检查登录状态
+        if (!_isLoggedIn.value) {
+            _needLoginAction.value = LoginAction.SET_WALLPAPER
+            return
+        }
+
         // 检查上下文是否为空
         if (context == null) {
             Log.e("WallpaperDetailViewModel", "Context is null")
@@ -339,8 +390,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             Log.d("WallpaperDetailViewModel", "Setting wallpaper for target: $target")
-            val currentWallpaper =
-                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             // 立即隐藏选项对话框，提供即时反馈
             _showSetWallpaperOptions.value = false
@@ -350,10 +400,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
             // 使用统一的WallpaperManager设置壁纸
             wallpaperManager.setWallpaper(
-                activity = context,
-                wallpaper = currentWallpaper,
-                target = target,
-                editedBitmap = _editedBitmap.value
+                activity = context, wallpaper = currentWallpaper, target = target, editedBitmap = _editedBitmap.value
             ) { success ->
                 _isProcessingWallpaper.value = false
             }
@@ -367,6 +414,12 @@ class WallpaperDetailViewModel @Inject constructor(
      * 下载壁纸
      */
     fun downloadWallpaper() {
+        // 检查登录状态
+        if (!_isLoggedIn.value) {
+            _needLoginAction.value = LoginAction.DOWNLOAD
+            return
+        }
+
         val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
 
         // 检查是否为高级壁纸或动态壁纸，且用户不是高级用户
@@ -379,9 +432,7 @@ class WallpaperDetailViewModel @Inject constructor(
         // 检查存储权限
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             // Android 10 及以下需要显式请求存储权限
-            val hasStoragePermission =
-                context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                        PackageManager.PERMISSION_GRANTED
+            val hasStoragePermission = context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
 
             if (!hasStoragePermission) {
                 // 需要请求权限，设置状态并返回
@@ -449,7 +500,8 @@ class WallpaperDetailViewModel @Inject constructor(
                 _downloadProgress.value = 1f
 
                 // 显示下载完成通知
-                val filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + "/Vistara_${System.currentTimeMillis()}.jpg"
+                val filePath =
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + "/Vistara_${System.currentTimeMillis()}.jpg"
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                         notificationUtil.showDownloadCompleteNotification(wallpaper, filePath)
@@ -500,8 +552,7 @@ class WallpaperDetailViewModel @Inject constructor(
         }
 
         val imageUri = context.contentResolver.insert(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            contentValues
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues
         )
         imageUri?.let { uri ->
             withContext(Dispatchers.IO) {
@@ -525,7 +576,10 @@ class WallpaperDetailViewModel @Inject constructor(
 
                         // 更新通知进度
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.checkSelfPermission(
+                                    context, Manifest.permission.POST_NOTIFICATIONS
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
                                 notificationUtil.showDownloadProgressNotification(wallpaper, (progress * 100).toInt())
                             }
                         } else {
@@ -562,14 +616,9 @@ class WallpaperDetailViewModel @Inject constructor(
         Log.d("WallpaperDetailViewModel", "Downloading video from: $videoUrl")
 
         // 使用OkHttp下载视频文件
-        val client = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
+        val client = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build()
 
-        val request = Request.Builder()
-            .url(videoUrl)
-            .build()
+        val request = Request.Builder().url(videoUrl).build()
 
         val response = withContext(Dispatchers.IO) {
             client.newCall(request).execute()
@@ -592,8 +641,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
         // 插入到视频媒体库
         val videoUri = context.contentResolver.insert(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-            contentValues
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues
         )
         videoUri?.let { uri ->
             withContext(Dispatchers.IO) {
@@ -613,8 +661,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
                                 // 更新进度
                                 if (contentLength > 0) {
-                                    val progress =
-                                        totalBytesRead.toFloat() / contentLength.toFloat()
+                                    val progress = totalBytesRead.toFloat() / contentLength.toFloat()
                                     _downloadProgress.value = progress
                                 }
                             }
@@ -648,16 +695,11 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun shareWallpaper() {
         viewModelScope.launch {
-            val currentWallpaper =
-                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             // 分享壁纸信息
-            val shareText = "\u6211发现了一张精美的壁纸\n" +
-                    "\u6807题: ${currentWallpaper.title ?: "未命名壁纸"}\n" +
-                    "\u4f5c者: ${currentWallpaper.author}\n" +
-                    "\u6765源: ${currentWallpaper.source}\n" +
-                    "\u5206辨率: ${currentWallpaper.resolution?.width} x ${currentWallpaper.resolution?.height}\n" +
-                    "\u4e0b载 Vistara 壁纸应用以获取更多精美壁纸!"
+            val shareText =
+                "\u6211发现了一张精美的壁纸\n" + "\u6807题: ${currentWallpaper.title ?: "未命名壁纸"}\n" + "\u4f5c者: ${currentWallpaper.author}\n" + "\u6765源: ${currentWallpaper.source}\n" + "\u5206辨率: ${currentWallpaper.resolution?.width} x ${currentWallpaper.resolution?.height}\n" + "\u4e0b载 Vistara 壁纸应用以获取更多精美壁纸!"
 
             try {
                 // 下载图片并生成分享图
@@ -684,17 +726,14 @@ class WallpaperDetailViewModel @Inject constructor(
                         val cachePath = File(context.cacheDir, "shared_images")
                         cachePath.mkdirs()
 
-                        val shareImageFile =
-                            File(cachePath, "share_${System.currentTimeMillis()}.jpg")
+                        val shareImageFile = File(cachePath, "share_${System.currentTimeMillis()}.jpg")
                         val outputStream = FileOutputStream(shareImageFile)
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                         outputStream.close()
 
                         // 使用FileProvider获取URI
                         val contentUri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.fileprovider",
-                            shareImageFile
+                            context, "${context.packageName}.fileprovider", shareImageFile
                         )
 
                         putExtra(Intent.EXTRA_STREAM, contentUri)
@@ -747,14 +786,11 @@ class WallpaperDetailViewModel @Inject constructor(
 
         val scaledWidth = (width * scale).toInt()
         val scaledHeight = (height * scale).toInt()
-        val scaledBitmap =
-            Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
 
         // 创建最终图片，包含水印区域
         val result = Bitmap.createBitmap(
-            scaledWidth,
-            scaledHeight + watermarkHeight,
-            Bitmap.Config.ARGB_8888
+            scaledWidth, scaledHeight + watermarkHeight, Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(result)
 
@@ -765,11 +801,7 @@ class WallpaperDetailViewModel @Inject constructor(
         val paint = Paint()
         paint.color = Color.WHITE
         canvas.drawRect(
-            0f,
-            scaledHeight.toFloat(),
-            scaledWidth.toFloat(),
-            (scaledHeight + watermarkHeight).toFloat(),
-            paint
+            0f, scaledHeight.toFloat(), scaledWidth.toFloat(), (scaledHeight + watermarkHeight).toFloat(), paint
         )
 
         // 绘制水印文字
@@ -802,22 +834,6 @@ class WallpaperDetailViewModel @Inject constructor(
     }
 
     /**
-     * 编辑壁纸
-     */
-    fun editWallpaper() {
-        viewModelScope.launch {
-            val currentWallpaper =
-                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
-
-            // 检查是否为高级壁纸且用户不是高级用户
-            if (currentWallpaper.isPremium && !_isPremiumUser.value) {
-                _showPremiumPrompt.value = true
-                return@launch
-            }
-        }
-    }
-
-    /**
      * 刷新编辑后的图片
      */
     fun refreshEditedImage() {
@@ -828,54 +844,10 @@ class WallpaperDetailViewModel @Inject constructor(
     }
 
     /**
-     * 升级到高级版
-     * @param activity 当前活动实例
-     * @param productId 订阅产品ID，默认为月度订阅
-     */
-    fun upgradeToPremium(activity: Activity?, productId: String = BillingManager.SUBSCRIPTION_MONTHLY) {
-        if (_isPremiumUser.value) {
-            _upgradeResult.value = UpgradeResult.Error("您已经是高级用户")
-            return
-        }
-
-        if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
-            return
-        }
-
-        // 使用指定的订阅计划
-        billingManager.launchBillingFlow(activity, productId)
-    }
-
-    /**
      * 清除升级结果
      */
     fun clearUpgradeResult() {
         _upgradeResult.value = null
-    }
-
-    /**
-     * 测试支付
-     * 仅用于开发测试
-     */
-    fun testPayment(activity: Activity?) {
-        if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
-            return
-        }
-
-        // 测试不同的支付方式
-        val productIds = listOf(
-            BillingManager.SUBSCRIPTION_WEEKLY,
-            BillingManager.SUBSCRIPTION_MONTHLY,
-            BillingManager.SUBSCRIPTION_QUARTERLY,
-            BillingManager.SUBSCRIPTION_YEARLY,
-            BillingManager.PREMIUM_LIFETIME
-        )
-
-        // 随机选择一种支付方式进行测试
-        val randomProductId = productIds.random()
-        billingManager.launchBillingFlow(activity, randomProductId)
     }
 
     /**
@@ -884,5 +856,12 @@ class WallpaperDetailViewModel @Inject constructor(
     sealed class UpgradeResult {
         data class Success(val message: String) : UpgradeResult()
         data class Error(val message: String) : UpgradeResult()
+    }
+
+    /**
+     * 需要登录的操作类型
+     */
+    enum class LoginAction {
+        FAVORITE, DOWNLOAD, SET_WALLPAPER, EDIT
     }
 }

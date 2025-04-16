@@ -48,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
+import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -59,6 +60,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @Composable
 fun AutoChangeScreen(
     onBackPressed: () -> Unit,
+    onNavigateToLogin: () -> Unit = {},
     viewModel: AutoChangeViewModel = hiltViewModel()
 ) {
     // 从ViewModel获取状态
@@ -69,6 +71,23 @@ fun AutoChangeScreen(
     val autoChangeTarget by viewModel.autoChangeTarget.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isChangingWallpaper by viewModel.isChangingWallpaper.collectAsState()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val needLogin by viewModel.needLogin.collectAsState()
+
+    // 登录提示对话框
+    if (needLogin) {
+        LoginPromptDialog(
+            onDismiss = {
+                viewModel.clearNeedLogin()
+                onBackPressed()
+            },
+            onConfirm = {
+                viewModel.clearNeedLogin()
+                onNavigateToLogin()
+            },
+            message = "自动更换壁纸功能需要登录后才能使用"
+        )
+    }
 
     Scaffold(
         topBar = {

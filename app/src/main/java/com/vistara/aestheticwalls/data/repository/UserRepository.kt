@@ -7,4 +7,6 @@ interface UserRepository {
     suspend fun checkPremiumStatus(): Boolean
     suspend fun updatePremiumStatus(isPremium: Boolean)
     suspend fun clearUserData()
-} 
+    suspend fun checkUserLoggedIn(): Boolean
+    suspend fun updateLoginStatus(isLoggedIn: Boolean)
+}

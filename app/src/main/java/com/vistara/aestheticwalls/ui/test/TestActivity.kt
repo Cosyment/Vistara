@@ -80,6 +80,7 @@ fun TestScreen(
 
     // 获取用户状态
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val operationResult by viewModel.operationResult.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -162,6 +163,54 @@ fun TestScreen(
 
                     Text(
                         text = if (isPremiumUser) "当前状态: 高级用户" else "当前状态: 普通用户",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+            )
+
+            // 登录状态测试
+            Text(
+                text = "登录状态测试", style = MaterialTheme.typography.titleMedium
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "登录状态", style = MaterialTheme.typography.bodyLarge
+                        )
+
+                        Switch(
+                            checked = isLoggedIn, onCheckedChange = { isChecked ->
+                                if (isChecked) {
+                                    viewModel.simulateLogin()
+                                } else {
+                                    viewModel.simulateLogout()
+                                }
+                            })
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = if (isLoggedIn) "当前状态: 已登录" else "当前状态: 未登录",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )

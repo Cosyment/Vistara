@@ -23,6 +23,7 @@ class UserRepositoryImpl @Inject constructor(
     companion object {
         private val IS_PREMIUM_USER = booleanPreferencesKey("is_premium_user")
         private val PREMIUM_EXPIRY_DATE = longPreferencesKey("premium_expiry_date")
+        private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
     }
 
     override val isPremiumUser: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -70,6 +71,22 @@ class UserRepositoryImpl @Inject constructor(
         dataStore.edit { preferences ->
             preferences.remove(IS_PREMIUM_USER)
             preferences.remove(PREMIUM_EXPIRY_DATE)
+            preferences.remove(IS_LOGGED_IN)
+        }
+    }
+
+    override suspend fun checkUserLoggedIn(): Boolean {
+        return dataStore.data.map { preferences ->
+            preferences[IS_LOGGED_IN] ?: false
+        }.first()
+    }
+
+    /**
+     * 更新用户登录状态
+     */
+    override suspend fun updateLoginStatus(isLoggedIn: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[IS_LOGGED_IN] = isLoggedIn
         }
     }
 }

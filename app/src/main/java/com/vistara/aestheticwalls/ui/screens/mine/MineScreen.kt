@@ -48,14 +48,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -73,12 +74,15 @@ fun MineScreen(
     onAboutClick: () -> Unit = {},
     onUpgradeClick: () -> Unit = {},
     onTestToolsClick: () -> Unit = {},
+    onLoginClick: () -> Unit = {},
     viewModel: MineViewModel = hiltViewModel()
 ) {
     // 从ViewModel获取状态
     val username by viewModel.username.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isDebugMode by viewModel.isDebugMode.collectAsState()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val needLoginAction by viewModel.needLoginAction.collectAsState()
 
     // 使用生命周期事件监听器来检测页面可见性变化
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -106,6 +110,22 @@ fun MineScreen(
         viewModel.refreshUserData()
     }
 
+    // 登录提示对话框
+    needLoginAction?.let { action ->
+        val message = when (action) {
+            MineViewModel.LoginAction.FAVORITES -> "收藏列表需要登录后才能使用"
+            MineViewModel.LoginAction.DOWNLOADS -> "下载列表需要登录后才能使用"
+            MineViewModel.LoginAction.AUTO_WALLPAPER -> "自动更换壁纸需要登录后才能使用"
+        }
+
+        LoginPromptDialog(
+            onDismiss = { viewModel.clearNeedLoginAction() }, onConfirm = {
+            viewModel.clearNeedLoginAction()
+            onLoginClick()
+        }, message = message
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -124,12 +144,12 @@ fun MineScreen(
         ) {
             // 用户信息区域
             MineHeader(
-                username = username, isPremiumUser = isPremiumUser
+                username = username, isPremiumUser = isPremiumUser, isLoggedIn = isLoggedIn, onLoginClick = onLoginClick
             )
 
             // 升级横幅
-            if (!isPremiumUser) {
-                UpgradeBanner(
+            if (!isPremiumUser && isLoggedIn) {
+                PremiumBanner(
                     onClick = {
                         // 调用ViewModel的升级方法
                         viewModel.upgradeToPremium()
@@ -142,16 +162,25 @@ fun MineScreen(
 
             // 功能列表
             FeatureItem(
-                icon = Icons.Default.Favorite, title = "我的收藏", subtitle = "查看所有收藏的壁纸", onClick = onFavoritesClick
-            )
+                icon = Icons.Default.Favorite, title = "我的收藏", subtitle = "查看所有收藏的壁纸", onClick = {
+                    viewModel.checkLoginAndExecute(MineViewModel.LoginAction.FAVORITES) {
+                        onFavoritesClick()
+                    }
+                })
 
             FeatureItem(
-                icon = Icons.Default.Star, title = "我的下载", subtitle = "查看所有下载的壁纸", onClick = onDownloadsClick
-            )
+                icon = Icons.Default.Star, title = "我的下载", subtitle = "查看所有下载的壁纸", onClick = {
+                    viewModel.checkLoginAndExecute(MineViewModel.LoginAction.DOWNLOADS) {
+                        onDownloadsClick()
+                    }
+                })
 
             FeatureItem(
-                icon = Icons.Default.Refresh, title = "自动更换壁纸", subtitle = "设置自动更换壁纸的频率和来源", onClick = onAutoChangeClick
-            )
+                icon = Icons.Default.Refresh, title = "自动更换壁纸", subtitle = "设置自动更换壁纸的频率和来源", onClick = {
+                    viewModel.checkLoginAndExecute(MineViewModel.LoginAction.AUTO_WALLPAPER) {
+                        onAutoChangeClick()
+                    }
+                })
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -189,7 +218,7 @@ fun MineScreen(
  */
 @Composable
 private fun MineHeader(
-    username: String, isPremiumUser: Boolean, modifier: Modifier = Modifier
+    username: String, isPremiumUser: Boolean, isLoggedIn: Boolean, onLoginClick: () -> Unit = {}, modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
@@ -215,19 +244,42 @@ private fun MineHeader(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // 用户名
-        Text(
-            text = username, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
-        )
-
-        // 会员状态
-        if (isPremiumUser) {
+        if (isLoggedIn) {
+            // 用户名
             Text(
-                text = "高级会员",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 4.dp)
+                text = username, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
             )
+
+            // 会员状态
+            if (isPremiumUser) {
+                Text(
+                    text = "高级会员",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        } else {
+            // 未登录状态
+            Text(
+                text = "未登录", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 登录按钮
+            Card(
+                onClick = onLoginClick, colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ), shape = RoundedCornerShape(20.dp), modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Text(
+                    text = "点击登录",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
         }
     }
 }
@@ -236,7 +288,7 @@ private fun MineHeader(
  * 升级横幅
  */
 @Composable
-private fun UpgradeBanner(
+private fun PremiumBanner(
     onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(

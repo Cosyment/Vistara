@@ -33,6 +33,7 @@ import androidx.navigation.navArgument
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.ui.screens.about.AboutScreen
+import com.vistara.aestheticwalls.ui.screens.auth.AuthScreen
 import com.vistara.aestheticwalls.ui.screens.autochange.AutoChangeScreen
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
 import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
@@ -68,6 +69,17 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
             // 只有在主页面才为底部导航栏留出空间
             modifier = if (isMainScreen) Modifier.padding(bottom = 80.dp) else Modifier
         ) {
+            // 登录页面
+            composable("auth") {
+                AuthScreen(
+                    onLoginSuccess = {
+                        navController.popBackStack()
+                    },
+                    onSkipLogin = {
+                        navController.popBackStack()
+                    }
+                )
+            }
             composable(NavDestination.Home.route) {
                 HomeScreen(onWallpaperClick = { wallpaper ->
                     navController.navigate("wallpaper/${wallpaper.id}")
@@ -121,6 +133,7 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onFeedbackClick = { navController.navigate("feedback") },
                     onAboutClick = { navController.navigate("about") },
                     onUpgradeClick = { navController.navigate("premium") },
+                    onLoginClick = { navController.navigate("auth") },
                     onTestToolsClick = {
                         // 启动测试工具
                         context.startActivity(Intent(context, TestActivity::class.java))
@@ -131,37 +144,58 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
             composable(
                 route = "wallpaper/{wallpaperId}", arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
             ) {
-                WallpaperDetailScreen(onBackPressed = { navController.navigateUp() }, onNavigateToEdit = { wallpaperId ->
-                    navController.navigate("edit/$wallpaperId")
-                }, onNavigateToUpgrade = {
-                    navController.navigate("premium")
-                })
+                WallpaperDetailScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onNavigateToEdit = { wallpaperId ->
+                        navController.navigate("edit/$wallpaperId")
+                    },
+                    onNavigateToUpgrade = {
+                        navController.navigate("premium")
+                    },
+                    onNavigateToLogin = {
+                        navController.navigate("auth")
+                    }
+                )
             }
 
             // 收藏页面
             composable("favorites") {
-                FavoritesScreen(onBackPressed = { navController.navigateUp() }, onWallpaperClick = { wallpaper ->
-                    navController.navigate("wallpaper/${wallpaper.id}")
-                })
+                FavoritesScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    },
+                    onNavigateToLogin = { navController.navigate("auth") }
+                )
             }
 
             // 下载页面
             composable("downloads") {
-                DownloadsScreen(onBackPressed = { navController.navigateUp() }, onWallpaperClick = { wallpaper ->
-                    navController.navigate("wallpaper/${wallpaper.id}")
-                })
+                DownloadsScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onWallpaperClick = { wallpaper ->
+                        navController.navigate("wallpaper/${wallpaper.id}")
+                    },
+                    onNavigateToLogin = { navController.navigate("auth") }
+                )
             }
 
             // 设置页面
             composable("settings") {
                 SettingsScreen(
-                    onBackPressed = { navController.navigateUp() })
+                    onBackPressed = { navController.navigateUp() },
+                    onNavigateToLogin = { navController.navigate("auth") },
+                    onNavigateToFavorites = { navController.navigate("favorites") },
+                    onNavigateToDownloads = { navController.navigate("downloads") },
+                    onNavigateToAutoChange = { navController.navigate("autochange") })
             }
 
             // 自动更换壁纸页面
             composable("autochange") {
                 AutoChangeScreen(
-                    onBackPressed = { navController.navigateUp() })
+                    onBackPressed = { navController.navigateUp() },
+                    onNavigateToLogin = { navController.navigate("auth") }
+                )
             }
 
             // 评分与反馈页面
@@ -280,8 +314,8 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
  * 导航目的地枚举
  */
 enum class NavDestination(val route: String, val title: String) {
-    Home("home", "首页"), StaticWallpapers("static", "静态"), LiveWallpapers(
-        "live", "动态"
-    ),
+    Home("home", "首页"),
+    StaticWallpapers("static", "静态"),
+    LiveWallpapers("live", "动态"),
     Mine("mine", "我的")
 }

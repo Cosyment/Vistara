@@ -137,6 +137,9 @@ dependencies {
     implementation(libs.google.play.billing)
     implementation(libs.google.play.billing.ktx)
 
+    // Google Auth
+    implementation(libs.google.auth)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

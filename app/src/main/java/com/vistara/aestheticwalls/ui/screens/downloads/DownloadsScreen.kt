@@ -29,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.ErrorState
+import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.components.WallpaperGrid
 
 /**
@@ -40,10 +41,12 @@ import com.vistara.aestheticwalls.ui.components.WallpaperGrid
 fun DownloadsScreen(
     onBackPressed: () -> Unit,
     onWallpaperClick: (Wallpaper) -> Unit,
+    onNavigateToLogin: () -> Unit = {},
     viewModel: DownloadsViewModel = hiltViewModel()
 ) {
     val downloadsState by viewModel.downloadsState.collectAsState()
-    
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -70,17 +73,27 @@ fun DownloadsScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                
+
                 is UiState.Error -> {
-                    ErrorState(
-                        message = (downloadsState as UiState.Error).message,
-                        onRetry = { viewModel.refresh() }
-                    )
+                    val errorMessage = (downloadsState as UiState.Error).message
+                    if (errorMessage == "需要登录才能查看下载列表") {
+                        // 显示登录提示对话框
+                        LoginPromptDialog(
+                            onDismiss = { onBackPressed() },
+                            onConfirm = { onNavigateToLogin() },
+                            message = "下载列表需要登录后才能使用"
+                        )
+                    } else {
+                        ErrorState(
+                            message = errorMessage,
+                            onRetry = { viewModel.refresh() }
+                        )
+                    }
                 }
-                
+
                 is UiState.Success -> {
                     val wallpapers = (downloadsState as UiState.Success<List<Wallpaper>>).data
-                    
+
                     if (wallpapers.isEmpty()) {
                         EmptyDownloadsContent()
                     } else {
@@ -109,20 +122,20 @@ private fun EmptyDownloadsContent() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.weight(0.3f))
-        
+
         // 可以添加一个图标或图片
         // Image(...)
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = "暂无下载壁纸",
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = "浏览壁纸并点击下载按钮，下载的壁纸将显示在这里",
             style = MaterialTheme.typography.bodyMedium,
@@ -130,7 +143,7 @@ private fun EmptyDownloadsContent() {
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth(0.8f)
         )
-        
+
         Spacer(modifier = Modifier.weight(0.7f))
     }
 }

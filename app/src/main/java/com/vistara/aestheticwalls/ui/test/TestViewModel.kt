@@ -29,12 +29,33 @@ class TestViewModel @Inject constructor(
     private val _isPremiumUser = MutableStateFlow(false)
     val isPremiumUser: StateFlow<Boolean> = _isPremiumUser.asStateFlow()
 
+    // 用户登录状态
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
     // 操作结果
     private val _operationResult = MutableStateFlow<String?>(null)
     val operationResult: StateFlow<String?> = _operationResult.asStateFlow()
 
     init {
         checkPremiumStatus()
+        checkLoginStatus()
+    }
+
+    /**
+     * 检查登录状态
+     */
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            try {
+                val isLoggedIn = userRepository.checkUserLoggedIn()
+                _isLoggedIn.value = isLoggedIn
+                Log.d(TAG, "Login status: $isLoggedIn")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking login status: ${e.message}")
+                _operationResult.value = "检查登录状态失败: ${e.message}"
+            }
+        }
     }
 
     /**
@@ -83,6 +104,42 @@ class TestViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error disabling premium status: ${e.message}")
                 _operationResult.value = "取消高级用户状态失败: ${e.message}"
+            }
+        }
+    }
+
+    /**
+     * 模拟登录成功
+     */
+    fun simulateLogin() {
+        viewModelScope.launch {
+            try {
+                // 更新登录状态
+                userRepository.updateLoginStatus(true)
+                _isLoggedIn.value = true
+                _operationResult.value = "模拟登录成功"
+                Log.d(TAG, "Simulated login successful")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error simulating login: ${e.message}")
+                _operationResult.value = "模拟登录失败: ${e.message}"
+            }
+        }
+    }
+
+    /**
+     * 模拟退出登录
+     */
+    fun simulateLogout() {
+        viewModelScope.launch {
+            try {
+                // 更新登录状态
+                userRepository.updateLoginStatus(false)
+                _isLoggedIn.value = false
+                _operationResult.value = "模拟退出登录成功"
+                Log.d(TAG, "Simulated logout successful")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error simulating logout: ${e.message}")
+                _operationResult.value = "模拟退出登录失败: ${e.message}"
             }
         }
     }

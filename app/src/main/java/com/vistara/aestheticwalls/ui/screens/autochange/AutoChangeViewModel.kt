@@ -75,15 +75,45 @@ class AutoChangeViewModel @Inject constructor(
     private val _isPremiumUser = MutableStateFlow(false)
     val isPremiumUser: StateFlow<Boolean> = _isPremiumUser.asStateFlow()
 
+    // 登录状态
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
+    // 需要登录的状态
+    private val _needLogin = MutableStateFlow(false)
+    val needLogin: StateFlow<Boolean> = _needLogin.asStateFlow()
+
     // 测试更换状态
     private val _isChangingWallpaper = MutableStateFlow(false)
     val isChangingWallpaper: StateFlow<Boolean> = _isChangingWallpaper.asStateFlow()
 
     init {
-        loadSettings()
-        checkPremiumStatus()
-        loadCategories()
-        loadAutoChangeHistory()
+        checkLoginStatus()
+    }
+
+    /**
+     * 检查登录状态
+     */
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            try {
+                _isLoggedIn.value = userRepository.checkUserLoggedIn()
+                Log.d(TAG, "User login status: ${_isLoggedIn.value}")
+
+                if (_isLoggedIn.value) {
+                    loadSettings()
+                    checkPremiumStatus()
+                    loadCategories()
+                    loadAutoChangeHistory()
+                } else {
+                    _needLogin.value = true
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking login status", e)
+                _isLoggedIn.value = false
+                _needLogin.value = true
+            }
+        }
     }
 
     /**
@@ -136,9 +166,21 @@ class AutoChangeViewModel @Inject constructor(
     }
 
     /**
+     * 清除登录状态
+     */
+    fun clearNeedLogin() {
+        _needLogin.value = false
+    }
+
+    /**
      * 更新自动更换启用状态
      */
     fun updateAutoChangeEnabled(enabled: Boolean) {
+        if (!_isLoggedIn.value) {
+            _needLogin.value = true
+            return
+        }
+
         _autoChangeEnabled.value = enabled
         saveSettings()
     }
@@ -147,6 +189,11 @@ class AutoChangeViewModel @Inject constructor(
      * 更新自动更换频率
      */
     fun updateAutoChangeFrequency(frequency: AutoChangeFrequency) {
+        if (!_isLoggedIn.value) {
+            _needLogin.value = true
+            return
+        }
+
         // 检查是否是高级功能且用户不是高级用户
         if (frequency.isPremium && !_isPremiumUser.value) {
             Log.d(TAG, "Cannot set premium frequency for non-premium user")
@@ -161,6 +208,11 @@ class AutoChangeViewModel @Inject constructor(
      * 更新仅在WiFi下更换设置
      */
     fun updateAutoChangeWifiOnly(wifiOnly: Boolean) {
+        if (!_isLoggedIn.value) {
+            _needLogin.value = true
+            return
+        }
+
         _autoChangeWifiOnly.value = wifiOnly
         saveSettings()
     }
@@ -169,6 +221,11 @@ class AutoChangeViewModel @Inject constructor(
      * 更新壁纸来源
      */
     fun updateAutoChangeSource(source: AutoChangeSource) {
+        if (!_isLoggedIn.value) {
+            _needLogin.value = true
+            return
+        }
+
         // 检查是否是高级功能且用户不是高级用户
         if (source.isPremium && !_isPremiumUser.value) {
             Log.d(TAG, "Cannot set premium source for non-premium user")
@@ -238,14 +295,17 @@ class AutoChangeViewModel @Inject constructor(
                     AutoChangeSource.FAVORITES -> {
                         wallpaperRepository.getRandomFavoriteWallpaper()
                     }
+
                     AutoChangeSource.CATEGORY -> {
                         _autoChangeCategory.value?.let { categoryId ->
                             wallpaperRepository.getRandomWallpaperByCategory(categoryId)
                         } ?: wallpaperRepository.getRandomWallpaper()
                     }
+
                     AutoChangeSource.DOWNLOADED -> {
                         wallpaperRepository.getRandomDownloadedWallpaper()
                     }
+
                     AutoChangeSource.TRENDING -> {
                         wallpaperRepository.getRandomTrendingWallpaper()
                     }

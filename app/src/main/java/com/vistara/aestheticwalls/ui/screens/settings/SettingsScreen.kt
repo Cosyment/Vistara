@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
@@ -30,6 +31,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -42,9 +45,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,6 +64,10 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @Composable
 fun SettingsScreen(
     onBackPressed: () -> Unit,
+    onNavigateToLogin: () -> Unit = {},
+    onNavigateToFavorites: () -> Unit = {},
+    onNavigateToDownloads: () -> Unit = {},
+    onNavigateToAutoChange: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     // 从ViewModel获取状态
@@ -73,6 +80,11 @@ fun SettingsScreen(
     val isClearingCache by viewModel.isClearingCache.collectAsState()
     val appVersion by viewModel.appVersion.collectAsState()
     val needNotificationPermission by viewModel.needNotificationPermission.collectAsState()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val isLoggingOut by viewModel.isLoggingOut.collectAsState()
+    val operationResult by viewModel.operationResult.collectAsState()
+    val needLoginAction by viewModel.needLoginAction.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // 当前请求的通知类型
     var currentNotificationType by remember { mutableStateOf<NotificationType?>(null) }
@@ -102,21 +114,23 @@ fun SettingsScreen(
     // 对话框状态
     var showClearCacheDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("设置") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
-                }
-            )
+    // 显示操作结果
+    LaunchedEffect(operationResult) {
+        operationResult?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearOperationResult()
         }
-    ) { paddingValues ->
+    }
+
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
+        TopAppBar(title = { Text("设置") }, navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回"
+                )
+            }
+        })
+    }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,21 +145,17 @@ fun SettingsScreen(
                 title = "深色主题",
                 subtitle = "启用应用深色主题",
                 checked = darkTheme,
-                onCheckedChange = { viewModel.updateDarkTheme(it) }
-            )
+                onCheckedChange = { viewModel.updateDarkTheme(it) })
 
             SettingsToggleItem(
                 icon = Icons.Default.Settings,
                 title = "动态颜色",
                 subtitle = "使用系统动态颜色（仅Android 12+）",
                 checked = dynamicColors,
-                onCheckedChange = { viewModel.updateDynamicColors(it) }
-            )
+                onCheckedChange = { viewModel.updateDynamicColors(it) })
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
             )
 
             // 通知设置
@@ -159,8 +169,7 @@ fun SettingsScreen(
                 onCheckedChange = {
                     currentNotificationType = NotificationType.DOWNLOAD
                     viewModel.updateShowDownloadNotification(it)
-                }
-            )
+                })
 
             SettingsToggleItem(
                 icon = Icons.Default.Notifications,
@@ -170,13 +179,10 @@ fun SettingsScreen(
                 onCheckedChange = {
                     currentNotificationType = NotificationType.WALLPAPER_CHANGE
                     viewModel.updateShowWallpaperChangeNotification(it)
-                }
-            )
+                })
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
             )
 
             // 下载设置
@@ -187,34 +193,57 @@ fun SettingsScreen(
                 title = "原始质量",
                 subtitle = "下载原始质量的壁纸（较大文件）",
                 checked = downloadOriginalQuality,
-                onCheckedChange = { viewModel.updateDownloadOriginalQuality(it) }
-            )
+                onCheckedChange = {
+                    viewModel.updateDownloadOriginalQuality(it)
+                })
 
             SettingsActionItem(
-                icon = Icons.Default.Delete,
-                title = "清除缓存",
-                subtitle = "当前缓存大小: $cacheSize",
-                onClick = { showClearCacheDialog = true },
-                trailingContent = if (isClearingCache) {
-                    { CircularProgressIndicator(modifier = Modifier.width(24.dp).height(24.dp)) }
-                } else null
-            )
+                icon = Icons.Default.Delete, title = "清除缓存", subtitle = "当前缓存大小: $cacheSize", onClick = {
+                    showClearCacheDialog = true
+                }, trailingContent = if (isClearingCache) {
+                    {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(24.dp)
+                        )
+                    }
+                } else null)
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
             )
 
             // 关于应用
             SettingsCategory(title = "关于应用")
 
             SettingsActionItem(
-                icon = Icons.Default.Info,
-                title = "应用版本",
-                subtitle = "$appVersion",
-                onClick = {}
-            )
+                icon = Icons.Default.Info, title = "应用版本", subtitle = "$appVersion", onClick = {})
+
+            // 账户设置
+            if (isLoggedIn) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+                )
+
+                SettingsCategory(title = "账户设置")
+
+                SettingsActionItem(
+                    icon = Icons.Default.ExitToApp,
+                    title = "退出登录",
+                    subtitle = "退出当前账户",
+                    onClick = { viewModel.signOut() },
+                    iconTint = MaterialTheme.colorScheme.error,
+                    trailingContent = if (isLoggingOut) {
+                        {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                            )
+                        }
+                    } else null)
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -229,20 +258,17 @@ fun SettingsScreen(
                             onClick = {
                                 viewModel.clearCache()
                                 showClearCacheDialog = false
-                            },
-                            enabled = !isClearingCache
+                            }, enabled = !isClearingCache
                         ) {
                             Text("清除")
                         }
                     },
                     dismissButton = {
                         TextButton(
-                            onClick = { showClearCacheDialog = false }
-                        ) {
+                            onClick = { showClearCacheDialog = false }) {
                             Text("取消")
                         }
-                    }
-                )
+                    })
             }
         }
     }
@@ -253,8 +279,7 @@ fun SettingsScreen(
  */
 @Composable
 private fun SettingsCategory(
-    title: String,
-    modifier: Modifier = Modifier
+    title: String, modifier: Modifier = Modifier
 ) {
     Text(
         text = title,
@@ -270,50 +295,35 @@ private fun SettingsCategory(
  */
 @Composable
 private fun SettingsToggleItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String? = null,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    icon: ImageVector, title: String, subtitle: String? = null, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        onClick = { onCheckedChange(!checked) }
-    ) {
+        modifier = modifier.fillMaxWidth(), onClick = { onCheckedChange(!checked) }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
                 )
 
                 if (subtitle != null) {
                     Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
             Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
+                checked = checked, onCheckedChange = onCheckedChange
             )
         }
     }
@@ -329,38 +339,31 @@ private fun SettingsActionItem(
     subtitle: String? = null,
     onClick: () -> Unit,
     trailingContent: @Composable (() -> Unit)? = null,
+    iconTint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        onClick = onClick
+        modifier = modifier.fillMaxWidth(), onClick = onClick
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                imageVector = icon, contentDescription = null, tint = iconTint
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
                 )
 
                 if (subtitle != null) {
                     Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

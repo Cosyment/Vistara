@@ -40,6 +40,14 @@ class MineViewModel @Inject constructor(
     private val _isDebugMode = MutableStateFlow(false)
     val isDebugMode: StateFlow<Boolean> = _isDebugMode.asStateFlow()
 
+    // 登录状态
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+
+    // 需要登录的操作类型
+    private val _needLoginAction = MutableStateFlow<LoginAction?>(null)
+    val needLoginAction: StateFlow<LoginAction?> = _needLoginAction.asStateFlow()
+
     init {
         loadUserData()
         checkDebugMode()
@@ -59,6 +67,10 @@ class MineViewModel @Inject constructor(
     private fun loadUserData() {
         viewModelScope.launch {
             try {
+                // 检查登录状态
+                _isLoggedIn.value = userRepository.checkUserLoggedIn()
+                Log.d(TAG, "Login status: ${_isLoggedIn.value}")
+
                 // 检查高级用户状态
                 val isPremium = userRepository.isPremiumUser.first()
                 _isPremiumUser.value = isPremium
@@ -83,6 +95,45 @@ class MineViewModel @Inject constructor(
         // 这里可以根据实际需求实现调试模式的检测逻辑
         // 例如，可以检查BuildConfig.DEBUG或特定的开发者选项
         _isDebugMode.value = BuildConfig.DEBUG // 开发阶段默认启用
+    }
+
+    /**
+     * 需要登录的操作类型
+     */
+    enum class LoginAction {
+        FAVORITES,
+        DOWNLOADS,
+        AUTO_WALLPAPER
+    }
+
+    /**
+     * 清除需要登录的操作
+     */
+    fun clearNeedLoginAction() {
+        _needLoginAction.value = null
+    }
+
+    /**
+     * 设置需要登录的操作
+     */
+    fun setNeedLoginAction(action: LoginAction) {
+        _needLoginAction.value = action
+    }
+
+    /**
+     * 检查登录状态并执行操作
+     * @param action 需要登录的操作类型
+     * @param onLoggedIn 已登录时执行的操作
+     * @return 是否已登录
+     */
+    fun checkLoginAndExecute(action: LoginAction, onLoggedIn: () -> Unit): Boolean {
+        return if (_isLoggedIn.value) {
+            onLoggedIn()
+            true
+        } else {
+            _needLoginAction.value = action
+            false
+        }
     }
 
     /**

@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
+import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
 import kotlinx.coroutines.launch
@@ -47,6 +48,7 @@ fun WallpaperDetailScreen(
     onBackPressed: () -> Unit,
     onNavigateToEdit: (String) -> Unit,
     onNavigateToUpgrade: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
     viewModel: WallpaperDetailViewModel = hiltViewModel()
 ) {
     val wallpaperState by viewModel.wallpaperState.collectAsState()
@@ -59,6 +61,11 @@ fun WallpaperDetailScreen(
     val isInfoExpanded by viewModel.isInfoExpanded
     val needStoragePermission by viewModel.needStoragePermission
     val upgradeResult by viewModel.upgradeResult.collectAsState()
+    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
+
+    // 登录相关状态
+    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val needLoginAction by viewModel.needLoginAction.collectAsState()
 
     val context = LocalContext.current
     val activity = LocalActivity.current
@@ -182,7 +189,14 @@ fun WallpaperDetailScreen(
                         onBackPressed = onBackPressed,
                         onToggleFavorite = { viewModel.toggleFavorite() },
                         onToggleInfo = { viewModel.toggleInfoExpanded() },
-                        onSetWallpaper = { viewModel.showSetWallpaperOptions(activity) },
+                        onSetWallpaper = {
+                            // 检查登录状态
+                            if (!isLoggedIn) {
+                                viewModel.setNeedLoginAction(WallpaperDetailViewModel.LoginAction.SET_WALLPAPER)
+                                return@WallpaperDetail
+                            }
+                            viewModel.showSetWallpaperOptions(activity)
+                        },
                         onDownload = {
                             if (wallpaper.isPremium && !isPremiumUser) {
                                 viewModel.showPremiumPrompt()
@@ -193,6 +207,12 @@ fun WallpaperDetailScreen(
                         },
                         onShare = { viewModel.shareWallpaper() },
                         onEdit = {
+                            // 检查登录状态
+                            if (!isLoggedIn) {
+                                viewModel.setNeedLoginAction(WallpaperDetailViewModel.LoginAction.EDIT)
+                                return@WallpaperDetail
+                            }
+
                             if (wallpaper.isPremium && !isPremiumUser) {
                                 viewModel.showPremiumPrompt()
                             } else {
@@ -249,5 +269,24 @@ fun WallpaperDetailScreen(
                     Text("取消")
                 }
             })
+    }
+
+    // 登录提示对话框
+    needLoginAction?.let { action ->
+        val message = when (action) {
+            WallpaperDetailViewModel.LoginAction.FAVORITE -> "收藏壁纸需要登录后才能使用"
+            WallpaperDetailViewModel.LoginAction.DOWNLOAD -> "下载壁纸需要登录后才能使用"
+            WallpaperDetailViewModel.LoginAction.SET_WALLPAPER -> "设置壁纸需要登录后才能使用"
+            WallpaperDetailViewModel.LoginAction.EDIT -> "编辑壁纸需要登录后才能使用"
+        }
+
+        LoginPromptDialog(
+            onDismiss = { viewModel.clearNeedLoginAction() },
+            onConfirm = {
+                viewModel.clearNeedLoginAction()
+                onNavigateToLogin()
+            },
+            message = message
+        )
     }
 }
