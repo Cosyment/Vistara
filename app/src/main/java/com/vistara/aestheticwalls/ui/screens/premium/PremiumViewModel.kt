@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls.ui.screens.upgrade
+package com.vistara.aestheticwalls.ui.screens.premium
 
 import android.app.Activity
 import android.util.Log
@@ -21,7 +21,7 @@ import javax.inject.Inject
  * 升级页面的ViewModel
  */
 @HiltViewModel
-class UpgradeViewModel @Inject constructor(
+class PremiumViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val billingManager: BillingManager
 ) : ViewModel() {

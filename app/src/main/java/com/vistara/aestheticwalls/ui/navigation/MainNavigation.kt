@@ -1,8 +1,8 @@
 package com.vistara.aestheticwalls.ui.navigation
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -14,8 +14,10 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -39,14 +41,11 @@ import com.vistara.aestheticwalls.ui.screens.feedback.FeedbackScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
+import com.vistara.aestheticwalls.ui.screens.premium.PremiumScreen
 import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
-import com.vistara.aestheticwalls.ui.screens.upgrade.UpgradeScreen
 import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
-import android.content.Context
-import android.content.Intent
-import androidx.compose.ui.platform.LocalContext
 
 /**
  * 主导航组件
@@ -64,41 +63,30 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
 
     Box {
         NavHost(
-            navController = navController,
-            startDestination = NavDestination.Home.route,
+            navController = navController, startDestination = NavDestination.Home.route,
             // 只有在主页面才为底部导航栏留出空间
             modifier = if (isMainScreen) Modifier.padding(bottom = 80.dp) else Modifier
         ) {
             composable(NavDestination.Home.route) {
-                HomeScreen(
-                    onWallpaperClick = { wallpaper ->
-                        navController.navigate("wallpaper/${wallpaper.id}")
-                    },
-                    onSearch = { query ->
-                        navController.navigate("search?query=$query")
-                    },
-                    onBannerClick = { /* 暂时不处理 */ }
-                )
+                HomeScreen(onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                }, onSearch = { query ->
+                    navController.navigate("search?query=$query")
+                }, onBannerClick = { /* 暂时不处理 */ })
             }
             composable(NavDestination.StaticWallpapers.route) {
-                StaticLibraryScreen(
-                    onWallpaperClick = { wallpaper ->
-                        navController.navigate("wallpaper/${wallpaper.id}")
-                    },
-                    onSearchClick = {
-                        navController.navigate("search")
-                    }
-                )
+                StaticLibraryScreen(onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                }, onSearchClick = {
+                    navController.navigate("search")
+                })
             }
             composable(NavDestination.LiveWallpapers.route) {
-                LiveLibraryScreen(
-                    onWallpaperClick = { wallpaper ->
-                        navController.navigate("wallpaper/${wallpaper.id}")
-                    },
-                    onSearchClick = {
-                        navController.navigate("search")
-                    }
-                )
+                LiveLibraryScreen(onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                }, onSearchClick = {
+                    navController.navigate("search")
+                })
             }
             composable(NavDestination.Mine.route) {
                 val context = LocalContext.current
@@ -109,12 +97,11 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onSettingsClick = { navController.navigate("settings") },
                     onFeedbackClick = { navController.navigate("feedback") },
                     onAboutClick = { navController.navigate("about") },
-                    onUpgradeClick = { navController.navigate("upgrade") },
+                    onUpgradeClick = { navController.navigate("premium") },
                     onTestToolsClick = {
                         // 启动测试工具
                         context.startActivity(Intent(context, TestLauncherActivity::class.java))
-                    }
-                )
+                    })
             }
 
             // 壁纸详情页面
@@ -126,8 +113,10 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onBackPressed = { navController.navigateUp() },
                     onNavigateToEdit = { wallpaperId ->
                         navController.navigate("edit/$wallpaperId")
-                    }
-                )
+                    },
+                    onNavigateToUpgrade = {
+                        navController.navigate("premium")
+                    })
             }
 
             // 收藏页面
@@ -136,8 +125,7 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onBackPressed = { navController.navigateUp() },
                     onWallpaperClick = { wallpaper ->
                         navController.navigate("wallpaper/${wallpaper.id}")
-                    }
-                )
+                    })
             }
 
             // 下载页面
@@ -146,61 +134,51 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onBackPressed = { navController.navigateUp() },
                     onWallpaperClick = { wallpaper ->
                         navController.navigate("wallpaper/${wallpaper.id}")
-                    }
-                )
+                    })
             }
 
             // 设置页面
             composable("settings") {
                 SettingsScreen(
-                    onBackPressed = { navController.navigateUp() }
-                )
+                    onBackPressed = { navController.navigateUp() })
             }
 
             // 自动更换壁纸页面
             composable("autochange") {
                 AutoChangeScreen(
-                    onBackPressed = { navController.navigateUp() }
-                )
+                    onBackPressed = { navController.navigateUp() })
             }
 
             // 评分与反馈页面
             composable("feedback") {
                 FeedbackScreen(
-                    onBackPressed = { navController.navigateUp() }
-                )
+                    onBackPressed = { navController.navigateUp() })
             }
 
             // 关于页面
             composable("about") {
                 AboutScreen(
-                    onBackPressed = { navController.navigateUp() }
-                )
+                    onBackPressed = { navController.navigateUp() })
             }
 
             // 升级页面
-            composable("upgrade") {
-                UpgradeScreen(
+            composable("premium") {
+                PremiumScreen(
                     onBackPressed = { navController.navigateUp() },
-                    onUpgradeSuccess = { navController.navigateUp() }
-                )
+                    onUpgradeSuccess = { navController.navigateUp() })
             }
 
             // 搜索页面
             composable(
-                route = "search?query={query}",
-                arguments = listOf(navArgument("query") {
+                route = "search?query={query}", arguments = listOf(navArgument("query") {
                     type = NavType.StringType
                     defaultValue = ""
                 })
             ) { backStackEntry ->
                 val query = backStackEntry.arguments?.getString("query") ?: ""
-                SearchScreen(
-                    onWallpaperClick = { wallpaper ->
-                        navController.navigate("wallpaper/${wallpaper.id}")
-                    },
-                    onBackClick = { navController.navigateUp() }
-                )
+                SearchScreen(onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                }, onBackClick = { navController.navigateUp() })
             }
 
             // 壁纸编辑页面
@@ -215,16 +193,14 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onSaveComplete = {
                         // 返回详情页面
                         navController.navigateUp()
-                    }
-                )
+                    })
             }
         }
 
         // 底部导航栏，只在主页面显示
         if (isMainScreen) {
             BottomNavBar(
-                navController = navController,
-                modifier = Modifier.align(Alignment.BottomCenter)
+                navController = navController, modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
     }
@@ -240,55 +216,55 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
 
     NavigationBar(modifier = modifier) {
         NavDestination.values().forEach { destination ->
-            val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
+            val selected =
+                currentDestination?.hierarchy?.any { it.route == destination.route } == true
 
-            NavigationBarItem(
-                icon = {
-                    when (destination) {
-                        NavDestination.Home -> {
-                            if (selected) {
-                                Icon(Icons.Filled.Home, contentDescription = destination.title)
-                            } else {
-                                Icon(Icons.Outlined.Home, contentDescription
-                                = destination.title)
-                            }
-                        }
-                        NavDestination.StaticWallpapers -> {
+            NavigationBarItem(icon = {
+                when (destination) {
+                    NavDestination.Home -> {
+                        if (selected) {
+                            Icon(Icons.Filled.Home, contentDescription = destination.title)
+                        } else {
                             Icon(
-                                ImageVector.vectorResource(id = R.drawable.ic_image),
-                                contentDescription = destination.title
+                                Icons.Outlined.Home, contentDescription = destination.title
                             )
-                        }
-                        NavDestination.LiveWallpapers -> {
-                            Icon(
-                                ImageVector.vectorResource(id = R.drawable.ic_movie),
-                                contentDescription = destination.title
-                            )
-                        }
-                        NavDestination.Mine -> {
-                            if (selected) {
-                                Icon(Icons.Filled.Person, contentDescription = destination.title)
-                            } else {
-                                Icon(Icons.Outlined.Person, contentDescription = destination.title)
-                            }
                         }
                     }
-                },
-                label = { Text(destination.title) },
-                selected = selected,
-                onClick = {
-                    navController.navigate(destination.route) {
-                        // 避免创建多个实例
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+
+                    NavDestination.StaticWallpapers -> {
+                        Icon(
+                            ImageVector.vectorResource(id = R.drawable.ic_image),
+                            contentDescription = destination.title
+                        )
+                    }
+
+                    NavDestination.LiveWallpapers -> {
+                        Icon(
+                            ImageVector.vectorResource(id = R.drawable.ic_movie),
+                            contentDescription = destination.title
+                        )
+                    }
+
+                    NavDestination.Mine -> {
+                        if (selected) {
+                            Icon(Icons.Filled.Person, contentDescription = destination.title)
+                        } else {
+                            Icon(Icons.Outlined.Person, contentDescription = destination.title)
                         }
-                        // 避免重复点击
-                        launchSingleTop = true
-                        // 恢复状态
-                        restoreState = true
                     }
                 }
-            )
+            }, label = { Text(destination.title) }, selected = selected, onClick = {
+                navController.navigate(destination.route) {
+                    // 避免创建多个实例
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    // 避免重复点击
+                    launchSingleTop = true
+                    // 恢复状态
+                    restoreState = true
+                }
+            })
         }
     }
 }
@@ -297,8 +273,8 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
  * 导航目的地枚举
  */
 enum class NavDestination(val route: String, val title: String) {
-    Home("home", "首页"),
-    StaticWallpapers("static", "静态"),
-    LiveWallpapers("live", "动态"),
+    Home("home", "首页"), StaticWallpapers("static", "静态"), LiveWallpapers(
+        "live", "动态"
+    ),
     Mine("mine", "我的")
 }

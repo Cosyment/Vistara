@@ -33,7 +33,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
-import com.vistara.aestheticwalls.ui.components.PremiumWallpaperPrompt
+// import com.vistara.aestheticwalls.ui.components.PremiumWallpaperPrompt - 不再使用弹框
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
 import kotlinx.coroutines.launch
@@ -47,6 +47,7 @@ import kotlinx.coroutines.launch
 fun WallpaperDetailScreen(
     onBackPressed: () -> Unit,
     onNavigateToEdit: (String) -> Unit,
+    onNavigateToUpgrade: () -> Unit = {},
     viewModel: WallpaperDetailViewModel = hiltViewModel()
 ) {
     val wallpaperState by viewModel.wallpaperState.collectAsState()
@@ -54,6 +55,7 @@ fun WallpaperDetailScreen(
     val isPremiumUser by viewModel.isPremiumUser
     val showSetWallpaperOptions by viewModel.showSetWallpaperOptions
     val showPremiumPrompt by viewModel.showPremiumPrompt
+    val navigateToUpgrade by viewModel.navigateToUpgrade
     val isDownloading by viewModel.isDownloading
     val downloadProgress by viewModel.downloadProgress.collectAsState()
     val isInfoExpanded by viewModel.isInfoExpanded
@@ -106,6 +108,14 @@ fun WallpaperDetailScreen(
     // 当页面变为可见时，刷新编辑后的图片
     LaunchedEffect(Unit) {
         viewModel.refreshEditedImage()
+    }
+
+    // 监听导航到升级页面的状态
+    LaunchedEffect(navigateToUpgrade) {
+        if (navigateToUpgrade) {
+            onNavigateToUpgrade()
+            viewModel.resetNavigateToUpgrade()
+        }
     }
 
     // 设置沉浸式状态栏和导航栏
@@ -220,26 +230,7 @@ fun WallpaperDetailScreen(
                     // 高级壁纸提示对话框 - 使用半透明背景
                 }
             }
-            if (showPremiumPrompt) {
-                Dialog(
-                    onDismissRequest = { viewModel.hidePremiumPrompt() },
-                    properties = DialogProperties(
-                        dismissOnBackPress = true,
-                        dismissOnClickOutside = true,
-                        usePlatformDefaultWidth = false
-                    )
-                ) {
-                    PremiumWallpaperPrompt(
-                        onUpgrade = { productId ->
-                            viewModel.upgradeToPremium(activity, productId)
-                            viewModel.hidePremiumPrompt()
-                        },
-                        onDismiss = { viewModel.hidePremiumPrompt() },
-                        isConnected = billingConnectionState == BillingConnectionState.CONNECTED,
-                        isPremiumUser = isPremiumUser
-                    )
-                }
-            }
+            // 移除了PremiumWallpaperPrompt弹框，改为直接导航到UpgradeScreen
         }
     }
 

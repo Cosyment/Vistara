@@ -29,6 +29,7 @@ import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
+import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.manager.AppWallpaperManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,6 +59,7 @@ import javax.inject.Inject
 class WallpaperDetailViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
+    private val userRepository: UserRepository,
     private val billingManager: BillingManager,
     private val wallpaperManager: AppWallpaperManager,
     @ApplicationContext private val context: Context,
@@ -97,6 +99,10 @@ class WallpaperDetailViewModel @Inject constructor(
     // 高级壁纸提示对话框状态
     private val _showPremiumPrompt = mutableStateOf(false)
     val showPremiumPrompt: State<Boolean> = _showPremiumPrompt
+
+    // 导航到升级页面的状态
+    private val _navigateToUpgrade = mutableStateOf(false)
+    val navigateToUpgrade: State<Boolean> = _navigateToUpgrade
 
     // 下载状态
     private val _isDownloading = mutableStateOf(false)
@@ -218,11 +224,12 @@ class WallpaperDetailViewModel @Inject constructor(
 
     /**
      * 检查高级用户状态
+     * 使用userRepository而不是userPrefsRepository获取高级用户状态
      */
     private fun checkPremiumStatus() {
         viewModelScope.launch {
-            val userSettings = userPrefsRepository.getUserSettings()
-            _isPremiumUser.value = userSettings.isPremiumUser
+            // 使用userRepository而不是userPrefsRepository
+            _isPremiumUser.value = userRepository.checkPremiumStatus()
         }
     }
 
@@ -256,8 +263,8 @@ class WallpaperDetailViewModel @Inject constructor(
 
         // 检查是否为高级壁纸且用户不是高级用户
         if (currentWallpaper.isPremium && !_isPremiumUser.value) {
-            // 如果是高级壁纸且用户不是高级用户，显示高级提示
-            _showPremiumPrompt.value = true
+            // 如果是高级壁纸且用户不是高级用户，触发导航到升级页面
+            _navigateToUpgrade.value = true
             return
         }
 
@@ -266,8 +273,8 @@ class WallpaperDetailViewModel @Inject constructor(
             Log.d("WallpaperDetailViewModel", "Checking premium status for live wallpaper")
             // 检查是否为高级用户
             if (!_isPremiumUser.value) {
-                // 如果不是高级用户，显示高级提示
-                _showPremiumPrompt.value = true
+                // 如果不是高级用户，触发导航到升级页面
+                _navigateToUpgrade.value = true
                 return
             }
 
@@ -295,9 +302,11 @@ class WallpaperDetailViewModel @Inject constructor(
 
     /**
      * 显示高级提示
+     * 现在直接触发导航到升级页面
      */
     fun showPremiumPrompt() {
-        _showPremiumPrompt.value = true
+        // 不再显示弹框，而是触发导航到升级页面
+        _navigateToUpgrade.value = true
     }
 
     /**
@@ -305,6 +314,13 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun hidePremiumPrompt() {
         _showPremiumPrompt.value = false
+    }
+
+    /**
+     * 重置导航到升级页面的状态
+     */
+    fun resetNavigateToUpgrade() {
+        _navigateToUpgrade.value = false
     }
 
     /**
@@ -352,8 +368,8 @@ class WallpaperDetailViewModel @Inject constructor(
 
         // 检查是否为高级壁纸或动态壁纸，且用户不是高级用户
         if ((currentWallpaper.isPremium || currentWallpaper.isLive) && !_isPremiumUser.value) {
-            // 如果是高级壁纸或动态壁纸且用户不是高级用户，显示高级提示
-            _showPremiumPrompt.value = true
+            // 如果是高级壁纸或动态壁纸且用户不是高级用户，触发导航到升级页面
+            _navigateToUpgrade.value = true
             return
         }
 

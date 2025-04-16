@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls.ui.screens.upgrade
+package com.vistara.aestheticwalls.ui.screens.premium
 
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
@@ -14,15 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -35,7 +32,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -46,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,10 +54,10 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpgradeScreen(
+fun PremiumScreen(
     onBackPressed: () -> Unit,
     onUpgradeSuccess: () -> Unit = {},
-    viewModel: UpgradeViewModel = hiltViewModel()
+    viewModel: PremiumViewModel = hiltViewModel()
 ) {
     val activity = LocalActivity.current
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
@@ -73,41 +67,35 @@ fun UpgradeScreen(
     val billingConnectionState by viewModel.billingConnectionState.collectAsState()
     val productPrices by viewModel.productPrices.collectAsState()
 
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     // 显示升级结果
     LaunchedEffect(upgradeResult) {
         upgradeResult?.let {
             when (it) {
                 is UpgradeResult.Success -> {
-                    snackbarHostState.showSnackbar(it.message)
+                    snackBarHostState.showSnackbar(it.message)
                     viewModel.clearUpgradeResult()
                     onUpgradeSuccess()
                 }
+
                 is UpgradeResult.Error -> {
-                    snackbarHostState.showSnackbar(it.message)
+                    snackBarHostState.showSnackbar(it.message)
                     viewModel.clearUpgradeResult()
                 }
             }
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("升级到高级版") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        TopAppBar(title = { Text("升级到高级版") }, navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回"
+                )
+            }
+        })
+    }, snackbarHost = { SnackbarHost(snackBarHostState) }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -155,9 +143,9 @@ fun UpgradeScreen(
             PlanCard(
                 plan = UpgradePlan.MONTHLY,
                 isSelected = selectedPlan == UpgradePlan.MONTHLY,
-                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY] ?: "加载中...",
-                onClick = { viewModel.selectPlan(UpgradePlan.MONTHLY) }
-            )
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY]
+                    ?: "加载中...",
+                onClick = { viewModel.selectPlan(UpgradePlan.MONTHLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -165,9 +153,9 @@ fun UpgradeScreen(
             PlanCard(
                 plan = UpgradePlan.YEARLY,
                 isSelected = selectedPlan == UpgradePlan.YEARLY,
-                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY] ?: "加载中...",
-                onClick = { viewModel.selectPlan(UpgradePlan.YEARLY) }
-            )
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY]
+                    ?: "加载中...",
+                onClick = { viewModel.selectPlan(UpgradePlan.YEARLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -175,9 +163,9 @@ fun UpgradeScreen(
             PlanCard(
                 plan = UpgradePlan.LIFETIME,
                 isSelected = selectedPlan == UpgradePlan.LIFETIME,
-                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME] ?: "加载中...",
-                onClick = { viewModel.selectPlan(UpgradePlan.LIFETIME) }
-            )
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME]
+                    ?: "加载中...",
+                onClick = { viewModel.selectPlan(UpgradePlan.LIFETIME) })
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -220,8 +208,7 @@ fun UpgradeScreen(
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = "恢复购买",
-                    style = MaterialTheme.typography.bodyLarge
+                    text = "恢复购买", style = MaterialTheme.typography.bodyLarge
                 )
             }
 
@@ -245,7 +232,7 @@ fun UpgradeScreen(
 @Composable
 private fun PremiumFeaturesList() {
     Column(modifier = Modifier.fillMaxWidth()) {
-        PremiumFeatureItem(text = "无限下载高质量壁纸")
+        PremiumFeatureItem(text = "无限下载动态壁纸")
         PremiumFeatureItem(text = "移除所有广告")
         PremiumFeatureItem(text = "自动更换壁纸（每小时/每次解锁）")
         PremiumFeatureItem(text = "独家高级壁纸")
@@ -259,8 +246,7 @@ private fun PremiumFeaturesList() {
 @Composable
 private fun PremiumFeatureItem(text: String) {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 8.dp)
+        verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
@@ -272,8 +258,7 @@ private fun PremiumFeatureItem(text: String) {
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge
+            text = text, style = MaterialTheme.typography.bodyLarge
         )
     }
 }
@@ -283,10 +268,7 @@ private fun PremiumFeatureItem(text: String) {
  */
 @Composable
 private fun PlanCard(
-    plan: UpgradePlan,
-    isSelected: Boolean,
-    price: String,
-    onClick: () -> Unit
+    plan: UpgradePlan, isSelected: Boolean, price: String, onClick: () -> Unit
 ) {
     val borderModifier = if (isSelected) {
         Modifier.border(
@@ -319,8 +301,7 @@ private fun PlanCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             RadioButton(
-                selected = isSelected,
-                onClick = onClick
+                selected = isSelected, onClick = onClick
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -372,12 +353,12 @@ private fun PlanCard(
 
 @Preview(showBackground = true)
 @Composable
-fun UpgradeScreenPreview() {
+fun PremiumScreenPreview() {
     VistaraTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
             // 这里只是UI预览
-            UpgradeScreen(onBackPressed = {})
+            PremiumScreen(onBackPressed = {})
         }
     }
 }
