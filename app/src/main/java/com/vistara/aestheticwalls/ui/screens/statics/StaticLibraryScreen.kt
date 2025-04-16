@@ -3,48 +3,31 @@ package com.vistara.aestheticwalls.ui.screens.statics
 import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
@@ -75,9 +58,7 @@ fun StaticLibraryScreen(
 
     // 下拉刷新状态
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = isRefreshing,
-        onRefresh = { viewModel.refresh() }
-    )
+        refreshing = isRefreshing, onRefresh = { viewModel.refresh() })
 
     // 监听壁纸数量变化，当壁纸数量足够多时自动加载更多
     LaunchedEffect(wallpapersState) {
@@ -85,7 +66,6 @@ fun StaticLibraryScreen(
             val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
             // 当壁纸数量达到一定阈值时，自动加载更多
             if (wallpapers.size % 10 == 0 && wallpapers.size > 0) {
-                Log.d("StaticLibraryScreen", "Auto loading more wallpapers, current count: ${wallpapers.size}")
                 viewModel.loadMore()
             }
         }
@@ -95,29 +75,37 @@ fun StaticLibraryScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "静态壁纸", style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.SemiBold
-                        )
+                Text(
+                    "静态壁纸", style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.SemiBold
                     )
-                }, actions = {
-                    IconButton(onClick = onSearchClick) {
-                        Icon(
-                            imageVector = Icons.Default.Search, contentDescription = "搜索"
-                        )
-                    }
-                }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
+            }, actions = {
+                IconButton(onClick = onSearchClick) {
+                    Icon(
+                        imageVector = Icons.Default.Search, contentDescription = "搜索"
+                    )
+                }
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                titleContentColor = MaterialTheme.colorScheme.onBackground
+            )
             )
         }) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .pullRefresh(pullRefreshState)
         ) {
+            // 分类选择器 - 使用remember缓存分类选择器
+            CategorySelector(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { category ->
+                    viewModel.filterByCategory(category)
+                })
+
             // 根据状态显示不同的内容
             when (wallpapersState) {
                 is UiState.Loading -> {
@@ -129,8 +117,7 @@ fun StaticLibraryScreen(
                     if (wallpapers.isEmpty()) {
                         // 显示空状态
                         Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = "没有找到壁纸",
@@ -141,20 +128,12 @@ fun StaticLibraryScreen(
                     } else {
                         // 使用Column包裹LazyRow和WallpaperStaggeredGrid
                         Column(modifier = Modifier.fillMaxSize()) {
-                            // 分类选择器 - 使用remember缓存分类选择器
-                            CategorySelector(
-                                categories = categories,
-                                selectedCategory = selectedCategory,
-                                onCategorySelected = { category ->
-                                    viewModel.filterByCategory(category)
-                                }
-                            )
-
                             // 显示壁纸网格 (瀑布流布局)
                             Box(modifier = Modifier.weight(1f)) {
                                 // 使用remember缓存WallpaperStaggeredGrid组件
                                 val rememberedWallpapers = remember(wallpapers) { wallpapers }
-                                val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
+                                val rememberedIsLoadingMore =
+                                    remember(isLoadingMore) { isLoadingMore }
                                 val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
 
                                 WallpaperStaggeredGrid(
@@ -174,8 +153,7 @@ fun StaticLibraryScreen(
                 is UiState.Error -> {
                     ErrorState(
                         message = (wallpapersState as UiState.Error).message,
-                        onRetry = { viewModel.refresh() }
-                    )
+                        onRetry = { viewModel.refresh() })
                 }
             }
 
@@ -183,7 +161,6 @@ fun StaticLibraryScreen(
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter),
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary
             )

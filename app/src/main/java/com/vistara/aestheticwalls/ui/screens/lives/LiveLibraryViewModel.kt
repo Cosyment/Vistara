@@ -144,9 +144,9 @@ class LiveLibraryViewModel @Inject constructor(
     /**
      * 加载壁纸数据
      * @param isRefresh 是否是刷新操作，如果是则重置分页参数
+     * @param categoryFilter 分类筛选，如果不为null则按分类加载
      */
-    fun loadWallpapers(isRefresh: Boolean = false) {
-        Log.d(TAG, "loadWallpapers called, isRefresh: $isRefresh, currentPage: ${_currentPage.value}")
+    fun loadWallpapers(isRefresh: Boolean = false, categoryFilter: String? = null) {
         viewModelScope.launch {
             // 如果是刷新操作，设置刷新状态并重置分页
             if (isRefresh) {
@@ -156,7 +156,6 @@ class LiveLibraryViewModel @Inject constructor(
                 _wallpapers.value = emptyList()
             } else if (_currentPage.value == 1) {
                 // 首次加载或切换分类后的加载，显示加载状态
-                Log.d(TAG, "First load or after category change")
                 _wallpapersState.value = UiState.Loading
             } else {
                 // 加载更多时，设置加载更多状态
@@ -165,19 +164,27 @@ class LiveLibraryViewModel @Inject constructor(
             }
 
             try {
-                Log.d(TAG, "Fetching live wallpapers for page: ${_currentPage.value}, pageSize: $PAGE_SIZE")
-                val result = wallpaperRepository.getWallpapers(
-                    "live",
-                    _currentPage.value,
-                    PAGE_SIZE
-                )
+                // 根据是否有分类筛选决定调用哪个API
+                val result = if (categoryFilter != null && categoryFilter != "全部") {
+                    // 使用分类ID格式："pexels_分类名称"
+                    val categoryId = "pexels_${categoryFilter.lowercase()}"
+                    wallpaperRepository.getWallpapersByCategory(
+                        categoryId,
+                        _currentPage.value,
+                        PAGE_SIZE
+                    )
+                } else {
+                    wallpaperRepository.getWallpapers(
+                        "live",
+                        _currentPage.value,
+                        PAGE_SIZE
+                    )
+                }
 
                 when (result) {
                     is ApiResult.Success -> {
-                        Log.d(TAG, "API Success, got ${result.data.size} wallpapers")
                         // 如果返回的数据少于页面大小，说明没有更多数据了
                         _canLoadMore.value = result.data.size >= PAGE_SIZE
-                        Log.d(TAG, "canLoadMore set to: ${_canLoadMore.value}")
 
                         // 如果是刷新或首次加载，直接设置数据
                         // 否则将新数据添加到现有数据中
@@ -189,21 +196,17 @@ class LiveLibraryViewModel @Inject constructor(
 
                         _wallpapers.value = newWallpapers
                         _wallpapersState.value = UiState.Success(newWallpapers)
-                        Log.d(TAG, "Updated wallpapers, total count: ${newWallpapers.size}")
 
                         // 如果不是刷新操作且有数据返回，增加页码
                         if (!isRefresh && result.data.isNotEmpty()) {
                             _currentPage.value = _currentPage.value + 1
-                            Log.d(TAG, "Incremented page to: ${_currentPage.value}")
                         }
                     }
                     is ApiResult.Error -> {
-                        Log.e(TAG, "API Error: ${result.message}")
                         _wallpapersState.value = UiState.Error(result.message)
                     }
                     is ApiResult.Loading -> {
                         // 已经设置了Loading状态，不需要额外处理
-                        Log.d(TAG, "API Loading state")
                     }
                 }
             } catch (e: Exception) {
@@ -213,7 +216,6 @@ class LiveLibraryViewModel @Inject constructor(
                 // 无论成功失败，都重置加载状态
                 _isRefreshing.value = false
                 _isLoadingMore.value = false
-                Log.d(TAG, "Reset loading states: isRefreshing=false, isLoadingMore=false")
             }
         }
     }
@@ -242,7 +244,7 @@ class LiveLibraryViewModel @Inject constructor(
                 // 先设置加载状态，然后再清空列表，避免闪烁
                 _wallpapersState.value = UiState.Loading
                 _wallpapers.value = emptyList()
-                loadWallpapers(true)
+                loadWallpapers(true, null)
                 return@launch
             }
 
@@ -264,17 +266,17 @@ class LiveLibraryViewModel @Inject constructor(
                         Log.d(TAG, "Filtered wallpapers: ${filtered.size}")
                         _wallpapersState.value = UiState.Success(filtered)
                     } else {
-                        // 如果筛选后没有数据，尝试从服务器加载
-                        Log.d(TAG, "No filtered results, loading from server")
+                        // 如果筛选后没有数据，尝试从服务器按分类加载
+                        Log.d(TAG, "No filtered results, loading from server with category: $category")
                         _wallpapers.value = emptyList()
-                        loadWallpapers(true)
+                        loadWallpapers(true, category)
                     }
                 } else {
-                    // 如果没有数据，重新加载
-                    Log.d(TAG, "No existing data, loading from server")
+                    // 如果没有数据，按分类从服务器加载
+                    Log.d(TAG, "No existing data, loading from server with category: $category")
                     _wallpapersState.value = UiState.Loading
                     _wallpapers.value = emptyList()
-                    loadWallpapers(true)
+                    loadWallpapers(true, category)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error filtering by category: ${e.message}", e)
@@ -288,7 +290,10 @@ class LiveLibraryViewModel @Inject constructor(
      */
     fun refresh() {
         Log.d(TAG, "refresh called")
-        loadWallpapers(true)
+        // 使用当前选中的分类进行刷新
+        val currentCategory = _selectedCategory.value
+        val categoryFilter = if (currentCategory != "全部") currentCategory else null
+        loadWallpapers(true, categoryFilter)
     }
 
     /**
@@ -301,7 +306,10 @@ class LiveLibraryViewModel @Inject constructor(
             return
         }
         Log.d(TAG, "loadMore executing loadWallpapers(false)")
-        loadWallpapers(false)
+        // 使用当前选中的分类加载更多
+        val currentCategory = _selectedCategory.value
+        val categoryFilter = if (currentCategory != "全部") currentCategory else null
+        loadWallpapers(false, categoryFilter)
     }
 
     /**

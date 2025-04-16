@@ -33,7 +33,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +47,7 @@ import com.vistara.aestheticwalls.ui.components.LiveVideoGrid
 import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.rememberVideoPlaybackManager
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import kotlinx.coroutines.launch
 
 /**
  * 动态壁纸库页面
@@ -88,6 +88,7 @@ fun LiveLibraryScreen(
                         snackbarHostState.showSnackbar(result.message)
                     }
                 }
+
                 is LiveLibraryViewModel.UpgradeResult.Error -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(result.message)
@@ -99,35 +100,40 @@ fun LiveLibraryScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                Text(
-                    "动态壁纸", style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.SemiBold
-                    )
+    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, topBar = {
+        TopAppBar(
+            title = {
+            Text(
+                "动态壁纸", style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold
                 )
-            }, actions = {
-                IconButton(onClick = onSearchClick) {
-                    Icon(
-                        imageVector = Icons.Default.Search, contentDescription = "搜索"
-                    )
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                titleContentColor = MaterialTheme.colorScheme.onBackground
             )
-            )
-        }) { paddingValues ->
+        }, actions = {
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search, contentDescription = "搜索"
+                )
+            }
+        }, colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+            titleContentColor = MaterialTheme.colorScheme.onBackground
+        )
+        )
+    }) { paddingValues ->
         val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = {})
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .pullRefresh(pullRefreshState)
         ) {
+            // 分类选择器 - 使用remember缓存分类选择器
+            CategorySelector(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { category: String ->
+                    viewModel.filterByCategory(category)
+                })
             // 将整个when表达式包裹在一个组合函数中
             val content = @Composable {
                 when (wallpapersState) {
@@ -153,14 +159,6 @@ fun LiveLibraryScreen(
 
                         // 使用Column包裹LazyRow和WallpaperStaggeredGrid
                         Column(modifier = Modifier.fillMaxSize()) {
-                            // 分类选择器 - 使用remember缓存分类选择器
-                            CategorySelector(
-                                categories = categories,
-                                selectedCategory = selectedCategory,
-                                onCategorySelected = { category: String ->
-                                    viewModel.filterByCategory(category)
-                                })
-
                             // 显示动态壁纸网格 (统一大小布局)
                             Box(modifier = Modifier.weight(1f)) {
                                 // 创建视频播放管理器

@@ -54,20 +54,3 @@ fun WallpaperGrid(
         }
     }
 }
-
-/**
- * 支持分页加载的壁纸网格组件
- * 后续实现完整的分页加载功能
- */
-/*
-@Composable
-fun WallpaperGrid(
-    wallpapers: LazyPagingItems<Wallpaper>,
-    onWallpaperClick: (Wallpaper) -> Unit,
-    columns: Int = 2,
-    contentPadding: PaddingValues = PaddingValues(8.dp),
-    modifier: Modifier = Modifier
-) {
-    // 分页加载实现，后续补充
-}
-*/
