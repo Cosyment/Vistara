@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.vistara.aestheticwalls.ui.theme.AppColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -136,8 +137,8 @@ fun WallpaperDetailScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        // 设置Scaffold的内容颜色为透明，确保不影响背景
-        containerColor = Color.Transparent, contentColor = Color.White,
+        // 设置Scaffold的内容颜色为黑色，确保壁纸详情页始终使用黑色背景
+        containerColor = AppColors.WallpaperDetailBackground, contentColor = Color.White,
         // 移除所有的内容填充，确保全屏效果
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->

@@ -21,14 +21,14 @@ import androidx.core.view.WindowCompat
 private val DarkColorScheme = darkColorScheme(
     primary = AppColors.Primary,
     secondary = AppColors.Secondary,
-    background = AppColors.Background,
-    surface = AppColors.Surface,
-    error = AppColors.Error,
-    onPrimary = AppColors.OnPrimary,
-    onSecondary = AppColors.OnSecondary,
-    onBackground = AppColors.OnBackground,
-    onSurface = AppColors.OnSurface,
-    onError = AppColors.OnError
+    background = AppColors.DarkBackground,
+    surface = AppColors.DarkSurface,
+    error = AppColors.DarkError,
+    onPrimary = AppColors.DarkOnPrimary,
+    onSecondary = AppColors.DarkOnSecondary,
+    onBackground = AppColors.DarkOnBackground,
+    onSurface = AppColors.DarkOnSurface,
+    onError = AppColors.DarkOnError
 )
 
 /**
@@ -37,14 +37,14 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = AppColors.Primary,
     secondary = AppColors.Secondary,
-    background = AppColors.Background,
-    surface = AppColors.Surface,
+    background = AppColors.LightBackground,
+    surface = AppColors.LightSurface,
     error = AppColors.Error,
-    onPrimary = AppColors.OnPrimary,
-    onSecondary = AppColors.OnSecondary,
-    onBackground = AppColors.OnBackground,
-    onSurface = AppColors.OnSurface,
-    onError = AppColors.OnError
+    onPrimary = AppColors.LightOnPrimary,
+    onSecondary = AppColors.LightOnSecondary,
+    onBackground = AppColors.LightOnBackground,
+    onSurface = AppColors.LightOnSurface,
+    onError = AppColors.LightOnError
 )
 
 /**
@@ -68,7 +68,7 @@ fun VistaraTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
