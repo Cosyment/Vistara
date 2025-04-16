@@ -2,7 +2,6 @@ package com.vistara.aestheticwalls.ui.screens.detail
 
 import android.Manifest
 import android.app.Activity
-import android.app.WallpaperManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -12,41 +11,44 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.util.Log
-import android.net.Uri
 import android.os.Build
-import com.vistara.aestheticwalls.data.EditedImageCache
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import androidx.compose.runtime.State
-import androidx.core.content.FileProvider
-import java.io.File
-import java.io.FileOutputStream
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
+import com.vistara.aestheticwalls.data.EditedImageCache
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
+import com.vistara.aestheticwalls.manager.AppWallpaperManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
@@ -57,6 +59,7 @@ class WallpaperDetailViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
     private val billingManager: BillingManager,
+    private val wallpaperManager: AppWallpaperManager,
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -103,13 +106,18 @@ class WallpaperDetailViewModel @Inject constructor(
     private val _downloadProgress = MutableStateFlow(0f)
     val downloadProgress: StateFlow<Float> = _downloadProgress.asStateFlow()
 
+    // 壁纸处理状态，避免重复操作
+    private val _isProcessingWallpaper = mutableStateOf(false)
+    val isProcessingWallpaper: State<Boolean> = _isProcessingWallpaper
+
     // 壁纸信息展开状态
     private val _isInfoExpanded = mutableStateOf(false)
     val isInfoExpanded: State<Boolean> = _isInfoExpanded
 
     // 计费连接状态
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
-    val billingConnectionState: StateFlow<BillingConnectionState> = _billingConnectionState.asStateFlow()
+    val billingConnectionState: StateFlow<BillingConnectionState> =
+        _billingConnectionState.asStateFlow()
 
     // 升级结果
     private val _upgradeResult = MutableStateFlow<UpgradeResult?>(null)
@@ -151,12 +159,15 @@ class WallpaperDetailViewModel @Inject constructor(
                         _isPremiumUser.value = true
                         _upgradeResult.value = UpgradeResult.Success("升级成功！感谢您的支持")
                     }
+
                     is PurchaseState.Failed -> {
                         _upgradeResult.value = UpgradeResult.Error("升级失败: ${state.message}")
                     }
+
                     is PurchaseState.Cancelled -> {
                         _upgradeResult.value = UpgradeResult.Error("升级已取消")
                     }
+
                     else -> {
                         // 其他状态不处理
                     }
@@ -220,7 +231,8 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun toggleFavorite() {
         viewModelScope.launch {
-            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            val currentWallpaper =
+                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             if (_isFavorite.value) {
                 // 取消收藏
@@ -237,15 +249,30 @@ class WallpaperDetailViewModel @Inject constructor(
 
     /**
      * 显示设置壁纸选项
+     * @param activity 当前活动实例，用于设置动态壁纸
      */
-    fun showSetWallpaperOptions() {
+    fun showSetWallpaperOptions(activity: Activity? = null) {
         val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
 
         if (currentWallpaper.isPremium && !_isPremiumUser.value) {
             // 如果是高级壁纸且用户不是高级用户，显示高级提示
             _showPremiumPrompt.value = true
+            return
+        }
+
+        // 对于动态壁纸，直接设置，不显示选项弹框
+        if (currentWallpaper.isLive) {
+            Log.d("WallpaperDetailViewModel", "Setting live wallpaper, activity is $activity")
+            if (activity != null) {
+                // 直接设置为两者（系统会显示选择界面）
+                setWallpaper(activity, WallpaperTarget.BOTH)
+            } else {
+                Log.e("WallpaperDetailViewModel", "Cannot set live wallpaper: activity is null")
+                // 如果没有Activity，也显示选项弹框，让用户选择
+                _showSetWallpaperOptions.value = true
+            }
         } else {
-            // 否则显示设置壁纸选项
+            // 静态壁纸显示设置壁纸选项
             _showSetWallpaperOptions.value = true
         }
     }
@@ -273,101 +300,40 @@ class WallpaperDetailViewModel @Inject constructor(
 
     /**
      * 设置壁纸
+     * 根据壁纸类型和目标位置设置壁纸
      */
-    fun setWallpaper(context: Context, target: WallpaperTarget) {
+    fun setWallpaper(context: Activity?, target: WallpaperTarget) {
+        // 检查上下文是否为空
+        if (context == null) {
+            Log.e("WallpaperDetailViewModel", "Context is null")
+            return
+        }
+
         viewModelScope.launch {
-            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            Log.d("WallpaperDetailViewModel", "Setting wallpaper for target: $target")
+            val currentWallpaper =
+                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             // 立即隐藏选项对话框，提供即时反馈
             _showSetWallpaperOptions.value = false
 
-            try {
-                // 如果是动态壁纸，需要特殊处理
-                if (currentWallpaper.isLive) {
-                    // 对于动态壁纸，目前只能设置静态图片
-                    // 使用缩略图作为静态壁纸
-                    val bitmap = withContext(Dispatchers.IO) {
-                        try {
-                            // 尝试使用预览图或缩略图
-                            val previewUrl = currentWallpaper.previewUrl ?: currentWallpaper.thumbnailUrl
-                            if (previewUrl != null) {
-                                val url = URL(previewUrl)
-                                BitmapFactory.decodeStream(url.openStream())
-                            } else {
-                                // 如果没有预览图，创建一个空白图片
-                                Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                            }
-                        } catch (e: Exception) {
-                            Log.e("WallpaperDetailViewModel", "Error loading preview image: ${e.message}")
-                            // 如果加载失败，创建一个空白图片
-                            Bitmap.createBitmap(1080, 1920, Bitmap.Config.ARGB_8888)
-                        }
-                    }
+            // 设置正在处理状态，避免重复操作
+            _isProcessingWallpaper.value = true
 
-                    // 设置壁纸
-                    withContext(Dispatchers.IO) {
-                        val wallpaperManager = WallpaperManager.getInstance(context)
-                        when (target) {
-                            WallpaperTarget.HOME -> {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
-                                } else {
-                                    wallpaperManager.setBitmap(bitmap)
-                                }
-                            }
-                            WallpaperTarget.LOCK -> {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
-                                }
-                            }
-                            WallpaperTarget.BOTH -> {
-                                wallpaperManager.setBitmap(bitmap)
-                            }
-                        }
-                    }
-                } else {
-                    // 对于静态壁纸，使用原来的逻辑
-                    // 检查是否有编辑后的图片
-                    val bitmap = if (_editedBitmap.value != null) {
-                        // 使用编辑后的图片
-                        _editedBitmap.value
-                    } else {
-                        // 如果没有编辑过，则下载原始图片
-                        withContext(Dispatchers.IO) {
-                            val url = URL(currentWallpaper.url)
-                            BitmapFactory.decodeStream(url.openStream())
-                        }
-                    }
-
-                    // 设置壁纸操作也可能是耗时操作，使用IO线程
-                    withContext(Dispatchers.IO) {
-                        val wallpaperManager = WallpaperManager.getInstance(context)
-                        when (target) {
-                            WallpaperTarget.HOME -> {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM)
-                                } else {
-                                    wallpaperManager.setBitmap(bitmap)
-                                }
-                            }
-                            WallpaperTarget.LOCK -> {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    wallpaperManager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK)
-                                }
-                            }
-                            WallpaperTarget.BOTH -> {
-                                wallpaperManager.setBitmap(bitmap)
-                            }
-                        }
-                    }
-                }
-            } catch (e: IOException) {
-                // 处理错误
-                Log.e("WallpaperDetailViewModel", "Error setting wallpaper: ${e.message}")
-                e.printStackTrace()
+            // 使用统一的WallpaperManager设置壁纸
+            wallpaperManager.setWallpaper(
+                activity = context,
+                wallpaper = currentWallpaper,
+                target = target,
+                editedBitmap = _editedBitmap.value
+            ) { success ->
+                _isProcessingWallpaper.value = false
             }
         }
     }
+
+    // 已移除handleLiveWallpaper和handleStaticWallpaper方法
+    // 现在使用统一的WallpaperManager类处理壁纸设置
 
     /**
      * 下载壁纸
@@ -384,8 +350,9 @@ class WallpaperDetailViewModel @Inject constructor(
         // 检查存储权限
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             // Android 10 及以下需要显式请求存储权限
-            val hasStoragePermission = context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                    PackageManager.PERMISSION_GRANTED
+            val hasStoragePermission =
+                context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                        PackageManager.PERMISSION_GRANTED
 
             if (!hasStoragePermission) {
                 // 需要请求权限，设置状态并返回
@@ -424,61 +391,12 @@ class WallpaperDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // 实际下载图片
-                val bitmap = withContext(Dispatchers.IO) {
-                    val url = URL(wallpaper.url)
-                    BitmapFactory.decodeStream(url.openStream())
-                }
-
-                // 保存图片到相册
-                val fileName = "Vistara_${System.currentTimeMillis()}.jpg"
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
-                        put(MediaStore.Images.Media.IS_PENDING, 1)
-                    }
-                }
-
-                val imageUri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                imageUri?.let { uri ->
-                    withContext(Dispatchers.IO) {
-                        context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            // 模拟下载进度
-                            val buffer = ByteArrayOutputStream()
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, buffer)
-                            val byteArray = buffer.toByteArray()
-
-                            // 写入文件并更新进度
-                            val chunkSize = byteArray.size / 10
-                            for (i in 0 until 10) {
-                                val start = i * chunkSize
-                                val end = if (i == 9) byteArray.size else (i + 1) * chunkSize
-                                outputStream.write(byteArray, start, end - start)
-                                outputStream.flush()
-
-                                // 更新进度
-                                _downloadProgress.value = (i + 1) / 10f
-                                delay(100) // 稍微延迟以显示进度
-                            }
-                        }
-
-                        // 如果是Android Q及以上，需要更新IS_PENDING状态
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            val updateValues = ContentValues().apply {
-                                put(MediaStore.Images.Media.IS_PENDING, 0)
-                            }
-                            context.contentResolver.update(uri, updateValues, null, null)
-                        }
-
-                        // 通知媒体扫描器更新相册
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                            val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-                            mediaScanIntent.data = uri
-                            context.sendBroadcast(mediaScanIntent)
-                        }
-                    }
+                if (wallpaper.isLive) {
+                    // 如果是动态壁纸（视频），使用不同的下载逻辑
+                    downloadVideo(wallpaper)
+                } else {
+                    // 静态壁纸下载逻辑
+                    downloadImage(wallpaper)
                 }
 
                 // 记录下载历史
@@ -486,9 +404,164 @@ class WallpaperDetailViewModel @Inject constructor(
                 _isDownloading.value = false
                 _downloadProgress.value = 1f
             } catch (e: Exception) {
+                Log.e("WallpaperDetailViewModel", "Download failed: ${e.message}")
                 e.printStackTrace()
                 _isDownloading.value = false
                 _downloadProgress.value = 0f
+            }
+        }
+    }
+
+    /**
+     * 下载静态壁纸（图片）
+     */
+    private suspend fun downloadImage(wallpaper: Wallpaper) {
+        // 实际下载图片
+        val bitmap = withContext(Dispatchers.IO) {
+            val url = URL(wallpaper.url)
+            BitmapFactory.decodeStream(url.openStream())
+        }
+
+        // 保存图片到相册
+        val fileName = "Vistara_${System.currentTimeMillis()}.jpg"
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+        }
+
+        val imageUri = context.contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        )
+        imageUri?.let { uri ->
+            withContext(Dispatchers.IO) {
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    // 模拟下载进度
+                    val buffer = ByteArrayOutputStream()
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, buffer)
+                    val byteArray = buffer.toByteArray()
+
+                    // 写入文件并更新进度
+                    val chunkSize = byteArray.size / 10
+                    for (i in 0 until 10) {
+                        val start = i * chunkSize
+                        val end = if (i == 9) byteArray.size else (i + 1) * chunkSize
+                        outputStream.write(byteArray, start, end - start)
+                        outputStream.flush()
+
+                        // 更新进度
+                        _downloadProgress.value = (i + 1) / 10f
+                        delay(100) // 稍微延迟以显示进度
+                    }
+                }
+
+                // 如果是Android Q及以上，需要更新IS_PENDING状态
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val updateValues = ContentValues().apply {
+                        put(MediaStore.Images.Media.IS_PENDING, 0)
+                    }
+                    context.contentResolver.update(uri, updateValues, null, null)
+                }
+
+                // 通知媒体扫描器更新相册
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                    mediaScanIntent.data = uri
+                    context.sendBroadcast(mediaScanIntent)
+                }
+            }
+        }
+    }
+
+    /**
+     * 下载动态壁纸（视频）
+     */
+    private suspend fun downloadVideo(wallpaper: Wallpaper) {
+        val videoUrl = wallpaper.url ?: throw IllegalArgumentException("Video URL is null")
+        Log.d("WallpaperDetailViewModel", "Downloading video from: $videoUrl")
+
+        // 使用OkHttp下载视频文件
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        val request = Request.Builder()
+            .url(videoUrl)
+            .build()
+
+        val response = withContext(Dispatchers.IO) {
+            client.newCall(request).execute()
+        }
+
+        if (!response.isSuccessful) {
+            throw IOException("Failed to download video: ${response.code}")
+        }
+
+        // 准备保存视频的ContentValues
+        val fileName = "Vistara_${System.currentTimeMillis()}.mp4"
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_MOVIES)
+                put(MediaStore.Video.Media.IS_PENDING, 1)
+            }
+        }
+
+        // 插入到视频媒体库
+        val videoUri = context.contentResolver.insert(
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+            contentValues
+        )
+        videoUri?.let { uri ->
+            withContext(Dispatchers.IO) {
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    response.body?.let { responseBody ->
+                        // 获取总大小用于计算进度
+                        val contentLength = responseBody.contentLength()
+                        val buffer = ByteArray(8192) // 8KB buffer
+                        var bytesRead: Int
+                        var totalBytesRead: Long = 0
+
+                        // 使用输入流读取数据
+                        responseBody.byteStream().use { inputStream ->
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                outputStream.write(buffer, 0, bytesRead)
+                                totalBytesRead += bytesRead
+
+                                // 更新进度
+                                if (contentLength > 0) {
+                                    val progress =
+                                        totalBytesRead.toFloat() / contentLength.toFloat()
+                                    _downloadProgress.value = progress
+                                }
+                            }
+                            outputStream.flush()
+                        }
+                    }
+                }
+
+                // 如果是Android Q及以上，需要更新IS_PENDING状态
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val updateValues = ContentValues().apply {
+                        put(MediaStore.Video.Media.IS_PENDING, 0)
+                    }
+                    context.contentResolver.update(uri, updateValues, null, null)
+                }
+
+                // 通知媒体扫描器更新视频库
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                    mediaScanIntent.data = uri
+                    context.sendBroadcast(mediaScanIntent)
+                }
+
+                Log.d("WallpaperDetailViewModel", "Video download completed and saved to: $uri")
             }
         }
     }
@@ -498,7 +571,8 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun shareWallpaper() {
         viewModelScope.launch {
-            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            val currentWallpaper =
+                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             // 分享壁纸信息
             val shareText = "\u6211发现了一张精美的壁纸\n" +
@@ -533,7 +607,8 @@ class WallpaperDetailViewModel @Inject constructor(
                         val cachePath = File(context.cacheDir, "shared_images")
                         cachePath.mkdirs()
 
-                        val shareImageFile = File(cachePath, "share_${System.currentTimeMillis()}.jpg")
+                        val shareImageFile =
+                            File(cachePath, "share_${System.currentTimeMillis()}.jpg")
                         val outputStream = FileOutputStream(shareImageFile)
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
                         outputStream.close()
@@ -595,10 +670,15 @@ class WallpaperDetailViewModel @Inject constructor(
 
         val scaledWidth = (width * scale).toInt()
         val scaledHeight = (height * scale).toInt()
-        val scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+        val scaledBitmap =
+            Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
 
         // 创建最终图片，包含水印区域
-        val result = Bitmap.createBitmap(scaledWidth, scaledHeight + watermarkHeight, Bitmap.Config.ARGB_8888)
+        val result = Bitmap.createBitmap(
+            scaledWidth,
+            scaledHeight + watermarkHeight,
+            Bitmap.Config.ARGB_8888
+        )
         val canvas = Canvas(result)
 
         // 绘制原始图片
@@ -607,7 +687,13 @@ class WallpaperDetailViewModel @Inject constructor(
         // 绘制水印背景
         val paint = Paint()
         paint.color = Color.WHITE
-        canvas.drawRect(0f, scaledHeight.toFloat(), scaledWidth.toFloat(), (scaledHeight + watermarkHeight).toFloat(), paint)
+        canvas.drawRect(
+            0f,
+            scaledHeight.toFloat(),
+            scaledWidth.toFloat(),
+            (scaledHeight + watermarkHeight).toFloat(),
+            paint
+        )
 
         // 绘制水印文字
         paint.color = Color.BLACK
@@ -643,7 +729,8 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun editWallpaper() {
         viewModelScope.launch {
-            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+            val currentWallpaper =
+                (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             // 检查是否为高级壁纸且用户不是高级用户
             if (currentWallpaper.isPremium && !_isPremiumUser.value) {

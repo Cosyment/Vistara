@@ -45,22 +45,23 @@ import com.vistara.aestheticwalls.data.model.Wallpaper
 fun LiveVideoPlayer(
     wallpaper: Wallpaper, onTap: () -> Unit, modifier: Modifier = Modifier
 ) {
-    // 跟踪重组频率
-    val lastRecompositionTime = remember { mutableStateOf(0L) }
-    val currentTime = System.currentTimeMillis()
-    if (lastRecompositionTime.value > 0 && currentTime - lastRecompositionTime.value < 500) {
-        Log.d(
-            "LiveVideoPlayer",
-            "Frequent recomposition detected: ${currentTime - lastRecompositionTime.value}ms for ${wallpaper.id}"
-        )
-    }
-    lastRecompositionTime.value = currentTime
+    // 跟踪重组频率 - 仅在调试时启用
+    // val lastRecompositionTime = remember { mutableStateOf(0L) }
+    // val currentTime = System.currentTimeMillis()
+    // if (lastRecompositionTime.value > 0 && currentTime - lastRecompositionTime.value < 500) {
+    //     Log.d(
+    //         "LiveVideoPlayer",
+    //         "Frequent recomposition detected: ${currentTime - lastRecompositionTime.value}ms for ${wallpaper.id}"
+    //     )
+    // }
+    // lastRecompositionTime.value = currentTime
     // 获取上下文和生命周期
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // 创建ExoPlayer实例
+    // 创建ExoPlayer实例 - 使用remember确保稳定性
     val exoPlayer = remember(wallpaper.id) {
+        Log.d("LiveVideoPlayer", "Creating new ExoPlayer instance for ${wallpaper.id}")
         ExoPlayer.Builder(context).build().apply {
             repeatMode = Player.REPEAT_MODE_ALL
             volume = 0f
@@ -69,6 +70,7 @@ fun LiveVideoPlayer(
             // 设置视频URL
             wallpaper.url?.let { url ->
                 if (url.isNotEmpty()) {
+                    Log.d("LiveVideoPlayer", "Setting media item: $url")
                     setMediaItem(MediaItem.fromUri(url))
                     prepare()
                 }
@@ -76,11 +78,14 @@ fun LiveVideoPlayer(
         }
     }
 
-    // 简化状态管理
+    // 简化状态管理 - 使用remember确保状态稳定性
     var isBuffering by remember(wallpaper.id) { mutableStateOf(true) }
 
-    // 监听播放器状态
-    DisposableEffect(exoPlayer, wallpaper.id) {
+    // 使用key包装整个内容，确保在wallpaper.id变化时完全重建组件
+    // 这有助于防止部分重组导致的问题
+
+    // 监听播放器状态 - 仅在exoPlayer变化时重新设置监听器
+    DisposableEffect(key1 = exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 when (state) {
@@ -129,6 +134,7 @@ fun LiveVideoPlayer(
         }
     }
 
+    // 使用remember确保在wallpaper.id变化时完全重建组件
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -162,7 +168,8 @@ fun LiveVideoPlayer(
                     view.player = exoPlayer
                 }
             },
-//            shouldUpdate = { _ -> false } // 始终返回false，防止重组时更新
+            // 防止重组时更新
+            // shouldUpdate = { _ -> false }
         )
 
         // 缓冲指示器 - 仅在缓冲时显示

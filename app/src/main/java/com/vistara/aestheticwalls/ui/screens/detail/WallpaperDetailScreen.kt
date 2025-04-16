@@ -6,10 +6,11 @@ import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,8 +26,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,16 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.vistara.aestheticwalls.BuildConfig
 import com.vistara.aestheticwalls.billing.BillingConnectionState
+import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.components.PremiumWallpaperPrompt
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
-import com.vistara.aestheticwalls.data.model.UiState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
+import kotlinx.coroutines.launch
 
 /**
  * 壁纸详情页面
@@ -85,6 +83,7 @@ fun WallpaperDetailScreen(
                         snackbarHostState.showSnackbar(result.message)
                     }
                 }
+
                 is WallpaperDetailViewModel.UpgradeResult.Error -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(result.message)
@@ -122,12 +121,10 @@ fun WallpaperDetailScreen(
     LaunchedEffect(Unit) {
         // 设置状态栏和导航栏为完全透明
         systemUiController.setStatusBarColor(
-            color = Color.Transparent,
-            darkIcons = false // 使用白色图标，因为背景可能是深色
+            color = Color.Transparent, darkIcons = false // 使用白色图标，因为背景可能是深色
         )
         systemUiController.setNavigationBarColor(
-            color = Color.Transparent,
-            darkIcons = false
+            color = Color.Transparent, darkIcons = false
         )
 
         // 设置系统栏可见性
@@ -137,157 +134,135 @@ fun WallpaperDetailScreen(
     // 使用Scaffold作为根布局，可以更好地控制浮动按钮
     androidx.compose.material3.Scaffold(
         floatingActionButton = {
-            // 开发模式下显示测试支付按钮
-            if (BuildConfig.IS_DEV_MODE) {
-                FloatingActionButton(
-                    onClick = {
-                        // 调用测试支付方法
-                        viewModel.testPayment(activity)
-                        // 显示提示
-                        Toast.makeText(context, "正在测试支付...", Toast.LENGTH_SHORT).show()
-                    },
-                    containerColor = MaterialTheme.colorScheme.error, // 使用错误颜色，更加醒目
-                    contentColor = MaterialTheme.colorScheme.onError,
-                    modifier = Modifier.size(72.dp) // 增大按钮尺寸，更容易点击
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = "测试支付",
-                        modifier = Modifier.size(32.dp) // 增大图标尺寸
-                    )
-                }
+        // 开发模式下显示测试支付按钮
+        if (BuildConfig.IS_DEV_MODE) {
+            FloatingActionButton(
+                onClick = {
+                    // 调用测试支付方法
+                    viewModel.testPayment(activity)
+                    // 显示提示
+                    Toast.makeText(context, "正在测试支付...", Toast.LENGTH_SHORT).show()
+                },
+                containerColor = MaterialTheme.colorScheme.error, // 使用错误颜色，更加醒目
+                contentColor = MaterialTheme.colorScheme.onError,
+                modifier = Modifier.size(72.dp) // 增大按钮尺寸，更容易点击
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "测试支付",
+                    modifier = Modifier.size(32.dp) // 增大图标尺寸
+                )
             }
-        },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
+        }
+    }, snackbarHost = {
+        SnackbarHost(hostState = snackbarHostState)
+    },
         // 设置Scaffold的内容颜色为透明，确保不影响背景
-        containerColor = Color.Transparent,
-        contentColor = Color.White,
+        containerColor = Color.Transparent, contentColor = Color.White,
         // 移除所有的内容填充，确保全屏效果
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         // 使用Box作为内容区域，不添加填充，保持全屏效果
-        Box(modifier = Modifier.fillMaxSize()) {
-        when (wallpaperState) {
-            is UiState.Loading -> {
-                // 显示加载中
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-            is UiState.Error -> {
-                // 显示错误信息
-                Text(
-                    text = (wallpaperState as UiState.Error).message ?: "加载失败",
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            is UiState.Success -> {
-                // 显示壁纸详情
-                val wallpaper = (wallpaperState as UiState.Success).data
-
-                // 获取编辑后的图片
-                val editedBitmap by viewModel.editedBitmap
-
-                WallpaperDetail(
-                    wallpaper = wallpaper,
-                    isFavorite = isFavorite,
-                    isInfoExpanded = isInfoExpanded,
-                    isDownloading = isDownloading,
-                    downloadProgress = downloadProgress,
-                    onBackPressed = onBackPressed,
-                    onToggleFavorite = { viewModel.toggleFavorite() },
-                    onToggleInfo = { viewModel.toggleInfoExpanded() },
-                    onSetWallpaper = { viewModel.showSetWallpaperOptions() },
-                    onDownload = {
-                        viewModel.downloadWallpaper()
-                        Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
-                    },
-                    onShare = { viewModel.shareWallpaper() },
-                    onEdit = {
-                        val wallpaperId = wallpaper.id
-                        if (wallpaper.isPremium && !isPremiumUser) {
-                            viewModel.showPremiumPrompt()
-                        } else {
-                            onNavigateToEdit(wallpaperId)
-                        }
-                    },
-                    isPremiumUser = isPremiumUser,
-                    editedBitmap = editedBitmap
-                )
-
-                // 设置壁纸选项对话框 - 使用半透明背景
-                if (showSetWallpaperOptions) {
-                    Dialog(
-                        onDismissRequest = { viewModel.hideSetWallpaperOptions() },
-                        properties = DialogProperties(
-                            dismissOnBackPress = true,
-                            dismissOnClickOutside = true,
-                            usePlatformDefaultWidth = false
-                        )
-                    ) {
-                        WallpaperSetOptions(
-                            onSetHomeScreen = {
-                                // 先显示提示，然后设置壁纸
-                                Toast.makeText(context, "正在设置主屏幕壁纸...", Toast.LENGTH_SHORT).show()
-                                viewModel.setWallpaper(context, WallpaperTarget.HOME)
-                                // 在后台完成设置后再显示成功提示
-                                coroutineScope.launch {
-                                    delay(500) // 等待一下，避免提示重叠
-                                    Toast.makeText(context, "已设置为主屏幕壁纸", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onSetLockScreen = {
-                                // 先显示提示，然后设置壁纸
-                                Toast.makeText(context, "正在设置锁屏壁纸...", Toast.LENGTH_SHORT).show()
-                                viewModel.setWallpaper(context, WallpaperTarget.LOCK)
-                                // 在后台完成设置后再显示成功提示
-                                coroutineScope.launch {
-                                    delay(500) // 等待一下，避免提示重叠
-                                    Toast.makeText(context, "已设置为锁屏壁纸", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onSetBoth = {
-                                // 先显示提示，然后设置壁纸
-                                Toast.makeText(context, "正在设置壁纸...", Toast.LENGTH_SHORT).show()
-                                viewModel.setWallpaper(context, WallpaperTarget.BOTH)
-                                // 在后台完成设置后再显示成功提示
-                                coroutineScope.launch {
-                                    delay(500) // 等待一下，避免提示重叠
-                                    Toast.makeText(context, "已设置为主屏幕和锁屏壁纸", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            onDismiss = { viewModel.hideSetWallpaperOptions() }
-                        )
-                    }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (wallpaperState) {
+                is UiState.Loading -> {
+                    // 显示加载中
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
 
-                // 高级壁纸提示对话框 - 使用半透明背景
-                if (showPremiumPrompt) {
-                    Dialog(
-                        onDismissRequest = { viewModel.hidePremiumPrompt() },
-                        properties = DialogProperties(
-                            dismissOnBackPress = true,
-                            dismissOnClickOutside = true,
-                            usePlatformDefaultWidth = false
-                        )
-                    ) {
-                        PremiumWallpaperPrompt(
-                            onUpgrade = {
+                is UiState.Error -> {
+                    // 显示错误信息
+                    Text(
+                        text = (wallpaperState as UiState.Error).message ?: "加载失败",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                is UiState.Success -> {
+                    // 显示壁纸详情
+                    val wallpaper = (wallpaperState as UiState.Success).data
+
+                    // 获取编辑后的图片
+                    val editedBitmap by viewModel.editedBitmap
+
+                    WallpaperDetail(
+                        wallpaper = wallpaper,
+                        isFavorite = isFavorite,
+                        isInfoExpanded = isInfoExpanded,
+                        isDownloading = isDownloading,
+                        downloadProgress = downloadProgress,
+                        onBackPressed = onBackPressed,
+                        onToggleFavorite = { viewModel.toggleFavorite() },
+                        onToggleInfo = { viewModel.toggleInfoExpanded() },
+                        onSetWallpaper = { viewModel.showSetWallpaperOptions(activity) },
+                        onDownload = {
+                            viewModel.downloadWallpaper()
+                            Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
+                        },
+                        onShare = { viewModel.shareWallpaper() },
+                        onEdit = {
+                            val wallpaperId = wallpaper.id
+                            if (wallpaper.isPremium && !isPremiumUser) {
+                                viewModel.showPremiumPrompt()
+                            } else {
+                                onNavigateToEdit(wallpaperId)
+                            }
+                        },
+                        isPremiumUser = isPremiumUser,
+                        editedBitmap = editedBitmap
+                    )
+
+                    // 设置壁纸选项对话框 - 使用半透明背景
+                    if (showSetWallpaperOptions) {
+                        Dialog(
+                            onDismissRequest = { viewModel.hideSetWallpaperOptions() },
+                            properties = DialogProperties(
+                                dismissOnBackPress = true,
+                                dismissOnClickOutside = true,
+                                usePlatformDefaultWidth = false
+                            )
+                        ) {
+                            WallpaperSetOptions(onSetHomeScreen = {
+                                viewModel.setWallpaper(activity, WallpaperTarget.HOME)
+                            }, onSetLockScreen = {
+                                viewModel.setWallpaper(activity, WallpaperTarget.LOCK)
+                            }, onSetBoth = {
+                                viewModel.setWallpaper(activity, WallpaperTarget.BOTH)
+                            }, onDismiss = { viewModel.hideSetWallpaperOptions() })
+                        }
+                    }
+
+                    // 高级壁纸提示对话框 - 使用半透明背景
+                    if (showPremiumPrompt) {
+                        Dialog(
+                            onDismissRequest = { viewModel.hidePremiumPrompt() },
+                            properties = DialogProperties(
+                                dismissOnBackPress = true,
+                                dismissOnClickOutside = true,
+                                usePlatformDefaultWidth = false
+                            )
+                        ) {
+                            PremiumWallpaperPrompt(
+                                onUpgrade = {
                                 viewModel.upgradeToPremium(activity)
                                 viewModel.hidePremiumPrompt()
                             },
-                            onDismiss = { viewModel.hidePremiumPrompt() },
-                            isConnected = billingConnectionState == BillingConnectionState.CONNECTED
-                        )
+                                onDismiss = { viewModel.hidePremiumPrompt() },
+                                isConnected = billingConnectionState == BillingConnectionState.CONNECTED
+                            )
+                        }
                     }
                 }
             }
         }
-    }
     }
 
     // 存储权限请求对话框
@@ -308,7 +283,6 @@ fun WallpaperDetailScreen(
                 }) {
                     Text("取消")
                 }
-            }
-        )
+            })
     }
 }

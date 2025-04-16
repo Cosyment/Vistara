@@ -93,6 +93,8 @@ fun WallpaperDetail(
             )
         } else if (wallpaper.isLive) {
             // 显示动态壁纸（视频）
+            // 使用remember确保在wallpaper.id变化时重建组件
+            val videoKey = remember { wallpaper.id }
             LiveVideoPlayer(
                 wallpaper = wallpaper,
                 modifier = Modifier.fillMaxSize(),
