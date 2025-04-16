@@ -46,7 +46,7 @@ import com.vistara.aestheticwalls.ui.screens.premium.PremiumScreen
 import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
-import com.vistara.aestheticwalls.ui.test.TestLauncherActivity
+import com.vistara.aestheticwalls.ui.test.TestActivity
 
 /**
  * 主导航组件
@@ -123,41 +123,33 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onUpgradeClick = { navController.navigate("premium") },
                     onTestToolsClick = {
                         // 启动测试工具
-                        context.startActivity(Intent(context, TestLauncherActivity::class.java))
+                        context.startActivity(Intent(context, TestActivity::class.java))
                     })
             }
 
             // 壁纸详情页面
             composable(
-                route = "wallpaper/{wallpaperId}",
-                arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
+                route = "wallpaper/{wallpaperId}", arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
             ) {
-                WallpaperDetailScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onNavigateToEdit = { wallpaperId ->
-                        navController.navigate("edit/$wallpaperId")
-                    },
-                    onNavigateToUpgrade = {
-                        navController.navigate("premium")
-                    })
+                WallpaperDetailScreen(onBackPressed = { navController.navigateUp() }, onNavigateToEdit = { wallpaperId ->
+                    navController.navigate("edit/$wallpaperId")
+                }, onNavigateToUpgrade = {
+                    navController.navigate("premium")
+                })
             }
 
             // 收藏页面
             composable("favorites") {
-                FavoritesScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onWallpaperClick = { wallpaper ->
-                        navController.navigate("wallpaper/${wallpaper.id}")
-                    })
+                FavoritesScreen(onBackPressed = { navController.navigateUp() }, onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                })
             }
 
             // 下载页面
             composable("downloads") {
-                DownloadsScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onWallpaperClick = { wallpaper ->
-                        navController.navigate("wallpaper/${wallpaper.id}")
-                    })
+                DownloadsScreen(onBackPressed = { navController.navigateUp() }, onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                })
             }
 
             // 设置页面
@@ -186,9 +178,7 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
 
             // 升级页面
             composable("premium") {
-                PremiumScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onUpgradeSuccess = { navController.navigateUp() })
+                PremiumScreen(onBackPressed = { navController.navigateUp() }, onUpgradeSuccess = { navController.navigateUp() })
             }
 
             // 搜索页面
@@ -206,17 +196,14 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
 
             // 壁纸编辑页面
             composable(
-                route = "edit/{wallpaperId}",
-                arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
+                route = "edit/{wallpaperId}", arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
             ) {
                 val wallpaperId = it.arguments?.getString("wallpaperId") ?: ""
 
-                WallpaperEditScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onSaveComplete = {
-                        // 返回详情页面
-                        navController.navigateUp()
-                    })
+                WallpaperEditScreen(onBackPressed = { navController.navigateUp() }, onSaveComplete = {
+                    // 返回详情页面
+                    navController.navigateUp()
+                })
             }
         }
 
@@ -239,8 +226,7 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
 
     NavigationBar(modifier = modifier) {
         NavDestination.values().forEach { destination ->
-            val selected =
-                currentDestination?.hierarchy?.any { it.route == destination.route } == true
+            val selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true
 
             NavigationBarItem(icon = {
                 when (destination) {
@@ -256,15 +242,13 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
 
                     NavDestination.StaticWallpapers -> {
                         Icon(
-                            ImageVector.vectorResource(id = R.drawable.ic_image),
-                            contentDescription = destination.title
+                            ImageVector.vectorResource(id = R.drawable.ic_image), contentDescription = destination.title
                         )
                     }
 
                     NavDestination.LiveWallpapers -> {
                         Icon(
-                            ImageVector.vectorResource(id = R.drawable.ic_movie),
-                            contentDescription = destination.title
+                            ImageVector.vectorResource(id = R.drawable.ic_movie), contentDescription = destination.title
                         )
                     }
 

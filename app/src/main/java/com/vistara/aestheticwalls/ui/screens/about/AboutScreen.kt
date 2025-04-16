@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -39,7 +38,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,27 +53,21 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    onBackPressed: () -> Unit,
-    viewModel: AboutViewModel = hiltViewModel()
+    onBackPressed: () -> Unit, viewModel: AboutViewModel = hiltViewModel()
 ) {
     val appVersion by viewModel.appVersion.collectAsState()
     val openSourceLibraries by viewModel.openSourceLibraries.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("关于与致谢") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
+            TopAppBar(title = { Text("关于与致谢") }, navigationIcon = {
+                IconButton(onClick = onBackPressed) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回"
+                    )
                 }
-            )
-        }
-    ) { paddingValues ->
+            })
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -88,21 +80,13 @@ fun AboutScreen(
                 appVersion = appVersion,
                 onPrivacyPolicyClick = { viewModel.openPrivacyPolicy() },
                 onTermsOfServiceClick = { viewModel.openTermsOfService() },
-                onGitHubRepoClick = { viewModel.openGitHubRepo() }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 开发者信息
-            DeveloperInfoSection()
+                onGitHubRepoClick = { viewModel.openGitHubRepo() })
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // 开源库
             OpenSourceSection(
-                libraries = openSourceLibraries,
-                onLibraryClick = { viewModel.openLibraryUrl(it) }
-            )
+                libraries = openSourceLibraries, onLibraryClick = { viewModel.openLibraryUrl(it) })
         }
     }
 }
@@ -112,14 +96,10 @@ fun AboutScreen(
  */
 @Composable
 private fun AppInfoSection(
-    appVersion: String,
-    onPrivacyPolicyClick: () -> Unit,
-    onTermsOfServiceClick: () -> Unit,
-    onGitHubRepoClick: () -> Unit
+    appVersion: String, onPrivacyPolicyClick: () -> Unit, onTermsOfServiceClick: () -> Unit, onGitHubRepoClick: () -> Unit
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()
     ) {
         // 应用图标
         Box(
@@ -129,9 +109,7 @@ private fun AppInfoSection(
                 .background(MaterialTheme.colorScheme.primary)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = "应用图标",
-                modifier = Modifier.fillMaxSize()
+                painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = "应用图标", modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -139,18 +117,14 @@ private fun AppInfoSection(
 
         // 应用名称
         Text(
-            text = "Vistara壁纸",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            text = "Vistara壁纸", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         // 应用版本
         Text(
-            text = appVersion,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            text = appVersion, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -165,84 +139,18 @@ private fun AppInfoSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        LinkItem(
+            title = "用户协议", onClick = onGitHubRepoClick
+        )
+
         // 链接
         LinkItem(
-            title = "隐私政策",
-            onClick = onPrivacyPolicyClick
+            title = "隐私政策", onClick = onPrivacyPolicyClick
         )
 
         LinkItem(
-            title = "服务条款",
-            onClick = onTermsOfServiceClick
+            title = "服务条款", onClick = onTermsOfServiceClick
         )
-
-        LinkItem(
-            title = "GitHub仓库",
-            onClick = onGitHubRepoClick
-        )
-    }
-}
-
-/**
- * 开发者信息部分
- */
-@Composable
-private fun DeveloperInfoSection() {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "开发者",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 开发者头像
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .align(Alignment.Center)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Cosyment",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Text(
-                        text = "Android开发者",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -251,35 +159,30 @@ private fun DeveloperInfoSection() {
  */
 @Composable
 private fun OpenSourceSection(
-    libraries: List<Library>,
-    onLibraryClick: (String) -> Unit
+    libraries: List<Library>, onLibraryClick: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "开源库",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            text = "开源库", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
+            modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 libraries.forEachIndexed { index, library ->
                     LibraryItem(
-                        library = library,
-                        onClick = { onLibraryClick(library.url) }
-                    )
+                        library = library, onClick = { onLibraryClick(library.url) })
 
                     if (index < libraries.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            thickness = DividerDefaults.Thickness, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                            thickness = DividerDefaults.Thickness,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                         )
                     }
                 }
@@ -293,37 +196,28 @@ private fun OpenSourceSection(
  */
 @Composable
 private fun LinkItem(
-    title: String,
-    onClick: () -> Unit
+    title: String, onClick: () -> Unit
 ) {
     Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        onClick = onClick, modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                imageVector = Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f)
+                text = title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f)
             )
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -334,31 +228,23 @@ private fun LinkItem(
  */
 @Composable
 private fun LibraryItem(
-    library: Library,
-    onClick: () -> Unit
+    library: Library, onClick: () -> Unit
 ) {
     Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        onClick = onClick, modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick() }
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(16.dp)) {
             Text(
-                text = library.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
+                text = library.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = library.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = library.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

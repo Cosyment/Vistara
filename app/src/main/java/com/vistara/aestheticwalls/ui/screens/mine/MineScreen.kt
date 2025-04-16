@@ -37,8 +37,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,10 +49,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -73,6 +79,32 @@ fun MineScreen(
     val username by viewModel.username.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isDebugMode by viewModel.isDebugMode.collectAsState()
+
+    // 使用生命周期事件监听器来检测页面可见性变化
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val currentViewModel = rememberUpdatedState(viewModel)
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // 当页面恢复可见时刷新用户数据
+                currentViewModel.value.refreshUserData()
+            }
+        }
+
+        // 添加观察者
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        // 当组件离开组合时移除观察者
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    // 首次加载时也刷新用户数据
+    LaunchedEffect(Unit) {
+        viewModel.refreshUserData()
+    }
 
     Scaffold(
         topBar = {
@@ -110,50 +142,31 @@ fun MineScreen(
 
             // 功能列表
             FeatureItem(
-                icon = Icons.Default.Favorite,
-                title = "我的收藏",
-                subtitle = "查看所有收藏的壁纸",
-                onClick = onFavoritesClick
+                icon = Icons.Default.Favorite, title = "我的收藏", subtitle = "查看所有收藏的壁纸", onClick = onFavoritesClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Star,
-                title = "我的下载",
-                subtitle = "查看所有下载的壁纸",
-                onClick = onDownloadsClick
+                icon = Icons.Default.Star, title = "我的下载", subtitle = "查看所有下载的壁纸", onClick = onDownloadsClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Refresh,
-                title = "自动更换壁纸",
-                subtitle = "设置自动更换壁纸的频率和来源",
-                onClick = onAutoChangeClick
+                icon = Icons.Default.Refresh, title = "自动更换壁纸", subtitle = "设置自动更换壁纸的频率和来源", onClick = onAutoChangeClick
             )
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
 
             FeatureItem(
-                icon = Icons.Default.Settings,
-                title = "设置",
-                subtitle = "调整应用偏好和通知",
-                onClick = onSettingsClick
+                icon = Icons.Default.Settings, title = "设置", subtitle = "调整应用偏好和通知", onClick = onSettingsClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Star,
-                title = "评分与反馈",
-                subtitle = "帮助我们改进应用",
-                onClick = onFeedbackClick
+                icon = Icons.Default.Star, title = "评分与反馈", subtitle = "帮助我们改进应用", onClick = onFeedbackClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Info,
-                title = "关于与致谢",
-                subtitle = "查看应用信息和版权",
-                onClick = onAboutClick
+                icon = Icons.Default.Info, title = "关于与致谢", subtitle = "查看应用信息和版权", onClick = onAboutClick
             )
 
             // 开发者模式下显示测试工具入口
@@ -164,10 +177,7 @@ fun MineScreen(
                 )
 
                 FeatureItem(
-                    icon = Icons.Default.Build,
-                    title = "测试工具",
-                    subtitle = "测试API接口和其他功能",
-                    onClick = onTestToolsClick
+                    icon = Icons.Default.Build, title = "测试工具", subtitle = "测试API接口和其他功能", onClick = onTestToolsClick
                 )
             }
         }
@@ -182,8 +192,7 @@ private fun MineHeader(
     username: String, isPremiumUser: Boolean, modifier: Modifier = Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
             .fillMaxWidth()
             .padding(top = 32.dp, bottom = 16.dp)
     ) {
@@ -208,9 +217,7 @@ private fun MineHeader(
 
         // 用户名
         Text(
-            text = username,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
+            text = username, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
         )
 
         // 会员状态
@@ -235,11 +242,9 @@ private fun UpgradeBanner(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
+            .clip(RoundedCornerShape(12.dp)), colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
-        ),
-        onClick = onClick
+        ), onClick = onClick
     ) {
         Box(
             modifier = Modifier
@@ -268,11 +273,7 @@ private fun UpgradeBanner(
  */
 @Composable
 private fun FeatureItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String? = null,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    icon: ImageVector, title: String, subtitle: String? = null, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Surface(
         onClick = onClick, color = Color.Transparent, modifier = modifier.fillMaxWidth()
@@ -296,9 +297,7 @@ private fun FeatureItem(
 
                 Column {
                     Text(
-                        text = title,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
                     )
 
                     if (subtitle != null) {

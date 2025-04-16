@@ -20,13 +20,13 @@ class ThemeManager @Inject constructor(
     /**
      * 获取深色主题设置流
      */
-    val darkThemeFlow: Flow<Boolean> = userPrefsRepository.getUserSettingsFlow()
+    private val darkThemeFlow: Flow<Boolean> = userPrefsRepository.getUserSettingsFlow()
         .map { it.darkTheme }
 
     /**
      * 获取动态颜色设置流
      */
-    val dynamicColorsFlow: Flow<Boolean> = userPrefsRepository.getUserSettingsFlow()
+    private val dynamicColorsFlow: Flow<Boolean> = userPrefsRepository.getUserSettingsFlow()
         .map { it.dynamicColors }
 
     /**

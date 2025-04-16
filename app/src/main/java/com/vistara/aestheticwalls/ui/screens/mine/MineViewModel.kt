@@ -46,6 +46,14 @@ class MineViewModel @Inject constructor(
     }
 
     /**
+     * 刷新用户数据
+     * 在页面每次显示时调用
+     */
+    fun refreshUserData() {
+        loadUserData()
+    }
+
+    /**
      * 加载用户数据
      */
     private fun loadUserData() {
@@ -59,7 +67,7 @@ class MineViewModel @Inject constructor(
                 // 获取用户设置
                 val userSettings = userPrefsRepository.getUserSettings()
                 // 这里可以根据实际需求加载更多用户数据
-                
+
                 Log.d(TAG, "User data loaded successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading user data: ${e.message}")
@@ -126,7 +134,7 @@ class MineViewModel @Inject constructor(
                 userPrefsRepository.clearUserSettings()
                 _isPremiumUser.value = false
                 Log.d(TAG, "User data cleared")
-                
+
                 // 重新加载用户数据
                 loadUserData()
             } catch (e: Exception) {

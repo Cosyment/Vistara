@@ -45,7 +45,7 @@
 
         <!-- 测试启动器Activity -->
         <activity
-            android:name=".ui.test.TestLauncherActivity"
+            android:name=".ui.test.TestActivity"
             android:exported="true"
             android:label="测试工具"
             android:theme="@style/Theme.Vistara">

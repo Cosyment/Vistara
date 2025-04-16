@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.0-alpha06"
+agp = "8.9.1"
 imagecropper = "4.6.0"
 kotlin = "2.1.20"
 coreKtx = "1.16.0"
@@ -25,6 +25,7 @@ workRuntimeKtx = "2.10.0"
 media3 = "1.6.0"
 glideCompose="1.0.0-beta01"
 billing = "6.1.0"
+googleAuth = "20.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -98,6 +99,9 @@ compose-glide = { group = "com.github.bumptech.glide", name = "compose", version
 # Billing
 google-play-billing = { group = "com.android.billingclient", name = "billing", version.ref = "billing" }
 google-play-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+
+# Google Auth
+google-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googleAuth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
