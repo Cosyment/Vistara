@@ -1,10 +1,12 @@
 package com.vistara.aestheticwalls.manager
 
+import android.Manifest
 import android.app.Activity
 import android.app.WallpaperManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -12,9 +14,11 @@ import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.service.LiveWallpaperService
+import com.vistara.aestheticwalls.utils.NotificationUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -33,7 +37,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class AppWallpaperManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val notificationUtil: NotificationUtil
 ) {
     companion object {
         private const val TAG = "AppWallpaperManager"
@@ -123,6 +128,15 @@ class AppWallpaperManager @Inject constructor(
                             wallpaperManager.setBitmap(bitmap)
                         }
                     }
+                }
+
+                // 发送壁纸更换通知
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        notificationUtil.showWallpaperChangedNotification(wallpaper)
+                    }
+                } else {
+                    notificationUtil.showWallpaperChangedNotification(wallpaper)
                 }
             }
 
@@ -228,6 +242,15 @@ class AppWallpaperManager @Inject constructor(
                 if (result.directSuccess) {
                     val message = getSuccessMessage(target)
                     Toast.makeText(activity, message, Toast.LENGTH_SHORT).show()
+
+                    // 发送壁纸更换通知
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                            notificationUtil.showWallpaperChangedNotification(wallpaper)
+                        }
+                    } else {
+                        notificationUtil.showWallpaperChangedNotification(wallpaper)
+                    }
                 } else if (!result.anyMethodSucceeded) {
                     // 如果所有方法都失败，显示失败提示
                     Toast.makeText(activity, "设置壁纸失败", Toast.LENGTH_SHORT).show()

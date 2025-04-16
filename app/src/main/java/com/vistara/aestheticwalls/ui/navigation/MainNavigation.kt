@@ -31,6 +31,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.ui.screens.about.AboutScreen
 import com.vistara.aestheticwalls.ui.screens.autochange.AutoChangeScreen
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
@@ -72,7 +73,29 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     navController.navigate("wallpaper/${wallpaper.id}")
                 }, onSearch = { query ->
                     navController.navigate("search?query=$query")
-                }, onBannerClick = { /* 暂时不处理 */ })
+                }, onBannerClick = { banner ->
+                    when (banner.actionType) {
+                        BannerActionType.WALLPAPER, BannerActionType.COLLECTION -> {
+                            // 跳转到壁纸详情页
+                            banner.actionTarget?.let { wallpaperId ->
+                                navController.navigate("wallpaper/$wallpaperId")
+                            }
+                        }
+
+//                        BannerActionType.COLLECTION -> {
+//                            // 暂时不处理专题跳转，可以在后续实现
+//                        }
+
+                        BannerActionType.PREMIUM -> {
+                            // 跳转到会员页面
+                            navController.navigate("premium")
+                        }
+
+                        BannerActionType.URL -> {
+                            // 暂时不处理外部URL跳转，可以在后续实现
+                        }
+                    }
+                })
             }
             composable(NavDestination.StaticWallpapers.route) {
                 StaticLibraryScreen(onWallpaperClick = { wallpaper ->

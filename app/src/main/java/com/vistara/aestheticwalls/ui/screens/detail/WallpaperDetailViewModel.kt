@@ -17,6 +17,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -32,6 +33,7 @@ import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.manager.AppWallpaperManager
+import com.vistara.aestheticwalls.utils.NotificationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -62,6 +64,7 @@ class WallpaperDetailViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val billingManager: BillingManager,
     private val wallpaperManager: AppWallpaperManager,
+    private val notificationUtil: NotificationUtil,
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -423,6 +426,15 @@ class WallpaperDetailViewModel @Inject constructor(
 
                 Log.d("WallpaperDetailViewModel", "Download with original quality: $downloadOriginalQuality")
 
+                // 显示下载进度通知
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        notificationUtil.showDownloadProgressNotification(wallpaper, 0)
+                    }
+                } else {
+                    notificationUtil.showDownloadProgressNotification(wallpaper, 0)
+                }
+
                 if (wallpaper.isLive) {
                     // 如果是动态壁纸（视频），使用不同的下载逻辑
                     downloadVideo(wallpaper)
@@ -435,6 +447,16 @@ class WallpaperDetailViewModel @Inject constructor(
                 wallpaperRepository.trackWallpaperDownload(wallpaperId)
                 _isDownloading.value = false
                 _downloadProgress.value = 1f
+
+                // 显示下载完成通知
+                val filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + "/Vistara_${System.currentTimeMillis()}.jpg"
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        notificationUtil.showDownloadCompleteNotification(wallpaper, filePath)
+                    }
+                } else {
+                    notificationUtil.showDownloadCompleteNotification(wallpaper, filePath)
+                }
             } catch (e: Exception) {
                 Log.e("WallpaperDetailViewModel", "Download failed: ${e.message}")
                 e.printStackTrace()
@@ -498,7 +520,18 @@ class WallpaperDetailViewModel @Inject constructor(
                         outputStream.flush()
 
                         // 更新进度
-                        _downloadProgress.value = (i + 1) / 10f
+                        val progress = (i + 1) / 10f
+                        _downloadProgress.value = progress
+
+                        // 更新通知进度
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                                notificationUtil.showDownloadProgressNotification(wallpaper, (progress * 100).toInt())
+                            }
+                        } else {
+                            notificationUtil.showDownloadProgressNotification(wallpaper, (progress * 100).toInt())
+                        }
+
                         delay(100) // 稍微延迟以显示进度
                     }
                 }

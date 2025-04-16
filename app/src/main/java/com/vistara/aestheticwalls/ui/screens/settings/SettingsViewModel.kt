@@ -1,6 +1,9 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -62,6 +65,10 @@ class SettingsViewModel @Inject constructor(
     private val _appVersion = MutableStateFlow("1.0.0")
     val appVersion: StateFlow<String> = _appVersion.asStateFlow()
 
+    // 通知权限状态
+    private val _needNotificationPermission = MutableStateFlow(false)
+    val needNotificationPermission: StateFlow<Boolean> = _needNotificationPermission.asStateFlow()
+
     init {
         loadUserSettings()
         calculateCacheSize()
@@ -110,6 +117,15 @@ class SettingsViewModel @Inject constructor(
      * 更新下载通知设置
      */
     fun updateShowDownloadNotification(enabled: Boolean) {
+        // 如果要开启通知，检查权限
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // 需要请求权限
+                _needNotificationPermission.value = true
+                return
+            }
+        }
+
         _showDownloadNotification.value = enabled
         saveSettings()
     }
@@ -118,8 +134,49 @@ class SettingsViewModel @Inject constructor(
      * 更新壁纸更换通知设置
      */
     fun updateShowWallpaperChangeNotification(enabled: Boolean) {
+        // 如果要开启通知，检查权限
+        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                // 需要请求权限
+                _needNotificationPermission.value = true
+                return
+            }
+        }
+
         _showWallpaperChangeNotification.value = enabled
         saveSettings()
+    }
+
+    /**
+     * 权限授予后继续开启通知
+     */
+    fun onNotificationPermissionGranted(notificationType: NotificationType) {
+        when (notificationType) {
+            NotificationType.DOWNLOAD -> {
+                _showDownloadNotification.value = true
+                saveSettings()
+            }
+            NotificationType.WALLPAPER_CHANGE -> {
+                _showWallpaperChangeNotification.value = true
+                saveSettings()
+            }
+        }
+        _needNotificationPermission.value = false
+    }
+
+    /**
+     * 权限被拒绝
+     */
+    fun onNotificationPermissionDenied() {
+        _needNotificationPermission.value = false
+    }
+
+    /**
+     * 通知类型
+     */
+    enum class NotificationType {
+        DOWNLOAD,
+        WALLPAPER_CHANGE
     }
 
     /**

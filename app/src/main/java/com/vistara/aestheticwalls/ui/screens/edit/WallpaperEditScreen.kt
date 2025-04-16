@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,15 +25,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -56,30 +56,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vistara.aestheticwalls.data.model.UiState
-import com.vistara.aestheticwalls.data.model.Wallpaper
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -173,6 +166,7 @@ fun WallpaperEditScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+
                 is UiState.Error -> {
                     // 显示错误信息
                     Column(
@@ -198,6 +192,7 @@ fun WallpaperEditScreen(
                         }
                     }
                 }
+
                 is UiState.Success -> {
                     val wallpaper = (wallpaperState as UiState.Success).data
 
@@ -321,6 +316,7 @@ fun WallpaperEditScreen(
                                         valueRange = 0.5f..1.5f
                                     )
                                 }
+
                                 EditTool.CONTRAST -> {
                                     SliderControl(
                                         label = "对比度",
@@ -329,6 +325,7 @@ fun WallpaperEditScreen(
                                         valueRange = 0.5f..1.5f
                                     )
                                 }
+
                                 EditTool.SATURATION -> {
                                     SliderControl(
                                         label = "饱和度",
@@ -337,12 +334,14 @@ fun WallpaperEditScreen(
                                         valueRange = 0f..2f
                                     )
                                 }
+
                                 EditTool.FILTER -> {
                                     FilterOptions(
                                         selectedFilter = editState.filter,
                                         onFilterSelected = { viewModel.applyFilter(it) }
                                     )
                                 }
+
                                 EditTool.CROP -> {
                                     CropOptions(
                                         originalBitmap = originalBitmap,
@@ -540,6 +539,7 @@ fun CropOptions(
                 val top = (height - cropHeight) / 2
                 Rect(left, top, left + cropWidth, top + cropHeight)
             }
+
             CropType.SQUARE -> {
                 // 正方形裁剪区域
                 val size = minOf(width, height) * 0.8f
@@ -547,6 +547,7 @@ fun CropOptions(
                 val top = (height - size) / 2
                 Rect(left, top, left + size, top + size)
             }
+
             CropType.CIRCLE -> {
                 // 圆形裁剪区域（实际上也是正方形，只是显示为圆形）
                 val size = minOf(width, height) * 0.8f
@@ -606,7 +607,9 @@ fun CropOptions(
                             .border(
                                 width = 2.dp,
                                 color = Color.White,
-                                shape = if (cropType == CropType.CIRCLE) CircleShape else RoundedCornerShape(4.dp)
+                                shape = if (cropType == CropType.CIRCLE) CircleShape else RoundedCornerShape(
+                                    4.dp
+                                )
                             )
                     )
                 }
@@ -927,6 +930,7 @@ fun createPreviewColorMatrix(
             m.setToSaturation(0f)
             m
         }
+
         ImageFilter.SEPIA -> ColorMatrix().apply { setToScale(0.8f, 0.6f, 0.4f, 1f) }
         ImageFilter.VINTAGE -> ColorMatrix().apply { setToScale(0.7f, 0.7f, 0.5f, 1f) }
         ImageFilter.COLD -> ColorMatrix().apply { setToScale(0.6f, 0.8f, 1.2f, 1f) }

@@ -1,5 +1,8 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.ui.screens.settings.SettingsViewModel.NotificationType
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -67,6 +72,32 @@ fun SettingsScreen(
     val cacheSize by viewModel.cacheSize.collectAsState()
     val isClearingCache by viewModel.isClearingCache.collectAsState()
     val appVersion by viewModel.appVersion.collectAsState()
+    val needNotificationPermission by viewModel.needNotificationPermission.collectAsState()
+
+    // 当前请求的通知类型
+    var currentNotificationType by remember { mutableStateOf<NotificationType?>(null) }
+
+    // 权限请求器
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // 权限已授予，继续开启通知
+            currentNotificationType?.let { viewModel.onNotificationPermissionGranted(it) }
+        } else {
+            // 权限被拒绝
+            viewModel.onNotificationPermissionDenied()
+        }
+        currentNotificationType = null
+    }
+
+    // 监听权限请求状态
+    LaunchedEffect(needNotificationPermission) {
+        if (needNotificationPermission) {
+            // 请求通知权限
+            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     // 对话框状态
     var showClearCacheDialog by remember { mutableStateOf(false) }
@@ -125,7 +156,10 @@ fun SettingsScreen(
                 title = "下载通知",
                 subtitle = "显示壁纸下载完成通知",
                 checked = showDownloadNotification,
-                onCheckedChange = { viewModel.updateShowDownloadNotification(it) }
+                onCheckedChange = {
+                    currentNotificationType = NotificationType.DOWNLOAD
+                    viewModel.updateShowDownloadNotification(it)
+                }
             )
 
             SettingsToggleItem(
@@ -133,7 +167,10 @@ fun SettingsScreen(
                 title = "壁纸更换通知",
                 subtitle = "显示自动壁纸更换通知",
                 checked = showWallpaperChangeNotification,
-                onCheckedChange = { viewModel.updateShowWallpaperChangeNotification(it) }
+                onCheckedChange = {
+                    currentNotificationType = NotificationType.WALLPAPER_CHANGE
+                    viewModel.updateShowWallpaperChangeNotification(it)
+                }
             )
 
             HorizontalDivider(

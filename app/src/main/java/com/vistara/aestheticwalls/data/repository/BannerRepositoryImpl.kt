@@ -44,8 +44,8 @@ class BannerRepositoryImpl @Inject constructor(
                     imageUrl = "https://picsum.photos/id/237/800/400",
                     title = "精选壁纸",
                     subtitle = "发现最新最美壁纸",
-                    actionType = BannerActionType.COLLECTION,
-                    actionTarget = "featured"
+                    actionType = BannerActionType.WALLPAPER,
+                    actionTarget = "unsplash_Dwu85P9SOIk"
                 ),
                 Banner(
                     id = "2",
@@ -60,8 +60,8 @@ class BannerRepositoryImpl @Inject constructor(
                     imageUrl = "https://picsum.photos/id/1018/800/400",
                     title = "动态壁纸",
                     subtitle = "让你的屏幕动起来",
-                    actionType = BannerActionType.COLLECTION,
-                    actionTarget = "live"
+                    actionType = BannerActionType.WALLPAPER,
+                    actionTarget = "pexels_photo_2014422"
                 )
             )
 

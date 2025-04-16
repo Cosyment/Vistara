@@ -1,6 +1,5 @@
 package com.vistara.aestheticwalls.manager
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
