@@ -254,15 +254,24 @@ class WallpaperDetailViewModel @Inject constructor(
     fun showSetWallpaperOptions(activity: Activity? = null) {
         val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
 
+        // 检查是否为高级壁纸且用户不是高级用户
         if (currentWallpaper.isPremium && !_isPremiumUser.value) {
             // 如果是高级壁纸且用户不是高级用户，显示高级提示
             _showPremiumPrompt.value = true
             return
         }
 
-        // 对于动态壁纸，直接设置，不显示选项弹框
+        // 对于动态壁纸，需要高级用户才能设置
         if (currentWallpaper.isLive) {
-            Log.d("WallpaperDetailViewModel", "Setting live wallpaper, activity is $activity")
+            Log.d("WallpaperDetailViewModel", "Checking premium status for live wallpaper")
+            // 检查是否为高级用户
+            if (!_isPremiumUser.value) {
+                // 如果不是高级用户，显示高级提示
+                _showPremiumPrompt.value = true
+                return
+            }
+
+            // 是高级用户，可以设置动态壁纸
             if (activity != null) {
                 // 直接设置为两者（系统会显示选择界面）
                 setWallpaper(activity, WallpaperTarget.BOTH)
@@ -341,8 +350,9 @@ class WallpaperDetailViewModel @Inject constructor(
     fun downloadWallpaper() {
         val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
 
-        if (currentWallpaper.isPremium && !_isPremiumUser.value) {
-            // 如果是高级壁纸且用户不是高级用户，显示高级提示
+        // 检查是否为高级壁纸或动态壁纸，且用户不是高级用户
+        if ((currentWallpaper.isPremium || currentWallpaper.isLive) && !_isPremiumUser.value) {
+            // 如果是高级壁纸或动态壁纸且用户不是高级用户，显示高级提示
             _showPremiumPrompt.value = true
             return
         }
@@ -752,8 +762,10 @@ class WallpaperDetailViewModel @Inject constructor(
 
     /**
      * 升级到高级版
+     * @param activity 当前活动实例
+     * @param productId 订阅产品ID，默认为月度订阅
      */
-    fun upgradeToPremium(activity: Activity?) {
+    fun upgradeToPremium(activity: Activity?, productId: String = BillingManager.SUBSCRIPTION_MONTHLY) {
         if (_isPremiumUser.value) {
             _upgradeResult.value = UpgradeResult.Error("您已经是高级用户")
             return
@@ -764,8 +776,8 @@ class WallpaperDetailViewModel @Inject constructor(
             return
         }
 
-        // 默认使用月度订阅
-        billingManager.launchBillingFlow(activity, BillingManager.SUBSCRIPTION_MONTHLY)
+        // 使用指定的订阅计划
+        billingManager.launchBillingFlow(activity, productId)
     }
 
     /**
@@ -787,7 +799,9 @@ class WallpaperDetailViewModel @Inject constructor(
 
         // 测试不同的支付方式
         val productIds = listOf(
+            BillingManager.SUBSCRIPTION_WEEKLY,
             BillingManager.SUBSCRIPTION_MONTHLY,
+            BillingManager.SUBSCRIPTION_QUARTERLY,
             BillingManager.SUBSCRIPTION_YEARLY,
             BillingManager.PREMIUM_LIFETIME
         )

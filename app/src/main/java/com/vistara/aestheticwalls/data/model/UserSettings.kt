@@ -32,8 +32,6 @@ data class UserSettings(
     val premiumExpiryDate: Long = 0L
 )
 
-// AutoChangeFrequency y AutoChangeSource se han movido a archivos separados
-
 /**
  * 应用主题设置
  */

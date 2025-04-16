@@ -8,15 +8,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -30,12 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.vistara.aestheticwalls.BuildConfig
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
@@ -132,31 +126,10 @@ fun WallpaperDetailScreen(
     }
 
     // 使用Scaffold作为根布局，可以更好地控制浮动按钮
-    androidx.compose.material3.Scaffold(
-        floatingActionButton = {
-        // 开发模式下显示测试支付按钮
-        if (BuildConfig.IS_DEV_MODE) {
-            FloatingActionButton(
-                onClick = {
-                    // 调用测试支付方法
-                    viewModel.testPayment(activity)
-                    // 显示提示
-                    Toast.makeText(context, "正在测试支付...", Toast.LENGTH_SHORT).show()
-                },
-                containerColor = MaterialTheme.colorScheme.error, // 使用错误颜色，更加醒目
-                contentColor = MaterialTheme.colorScheme.onError,
-                modifier = Modifier.size(72.dp) // 增大按钮尺寸，更容易点击
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "测试支付",
-                    modifier = Modifier.size(32.dp) // 增大图标尺寸
-                )
-            }
-        }
-    }, snackbarHost = {
-        SnackbarHost(hostState = snackbarHostState)
-    },
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         // 设置Scaffold的内容颜色为透明，确保不影响背景
         containerColor = Color.Transparent, contentColor = Color.White,
         // 移除所有的内容填充，确保全屏效果
@@ -204,15 +177,19 @@ fun WallpaperDetailScreen(
                         onToggleInfo = { viewModel.toggleInfoExpanded() },
                         onSetWallpaper = { viewModel.showSetWallpaperOptions(activity) },
                         onDownload = {
-                            viewModel.downloadWallpaper()
-                            Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
-                        },
-                        onShare = { viewModel.shareWallpaper() },
-                        onEdit = {
-                            val wallpaperId = wallpaper.id
                             if (wallpaper.isPremium && !isPremiumUser) {
                                 viewModel.showPremiumPrompt()
                             } else {
+                                viewModel.downloadWallpaper()
+                                Toast.makeText(context, "开始下载壁纸", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onShare = { viewModel.shareWallpaper() },
+                        onEdit = {
+                            if (wallpaper.isPremium && !isPremiumUser) {
+                                viewModel.showPremiumPrompt()
+                            } else {
+                                val wallpaperId = wallpaper.id
                                 onNavigateToEdit(wallpaperId)
                             }
                         },
@@ -241,25 +218,26 @@ fun WallpaperDetailScreen(
                     }
 
                     // 高级壁纸提示对话框 - 使用半透明背景
-                    if (showPremiumPrompt) {
-                        Dialog(
-                            onDismissRequest = { viewModel.hidePremiumPrompt() },
-                            properties = DialogProperties(
-                                dismissOnBackPress = true,
-                                dismissOnClickOutside = true,
-                                usePlatformDefaultWidth = false
-                            )
-                        ) {
-                            PremiumWallpaperPrompt(
-                                onUpgrade = {
-                                viewModel.upgradeToPremium(activity)
-                                viewModel.hidePremiumPrompt()
-                            },
-                                onDismiss = { viewModel.hidePremiumPrompt() },
-                                isConnected = billingConnectionState == BillingConnectionState.CONNECTED
-                            )
-                        }
-                    }
+                }
+            }
+            if (showPremiumPrompt) {
+                Dialog(
+                    onDismissRequest = { viewModel.hidePremiumPrompt() },
+                    properties = DialogProperties(
+                        dismissOnBackPress = true,
+                        dismissOnClickOutside = true,
+                        usePlatformDefaultWidth = false
+                    )
+                ) {
+                    PremiumWallpaperPrompt(
+                        onUpgrade = { productId ->
+                            viewModel.upgradeToPremium(activity, productId)
+                            viewModel.hidePremiumPrompt()
+                        },
+                        onDismiss = { viewModel.hidePremiumPrompt() },
+                        isConnected = billingConnectionState == BillingConnectionState.CONNECTED,
+                        isPremiumUser = isPremiumUser
+                    )
                 }
             }
         }

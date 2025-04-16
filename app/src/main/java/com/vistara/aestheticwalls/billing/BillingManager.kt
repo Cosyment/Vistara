@@ -30,11 +30,13 @@ class BillingManager @Inject constructor(
         private const val TAG = "BillingManager"
 
         // 订阅SKU
-        const val SUBSCRIPTION_MONTHLY = "vistara_premium_monthly"
-        const val SUBSCRIPTION_YEARLY = "vistara_premium_yearly"
+        const val SUBSCRIPTION_WEEKLY = "vistara_premium_weekly"     // 周订阅
+        const val SUBSCRIPTION_MONTHLY = "vistara_premium_monthly"   // 月订阅
+        const val SUBSCRIPTION_QUARTERLY = "vistara_premium_quarterly" // 季度订阅
+        const val SUBSCRIPTION_YEARLY = "vistara_premium_yearly"     // 年订阅
 
         // 一次性购买SKU
-        const val PREMIUM_LIFETIME = "vistara_premium_lifetime"
+        const val PREMIUM_LIFETIME = "vistara_premium_lifetime"     // 终身会员
     }
 
     // 计费客户端
@@ -92,7 +94,15 @@ class BillingManager @Inject constructor(
         // 查询订阅商品
         val subscriptionProductList = listOf(
             QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(SUBSCRIPTION_WEEKLY)
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build(),
+            QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(SUBSCRIPTION_MONTHLY)
+                .setProductType(BillingClient.ProductType.SUBS)
+                .build(),
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(SUBSCRIPTION_QUARTERLY)
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build(),
             QueryProductDetailsParams.Product.newBuilder()
@@ -253,7 +263,7 @@ class BillingManager @Inject constructor(
 
         // 根据商品类型构建购买参数
         val productType = when (productId) {
-            SUBSCRIPTION_MONTHLY, SUBSCRIPTION_YEARLY -> BillingClient.ProductType.SUBS
+            SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY, SUBSCRIPTION_YEARLY -> BillingClient.ProductType.SUBS
             PREMIUM_LIFETIME -> BillingClient.ProductType.INAPP
             else -> {
                 Log.e(TAG, "Unknown product ID: $productId")
@@ -388,7 +398,9 @@ class BillingManager @Inject constructor(
      */
     fun getProductPeriod(productId: String): String {
         return when (productId) {
+            SUBSCRIPTION_WEEKLY -> "周"
             SUBSCRIPTION_MONTHLY -> "月"
+            SUBSCRIPTION_QUARTERLY -> "季度"
             SUBSCRIPTION_YEARLY -> "年"
             PREMIUM_LIFETIME -> "终身"
             else -> ""

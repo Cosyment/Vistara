@@ -91,9 +91,8 @@ fun MineScreen(
                 .padding(bottom = 16.dp)
         ) {
             // 用户信息区域
-            ProfileHeader(
-                username = username,
-                isPremiumUser = isPremiumUser
+            MineHeader(
+                username = username, isPremiumUser = isPremiumUser
             )
 
             // 升级横幅
@@ -103,8 +102,7 @@ fun MineScreen(
                         // 调用ViewModel的升级方法
                         viewModel.upgradeToPremium()
                         onUpgradeClick()
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
 
@@ -180,7 +178,7 @@ fun MineScreen(
  * 用户信息头部
  */
 @Composable
-private fun ProfileHeader(
+private fun MineHeader(
     username: String, isPremiumUser: Boolean, modifier: Modifier = Modifier
 ) {
     Column(
@@ -327,7 +325,7 @@ private fun FeatureItem(
 
 @Preview(showBackground = true)
 @Composable
-fun ProfileScreenPreview() {
+fun MineScreenPreview() {
     VistaraTheme {
         // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
         // 这里只是UI预览
@@ -337,7 +335,7 @@ fun ProfileScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun ProfileScreenPremiumPreview() {
+fun MineScreenPremiumPreview() {
     VistaraTheme {
         // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
         // 这里只是UI预览，手动传入isPremiumUser参数

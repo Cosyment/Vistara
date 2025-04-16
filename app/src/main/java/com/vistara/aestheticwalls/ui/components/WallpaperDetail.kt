@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.ui.components
 
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -12,11 +13,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -49,14 +50,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import android.graphics.Bitmap
+import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 @Composable
 fun WallpaperDetail(
@@ -77,7 +79,6 @@ fun WallpaperDetail(
     editedBitmap: Bitmap? = null
 ) {
     var showControls by remember { mutableStateOf(true) }
-    val context = LocalContext.current
 
     Box(
         modifier = modifier.fillMaxSize()
@@ -89,8 +90,7 @@ fun WallpaperDetail(
                 bitmap = editedBitmap,
                 contentDescription = wallpaper.title ?: "壁纸",
                 modifier = Modifier.fillMaxSize(),
-                onTap = { showControls = !showControls }
-            )
+                onTap = { showControls = !showControls })
         } else if (wallpaper.isLive) {
             // 显示动态壁纸（视频）
             // 使用remember确保在wallpaper.id变化时重建组件
@@ -98,16 +98,14 @@ fun WallpaperDetail(
             LiveVideoPlayer(
                 wallpaper = wallpaper,
                 modifier = Modifier.fillMaxSize(),
-                onTap = { showControls = !showControls }
-            )
+                onTap = { showControls = !showControls })
         } else {
             // 显示原始图片
             ZoomableImage(
                 imageUrl = wallpaper.url ?: "",
                 contentDescription = wallpaper.title ?: "壁纸",
                 modifier = Modifier.fillMaxSize(),
-                onTap = { showControls = !showControls }
-            )
+                onTap = { showControls = !showControls })
         }
 
         // 顶部控制栏 (状态栏区域) - 半透明渐变背景
@@ -215,23 +213,6 @@ fun WallpaperDetail(
                             color = Color.White.copy(alpha = 0.7f)
                         )
                     }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (wallpaper.isPremium && !isPremiumUser) {
-                            Surface(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier.padding(end = 8.dp)
-                            ) {
-                                Text(
-                                    text = "高级 👑",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                    }
                 }
 
                 // 展开的详细信息
@@ -312,7 +293,7 @@ fun WallpaperDetail(
 
                     // 编辑按钮 - 仅对静态壁纸显示且不是动态壁纸时
                     if (!wallpaper.isLive) {
-                        val canEdit = !wallpaper.isPremium || isPremiumUser
+                        val canEdit = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
                         IconButton(
                             onClick = onEdit,
                             enabled = canEdit,
@@ -330,7 +311,8 @@ fun WallpaperDetail(
                     }
 
                     // 下载按钮
-                    val canDownload = !wallpaper.isPremium || isPremiumUser
+                    val canDownload = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
+                    val isPremiumWallpaper = wallpaper.isPremium && !isPremiumUser
                     Box(
                         contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp)
                     ) {
@@ -347,18 +329,33 @@ fun WallpaperDetail(
 
                         IconButton(
                             onClick = onDownload,
-                            enabled = canDownload && !isDownloading,
+                            enabled = !isDownloading,
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.White.copy(alpha = if (canDownload && !isDownloading) 0.2f else 0.1f))
+                                .background(Color.White.copy(alpha = if (!isDownloading) 0.2f else 0.1f))
                         ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_download),
-                                contentDescription = "下载",
-                                tint = if (canDownload && !isDownloading) Color.White else Color.White.copy(
-                                    alpha = 0.5f
+                            Box(
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_download),
+                                    contentDescription = "下载",
+                                    tint = if (canDownload && !isDownloading) Color.White else Color.White.copy(
+                                        alpha = 0.5f
+                                    )
                                 )
+                            }
+                        }
+
+                        // 添加皇冠图标
+                        if (isPremiumWallpaper) {
+                            Text(
+                                text = "👑",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 1.dp, y = (-5).dp)
                             )
                         }
                     }
@@ -395,23 +392,36 @@ fun WallpaperDetail(
                 }
 
                 // 设置壁纸按钮 - 主要操作
-                val canSetWallpaper = !wallpaper.isPremium || isPremiumUser
+                val canSetWallpaper = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
                 Button(
                     onClick = onSetWallpaper,
-                    enabled = canSetWallpaper,
+                    // 始终启用按钮，但对于高级壁纸和非高级用户，点击会显示升级提示
+                    enabled = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                         .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text(
-                        text = if (canSetWallpaper) "设置为壁纸" else "升级解锁此壁纸",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (!canSetWallpaper) {
+                            // 对于高级壁纸和非高级用户，显示皇冠图标
+                            Text(
+                                text = "👑", // 皇冠emoji
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                        }
+                        Text(
+                            text = if (canSetWallpaper) "设置为壁纸" else "升级解锁此壁纸",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
                 }
             }
         }
@@ -482,57 +492,33 @@ fun WallpaperSetOptions(
     }
 }
 
+@Preview
 @Composable
-fun PremiumWallpaperPrompt(
-    onUpgrade: () -> Unit, onDismiss: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "高级壁纸",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = "此壁纸为高级会员专享内容",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
-
-            Text(
-                text = "升级到Vistara高级版解锁全部内容",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            Button(
-                onClick = onUpgrade, modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "立即升级",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            TextButton(
-                onClick = onDismiss, modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text(text = "返回")
-            }
-        }
+fun WallpaperDetailPreview() {
+    VistaraTheme {
+        WallpaperDetail(
+            wallpaper = Wallpaper(
+            id = "1",
+            title = "Beautiful Landscape",
+            url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+            thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+            author = "John Doe",
+            source = "Unsplash",
+            isPremium = true,
+            isLive = false,
+            tags = listOf("nature", "landscape"),
+            resolution = Resolution(1920, 1080)
+        ),
+            onBackPressed = {},
+            onToggleInfo = {},
+            onDownload = {},
+            onShare = {},
+            onSetWallpaper = {},
+            isPremiumUser = false,
+            isInfoExpanded = true,
+            isDownloading = false,
+            isFavorite = false,
+            onEdit = {},
+            onToggleFavorite = {})
     }
 }

@@ -38,7 +38,8 @@ class UserPrefsRepositoryImpl @Inject constructor(
 
         // 通知设置
         private val SHOW_DOWNLOAD_NOTIFICATION = booleanPreferencesKey("show_download_notification")
-        private val SHOW_WALLPAPER_CHANGE_NOTIFICATION = booleanPreferencesKey("show_wallpaper_change_notification")
+        private val SHOW_WALLPAPER_CHANGE_NOTIFICATION =
+            booleanPreferencesKey("show_wallpaper_change_notification")
 
         // 下载设置
         private val DOWNLOAD_ORIGINAL_QUALITY = booleanPreferencesKey("download_original_quality")
@@ -83,7 +84,8 @@ class UserPrefsRepositoryImpl @Inject constructor(
 
                 // 通知设置
                 showDownloadNotification = preferences[SHOW_DOWNLOAD_NOTIFICATION] ?: true,
-                showWallpaperChangeNotification = preferences[SHOW_WALLPAPER_CHANGE_NOTIFICATION] ?: true,
+                showWallpaperChangeNotification = preferences[SHOW_WALLPAPER_CHANGE_NOTIFICATION]
+                    ?: true,
 
                 // 下载设置
                 downloadOriginalQuality = preferences[DOWNLOAD_ORIGINAL_QUALITY] ?: true,
@@ -91,8 +93,7 @@ class UserPrefsRepositoryImpl @Inject constructor(
 
                 // 高级用户状态
                 isPremiumUser = preferences[IS_PREMIUM_USER] ?: false,
-                premiumExpiryDate = preferences[PREMIUM_EXPIRY_DATE] ?: 0L
-            )
+                premiumExpiryDate = preferences[PREMIUM_EXPIRY_DATE] ?: 0L)
         }.first()
     }
 
@@ -114,7 +115,8 @@ class UserPrefsRepositoryImpl @Inject constructor(
 
             // 通知设置
             preferences[SHOW_DOWNLOAD_NOTIFICATION] = settings.showDownloadNotification
-            preferences[SHOW_WALLPAPER_CHANGE_NOTIFICATION] = settings.showWallpaperChangeNotification
+            preferences[SHOW_WALLPAPER_CHANGE_NOTIFICATION] =
+                settings.showWallpaperChangeNotification
 
             // 下载设置
             preferences[DOWNLOAD_ORIGINAL_QUALITY] = settings.downloadOriginalQuality
@@ -149,12 +151,13 @@ class UserPrefsRepositoryImpl @Inject constructor(
      * 更新通知设置
      */
     override suspend fun updateNotificationSettings(
-        showDownloadNotification: Boolean?,
-        showWallpaperChangeNotification: Boolean?
+        showDownloadNotification: Boolean?, showWallpaperChangeNotification: Boolean?
     ) {
         dataStore.edit { preferences ->
             showDownloadNotification?.let { preferences[SHOW_DOWNLOAD_NOTIFICATION] = it }
-            showWallpaperChangeNotification?.let { preferences[SHOW_WALLPAPER_CHANGE_NOTIFICATION] = it }
+            showWallpaperChangeNotification?.let {
+                preferences[SHOW_WALLPAPER_CHANGE_NOTIFICATION] = it
+            }
         }
     }
 
