@@ -417,12 +417,18 @@ class WallpaperDetailViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
+                // 获取用户设置中的下载原始质量设置
+                val userSettings = userPrefsRepository.getUserSettings()
+                val downloadOriginalQuality = userSettings.downloadOriginalQuality
+
+                Log.d("WallpaperDetailViewModel", "Download with original quality: $downloadOriginalQuality")
+
                 if (wallpaper.isLive) {
                     // 如果是动态壁纸（视频），使用不同的下载逻辑
                     downloadVideo(wallpaper)
                 } else {
                     // 静态壁纸下载逻辑
-                    downloadImage(wallpaper)
+                    downloadImage(wallpaper, downloadOriginalQuality)
                 }
 
                 // 记录下载历史
@@ -440,11 +446,23 @@ class WallpaperDetailViewModel @Inject constructor(
 
     /**
      * 下载静态壁纸（图片）
+     * @param downloadOriginalQuality 是否下载原始质量
      */
-    private suspend fun downloadImage(wallpaper: Wallpaper) {
+    private suspend fun downloadImage(wallpaper: Wallpaper, downloadOriginalQuality: Boolean) {
         // 实际下载图片
         val bitmap = withContext(Dispatchers.IO) {
-            val url = URL(wallpaper.url)
+            // 根据设置选择下载原始质量或压缩质量
+            val imageUrl = if (downloadOriginalQuality) {
+                // 使用原始质量图片URL
+                // 如果有downloadUrl字段，优先使用，否则使用普通的url
+                wallpaper.downloadUrl ?: wallpaper.url
+            } else {
+                // 使用普通质量图片URL
+                wallpaper.url
+            }
+
+            Log.d("WallpaperDetailViewModel", "Downloading image from: $imageUrl")
+            val url = URL(imageUrl)
             BitmapFactory.decodeStream(url.openStream())
         }
 

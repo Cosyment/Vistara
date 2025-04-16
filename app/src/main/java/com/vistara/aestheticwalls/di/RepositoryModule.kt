@@ -25,6 +25,7 @@ import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.UserRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepositoryImpl
+import com.vistara.aestheticwalls.manager.ThemeManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -96,5 +97,13 @@ object RepositoryModule {
         networkMonitor: NetworkMonitor
     ): BannerRepository {
         return BannerRepositoryImpl(context, networkMonitor)
+    }
+
+    @Provides
+    @Singleton
+    fun provideThemeManager(
+        userPrefsRepository: UserPrefsRepository
+    ): ThemeManager {
+        return ThemeManager(userPrefsRepository)
     }
 }

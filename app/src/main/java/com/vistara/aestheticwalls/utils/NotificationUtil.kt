@@ -12,7 +12,9 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.ui.MainActivity
+import kotlinx.coroutines.runBlocking
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,21 +25,22 @@ import javax.inject.Singleton
  */
 @Singleton
 class NotificationUtil @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val userPrefsRepository: UserPrefsRepository
 ) {
     companion object {
         private const val CHANNEL_ID_WALLPAPER = "wallpaper_channel"
         private const val CHANNEL_ID_DOWNLOAD = "download_channel"
-        
+
         private const val NOTIFICATION_ID_WALLPAPER_CHANGED = 1001
         private const val NOTIFICATION_ID_DOWNLOAD_PROGRESS = 1002
         private const val NOTIFICATION_ID_DOWNLOAD_COMPLETE = 1003
     }
-    
+
     init {
         createNotificationChannels()
     }
-    
+
     /**
      * 创建通知渠道
      */
@@ -52,7 +55,7 @@ class NotificationUtil @Inject constructor(
                 description = context.getString(R.string.notification_channel_wallpaper_desc)
                 setShowBadge(false)
             }
-            
+
             // 下载通知渠道
             val downloadChannel = NotificationChannel(
                 CHANNEL_ID_DOWNLOAD,
@@ -62,18 +65,24 @@ class NotificationUtil @Inject constructor(
                 description = context.getString(R.string.notification_channel_download_desc)
                 setShowBadge(true)
             }
-            
+
             // 注册通知渠道
             val notificationManager = context.getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannels(listOf(wallpaperChannel, downloadChannel))
         }
     }
-    
+
     /**
      * 显示壁纸已更换通知
+     * 根据用户设置决定是否显示通知
      */
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showWallpaperChangedNotification(wallpaper: Wallpaper) {
+        // 检查用户设置
+        val showNotification = runBlocking { userPrefsRepository.getUserSettings().showWallpaperChangeNotification }
+        if (!showNotification) {
+            return
+        }
         // 创建点击意图
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -86,7 +95,7 @@ class NotificationUtil @Inject constructor(
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
         )
-        
+
         // 构建通知
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_WALLPAPER)
             .setSmallIcon(R.drawable.ic_launcher)
@@ -96,16 +105,22 @@ class NotificationUtil @Inject constructor(
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
-        
+
         // 显示通知
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_WALLPAPER_CHANGED, notification)
     }
-    
+
     /**
      * 显示下载进度通知
+     * 根据用户设置决定是否显示通知
      */
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showDownloadProgressNotification(wallpaper: Wallpaper, progress: Int) {
+        // 检查用户设置
+        val showNotification = runBlocking { userPrefsRepository.getUserSettings().showDownloadNotification }
+        if (!showNotification) {
+            return
+        }
         // 构建通知
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD)
             .setSmallIcon(R.drawable.ic_download)
@@ -116,16 +131,22 @@ class NotificationUtil @Inject constructor(
             .setSilent(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
-        
+
         // 显示通知
         NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_DOWNLOAD_PROGRESS, notification)
     }
-    
+
     /**
      * 显示下载完成通知
+     * 根据用户设置决定是否显示通知
      */
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showDownloadCompleteNotification(wallpaper: Wallpaper, filePath: String) {
+        // 检查用户设置
+        val showNotification = runBlocking { userPrefsRepository.getUserSettings().showDownloadNotification }
+        if (!showNotification) {
+            return
+        }
         // 创建点击意图
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -139,7 +160,7 @@ class NotificationUtil @Inject constructor(
                 PendingIntent.FLAG_UPDATE_CURRENT
             }
         )
-        
+
         // 构建通知
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD)
             .setSmallIcon(R.drawable.ic_download)
@@ -149,17 +170,17 @@ class NotificationUtil @Inject constructor(
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
-        
+
         // 关闭进度通知并显示完成通知
         val notificationManager = NotificationManagerCompat.from(context)
         notificationManager.cancel(NOTIFICATION_ID_DOWNLOAD_PROGRESS)
         notificationManager.notify(NOTIFICATION_ID_DOWNLOAD_COMPLETE, notification)
     }
-    
+
     /**
      * 取消所有通知
      */
     fun cancelAllNotifications() {
         NotificationManagerCompat.from(context).cancelAll()
     }
-} 
+}

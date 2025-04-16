@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.data.repository
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.UserSettings
+import kotlinx.coroutines.flow.Flow
 
 /**
  * 用户偏好设置仓库接口
@@ -14,6 +15,11 @@ interface UserPrefsRepository {
      * 获取用户设置
      */
     suspend fun getUserSettings(): UserSettings
+
+    /**
+     * 获取用户设置流
+     */
+    fun getUserSettingsFlow(): Flow<UserSettings>
 
     /**
      * 保存用户设置

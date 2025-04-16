@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.UserSettings
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -57,6 +58,13 @@ class UserPrefsRepositoryImpl @Inject constructor(
      * 获取用户设置
      */
     override suspend fun getUserSettings(): UserSettings {
+        return getUserSettingsFlow().first()
+    }
+
+    /**
+     * 获取用户设置流
+     */
+    override fun getUserSettingsFlow(): Flow<UserSettings> {
         return dataStore.data.map { preferences ->
             UserSettings(
                 // 通用设置
@@ -94,7 +102,7 @@ class UserPrefsRepositoryImpl @Inject constructor(
                 // 高级用户状态
                 isPremiumUser = preferences[IS_PREMIUM_USER] ?: false,
                 premiumExpiryDate = preferences[PREMIUM_EXPIRY_DATE] ?: 0L)
-        }.first()
+        }
     }
 
     /**
