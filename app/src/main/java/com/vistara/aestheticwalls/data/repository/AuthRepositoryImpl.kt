@@ -79,6 +79,7 @@ class AuthRepositoryImpl @Inject constructor(
                     userPhotoUrl = account.photoUrl?.toString() ?: ""
                 )
 
+//                https://api.vistaraai.xyz/google/login
                 // 更新用户登录状态
                 userRepository.updateLoginStatus(true) // 设置为已登录
                 userRepository.updatePremiumStatus(false) // 默认不是高级用户

@@ -98,6 +98,7 @@
     <string name="category_abstract">Abstrak</string>
     <string name="category_tech">Teknologi</string>
     <string name="category_nature">Alam</string>
+    <string name="category_animals">Hewan</string>
     <string name="category_cyberpunk">Cyberpunk</string>
     <string name="category_particle">Partikel</string>
     <string name="category_fluid">Fluida</string>
@@ -110,6 +111,18 @@
     <string name="category_food">Makanan</string>
     <string name="category_static">Statis</string>
     <string name="category_live">Hidup</string>
+    <string name="category_cars">Mobil</string>
+    <string name="category_dark">Gelap</string>
+    <string name="category_fashion">Mode</string>
+    <string name="category_flowers">Bunga</string>
+    <string name="category_love">Cinta</string>
+    <string name="category_people">Orang</string>
+    <string name="category_sports">Olahraga</string>
+    <string name="category_technology">Teknologi</string>
+    <string name="category_travel">Perjalanan</string>
+    <string name="category_architecture">Arsitektur</string>
+    <string name="category_art">Seni</string>
+    <string name="category_space">Luar Angkasa</string>
 
     <!-- Error messages -->
     <string name="error_loading_wallpapers">Gagal memuat wallpaper</string>
@@ -259,6 +272,20 @@
     <string name="reset">Reset</string>
     <string name="reset_edits">Reset Editan</string>
     <string name="filter">Penapis</string>
+    <string name="loading_image">Memuat gambar...</string>
+    <string name="free_crop">Potong Bebas</string>
+    <string name="square">Persegi</string>
+    <string name="circle">Lingkaran</string>
+    <string name="apply">Terapkan</string>
+    <string name="crop_applied">Pemotongan Diterapkan</string>
+    <string name="recrop">Potong Ulang</string>
+    <string name="original">Asli</string>
+    <string name="grayscale">Skala Abu-abu</string>
+    <string name="sepia">Sepia</string>
+    <string name="vintage">Vintage</string>
+    <string name="cold">Dingin</string>
+    <string name="warm">Hangat</string>
+    <string name="crop">Potong</string>
 
     <!-- Feedback related -->
     <string name="direct_feedback">Umpan Balik Langsung</string>
@@ -288,4 +315,13 @@
     <string name="simulate_login_failed">Simulasi login gagal: %1$s</string>
     <string name="simulate_logout_success">Simulasi logout berhasil</string>
     <string name="simulate_logout_failed">Simulasi logout gagal: %1$s</string>
+
+    <!-- Authentication screen related -->
+    <string name="app_subtitle">Wallpaper</string>
+    <string name="auth_app_description">Segarkan perangkat Anda dengan wallpaper yang indah</string>
+    <string name="sign_in_with_google">Masuk dengan Google</string>
+    <string name="skip_login">Lewati login dan jelajahi</string>
+
+    <string name="sign_out_confirm_title">Konfirmasi Keluar</string>
+    <string name="sign_out_confirm_message">Apakah Anda yakin ingin keluar dari akun Anda?</string>
 </resources>

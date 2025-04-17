@@ -48,6 +48,8 @@
     <string name="account_settings">Account Settings</string>
     <string name="sign_out">Sign Out</string>
     <string name="sign_out_desc">Sign out from current account</string>
+    <string name="sign_out_confirm_title">Sign Out Confirmation</string>
+    <string name="sign_out_confirm_message">Are you sure you want to sign out from your account?</string>
     <string name="clear_cache_title">Clear Cache</string>
     <string name="clear_cache_message">Are you sure you want to clear the app cache? This will delete all cached images and data.</string>
     <string name="clear">Clear</string>

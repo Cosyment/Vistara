@@ -123,6 +123,9 @@
     <string name="category_animals">動物</string>
     <string name="category_static">静止</string>
     <string name="category_live">ライブ壁紙</string>
+    <string name="category_architecture">建築</string>
+    <string name="category_art">アート</string>
+    <string name="category_space">宇宙</string>
 
     <!-- エラーメッセージ -->
     <string name="error_loading_wallpapers">壁紙の読み込みに失敗しました</string>
