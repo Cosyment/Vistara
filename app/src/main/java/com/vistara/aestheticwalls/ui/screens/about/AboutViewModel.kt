@@ -43,10 +43,10 @@ class AboutViewModel @Inject constructor(
     private fun getAppVersion(): String {
         return try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            "版本 ${packageInfo.versionName} (${packageInfo.versionCode})"
+            "Ver ${packageInfo.versionName} (${packageInfo.versionCode})"
         } catch (e: Exception) {
             Log.e(TAG, "Error getting app version: ${e.message}")
-            "版本 1.0.0"
+            "Ver 1.0.0"
         }
     }
 
@@ -57,42 +57,42 @@ class AboutViewModel @Inject constructor(
         return listOf(
             Library(
                 name = "Jetpack Compose",
-                description = "Android的现代UI工具包",
+                description = "Modern UI toolkit for Android",
                 url = "https://developer.android.com/jetpack/compose"
             ),
             Library(
                 name = "Kotlin Coroutines",
-                description = "Kotlin的异步编程库",
+                description = "Asynchronous programming library for Kotlin",
                 url = "https://github.com/Kotlin/kotlinx.coroutines"
             ),
             Library(
                 name = "Hilt",
-                description = "Android的依赖注入库",
+                description = "Dependency injection library for Android",
                 url = "https://dagger.dev/hilt/"
             ),
             Library(
                 name = "Coil",
-                description = "Kotlin的图片加载库",
+                description = "Image loading library for Kotlin",
                 url = "https://github.com/coil-kt/coil"
             ),
             Library(
                 name = "Retrofit",
-                description = "类型安全的HTTP客户端",
+                description = "Type-safe HTTP client for Android and Java",
                 url = "https://square.github.io/retrofit/"
             ),
             Library(
                 name = "OkHttp",
-                description = "HTTP客户端",
+                description = "HTTP client for Android and Java",
                 url = "https://square.github.io/okhttp/"
             ),
             Library(
                 name = "Room",
-                description = "SQLite对象映射库",
+                description = "SQLite object mapping library for Android",
                 url = "https://developer.android.com/training/data-storage/room"
             ),
             Library(
                 name = "ExoPlayer",
-                description = "媒体播放器",
+                description = "Media player for Android",
                 url = "https://github.com/google/ExoPlayer"
             )
         )

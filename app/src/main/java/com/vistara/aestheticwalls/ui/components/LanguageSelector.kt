@@ -23,10 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.AppLanguage
+import com.vistara.aestheticwalls.ui.theme.LocalAppResources
 
 /**
  * 语言选择器组件
@@ -39,6 +40,7 @@ fun LanguageSelector(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val resources = LocalAppResources.current
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -61,7 +63,7 @@ fun LanguageSelector(
             Box(modifier = Modifier.weight(1f)) {
                 Column {
                     Text(
-                        text = stringResource(R.string.language),
+                        text = resources.getString(R.string.language),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -103,15 +105,16 @@ fun LanguageSelector(
 
 /**
  * 获取语言显示文本
+ * 返回固定的原始语言名称，不随系统语言变化
  */
 @Composable
 private fun getLanguageText(language: AppLanguage): String {
     return when (language) {
-        AppLanguage.SYSTEM -> stringResource(R.string.system_default)
-        AppLanguage.ENGLISH -> stringResource(R.string.english)
-        AppLanguage.CHINESE -> stringResource(R.string.chinese)
-        AppLanguage.JAPANESE -> stringResource(R.string.japanese)
-        AppLanguage.KOREAN -> stringResource(R.string.korean)
-        AppLanguage.INDONESIAN -> stringResource(R.string.indonesian)
+        AppLanguage.SYSTEM -> "跟随系统 / System"
+        AppLanguage.ENGLISH -> "English"
+        AppLanguage.CHINESE -> "中文"
+        AppLanguage.JAPANESE -> "日本語"
+        AppLanguage.KOREAN -> "한국어"
+        AppLanguage.INDONESIAN -> "Bahasa Indonesia"
     }
 }

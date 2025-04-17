@@ -116,15 +116,13 @@
     <string name="category_sports">Sports</string>
     <string name="category_technology">Technology</string>
     <string name="category_travel">Travel</string>
-    <string name="category_static">Static Wallpapers</string>
-    <string name="category_live">Live Wallpapers</string>
+    <string name="category_static">Static</string>
+    <string name="category_live">Live</string>
     <string name="category_cyberpunk">Cyberpunk</string>
     <string name="category_fluid">Fluid</string>
     <string name="category_particle">Particle</string>
     <string name="category_portrait">Portrait</string>
     <string name="category_illustration">Illustration</string>
-    <string name="category_tech">Tech</string>
-    <string name="category_animal">Animal</string>
 
     <!-- Error messages -->
     <string name="error_loading_wallpapers">Failed to load wallpapers</string>

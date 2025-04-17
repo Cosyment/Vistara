@@ -123,8 +123,6 @@
     <string name="category_particle">粒子</string>
     <string name="category_portrait">人像</string>
     <string name="category_illustration">插画</string>
-    <string name="category_tech">科技感</string>
-    <string name="category_animal">动物</string>
 
     <!-- 错误消息 -->
     <string name="error_loading_wallpapers">加载壁纸失败</string>

@@ -96,7 +96,6 @@
     <!-- Wallpaper categories -->
     <string name="category_all">Semua</string>
     <string name="category_abstract">Abstrak</string>
-    <string name="category_tech">Teknologi</string>
     <string name="category_nature">Alam</string>
     <string name="category_animals">Hewan</string>
     <string name="category_cyberpunk">Cyberpunk</string>
@@ -107,7 +106,6 @@
     <string name="category_city">Kota</string>
     <string name="category_illustration">Ilustrasi</string>
     <string name="category_minimal">Minimalis</string>
-    <string name="category_animal">Hewan</string>
     <string name="category_food">Makanan</string>
     <string name="category_static">Statis</string>
     <string name="category_live">Hidup</string>

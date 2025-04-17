@@ -146,12 +146,19 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.androidx.datastore.preferences.core)
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.hilt.android)
 }
 
 // 自定义任务：编译、安装并启动应用
@@ -160,7 +167,7 @@ tasks.register("buildInstallAndRun") {
     doLast {
         // 启动应用
         try {
-            exec {
+            providers.exec {
                 commandLine("adb", "shell", "am", "start", "-n", "com.vistara.aestheticwalls/.ui.MainActivity")
                 isIgnoreExitValue = true // 忽略退出代码
             }

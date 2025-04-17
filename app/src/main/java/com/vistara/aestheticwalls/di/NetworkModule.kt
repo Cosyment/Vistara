@@ -11,6 +11,7 @@ import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
+import com.vistara.aestheticwalls.data.remote.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,6 +34,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    private const val BASE_URL = "https://api.vistaraai.xyz/"
 
     /**
      * 提供Gson实例，用于JSON序列化/反序列化
@@ -75,6 +78,7 @@ object NetworkModule {
      */
     @Provides
     @Singleton
+    @Named("cacheInterceptor")
     fun provideCacheInterceptor(): Interceptor {
         return Interceptor { chain ->
             val request = chain.request()
@@ -102,6 +106,7 @@ object NetworkModule {
      */
     @Provides
     @Singleton
+    @Named("offlineInterceptor")
     fun provideOfflineInterceptor(@ApplicationContext context: Context): Interceptor {
         return Interceptor { chain ->
             var request = chain.request()
@@ -130,8 +135,8 @@ object NetworkModule {
     fun provideOkHttpClient(
         cache: Cache,
         loggingInterceptor: HttpLoggingInterceptor,
-        cacheInterceptor: Interceptor,
-        offlineInterceptor: Interceptor
+        @Named("cacheInterceptor") cacheInterceptor: Interceptor,
+        @Named("offlineInterceptor") offlineInterceptor: Interceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .cache(cache)
@@ -151,7 +156,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://api.example.com/") // 将在具体的API Module中替换
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .client(okHttpClient)
             .build()
@@ -498,5 +503,11 @@ object NetworkModule {
         @Named("wallhavenRetrofit") retrofit: Retrofit
     ): WallhavenApiService {
         return retrofit.create(WallhavenApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiService(retrofit: Retrofit): ApiService {
+        return retrofit.create(ApiService::class.java)
     }
 }

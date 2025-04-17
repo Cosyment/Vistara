@@ -119,7 +119,8 @@ fun SearchBar(
                         unfocusedIndicatorColor = Color.Transparent,
                         disabledIndicatorColor = Color.Transparent,
                         errorIndicatorColor = Color.Transparent,
-                    ))
+                    )
+                )
 
                 if (query.isNotEmpty()) {
                     IconButton(

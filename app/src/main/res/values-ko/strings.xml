@@ -99,7 +99,6 @@
     <!-- 배경화면 카테고리 -->
     <string name="category_all">전체</string>
     <string name="category_abstract">추상</string>
-    <string name="category_tech">테크노로지</string>
     <string name="category_nature">자연</string>
     <string name="category_cyberpunk">사이버펑크</string>
     <string name="category_particle">입자</string>
@@ -110,10 +109,9 @@
     <string name="category_illustration">일러스트</string>
     <string name="category_minimal">미니멀</string>
     <string name="category_animals">동물</string>
-    <string name="category_animal">동물</string>
     <string name="category_food">음식</string>
-    <string name="category_static">정적 배경화면</string>
-    <string name="category_live">동적 배경화면</string>
+    <string name="category_static">정적</string>
+    <string name="category_live">동적</string>
     <string name="category_cars">자동차</string>
     <string name="category_dark">다크</string>
     <string name="category_fashion">패션</string>
@@ -216,8 +214,8 @@
     <string name="source">출처: %1$s</string>
     <string name="resolution">해상도: %1$d x %2$d</string>
     <string name="wallpaper_type">유형: %1$s</string>
-    <string name="static_wallpaper">정적 배경화면</string>
-    <string name="live_wallpaper">라이브 배경화면</string>
+    <string name="static_wallpaper">정적</string>
+    <string name="live_wallpaper">라이브</string>
     <string name="tags">태그:</string>
     <string name="set_as_wallpaper">배경화면으로 설정</string>
     <string name="download">다운로드</string>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,23 +28,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.vistara.aestheticwalls.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.CategoryChip
 import com.vistara.aestheticwalls.ui.components.SearchBar
 import com.vistara.aestheticwalls.ui.components.WallpaperItem
+import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
  * 搜索屏幕
@@ -67,7 +67,7 @@ fun SearchScreen(
 
     Scaffold(
         topBar = {
-            Column {
+            Column(modifier = Modifier.statusBarsPadding()) {
                 // 顶部导航栏和搜索栏组合
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -101,12 +101,10 @@ fun SearchScreen(
                     ) {
                         items(hotSearches) { category ->
                             CategoryChip(
-                                category = category,
-                                onClick = {
+                                category = category, onClick = {
                                     viewModel.selectFromHistory(category)
                                     viewModel.search(category)
-                                }
-                            )
+                                })
                         }
                     }
                 } else if (query.isNotEmpty() && searchSuggestions.isNotEmpty()) {
@@ -117,16 +115,14 @@ fun SearchScreen(
                             .padding(horizontal = 16.dp)
                     ) {
                         searchSuggestions.forEach { suggestion ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        viewModel.selectSuggestion(suggestion)
-                                        viewModel.search(suggestion)
-                                    }
-                                    .padding(vertical = 8.dp, horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
+                            Row(modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.selectSuggestion(suggestion)
+                                    viewModel.search(suggestion)
+                                }
+                                .padding(vertical = 8.dp, horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Search,
                                     contentDescription = null,
@@ -146,8 +142,7 @@ fun SearchScreen(
                     }
                 }
             }
-        }
-    ) { paddingValues ->
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -167,8 +162,7 @@ fun SearchScreen(
             } else if (isLoading) {
                 // 加载状态
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
                 }
@@ -249,9 +243,7 @@ fun SearchScreen(
  */
 @Composable
 private fun InitialSearchState(
-    hotSearches: List<String>,
-    onCategorySelected: (String) -> Unit,
-    modifier: Modifier = Modifier
+    hotSearches: List<String>, onCategorySelected: (String) -> Unit, modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         Text(
@@ -267,9 +259,7 @@ private fun InitialSearchState(
         ) {
             items(hotSearches) { category ->
                 com.vistara.aestheticwalls.ui.components.CategoryChip(
-                    category = category,
-                    onClick = { onCategorySelected(category) }
-                )
+                    category = category, onClick = { onCategorySelected(category) })
             }
         }
 
@@ -308,9 +298,7 @@ private fun InitialSearchState(
  */
 @Composable
 private fun SearchTip(
-    title: String,
-    description: String,
-    modifier: Modifier = Modifier
+    title: String, description: String, modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         Text(
@@ -326,5 +314,13 @@ private fun SearchTip(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SearchScreenPreview() {
+    VistaraTheme {
+        SearchScreen(onWallpaperClick = {}, onBackClick = {})
     }
 }

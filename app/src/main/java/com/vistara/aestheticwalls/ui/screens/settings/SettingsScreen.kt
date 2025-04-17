@@ -66,6 +66,7 @@ import com.vistara.aestheticwalls.ui.components.ConfirmDialog
 import com.vistara.aestheticwalls.ui.components.LanguageSelector
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsViewModel.NotificationType
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.ui.theme.LocalAppResources
 import java.util.Locale
 
 /**
@@ -186,13 +187,21 @@ fun SettingsScreen(
     }
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-        TopAppBar(title = { Text(stringResource(R.string.settings)) }, navigationIcon = {
-            IconButton(onClick = onBackPressed) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
-                )
+        TopAppBar(
+            title = { 
+                val resources = LocalAppResources.current
+                Text(resources.getString(R.string.settings)) 
+            }, 
+            navigationIcon = {
+                IconButton(onClick = onBackPressed) {
+                    val resources = LocalAppResources.current
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
+                        contentDescription = resources.getString(R.string.back)
+                    )
+                }
             }
-        })
+        )
     }) { paddingValues ->
         Column(
             modifier = Modifier
@@ -200,20 +209,22 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
         ) {
+            val resources = LocalAppResources.current
+
             // 主题设置
-            SettingsCategory(title = stringResource(R.string.theme_settings))
+            SettingsCategory(title = resources.getString(R.string.theme_settings))
 
             SettingsToggleItem(
                 icon = Icons.Default.Info,
-                title = stringResource(R.string.dark_theme),
-                subtitle = stringResource(R.string.dark_theme_desc),
+                title = resources.getString(R.string.dark_theme),
+                subtitle = resources.getString(R.string.dark_theme_desc),
                 checked = darkTheme,
                 onCheckedChange = { viewModel.updateDarkTheme(it) })
 
             SettingsToggleItem(
                 icon = Icons.Default.Settings,
-                title = stringResource(R.string.dynamic_colors),
-                subtitle = stringResource(R.string.dynamic_colors_desc),
+                title = resources.getString(R.string.dynamic_colors),
+                subtitle = resources.getString(R.string.dynamic_colors_desc),
                 checked = dynamicColors,
                 onCheckedChange = { viewModel.updateDynamicColors(it) })
 
@@ -222,7 +233,7 @@ fun SettingsScreen(
             )
 
             // 语言设置
-            SettingsCategory(title = stringResource(R.string.language_settings))
+            SettingsCategory(title = resources.getString(R.string.language_settings))
 
             LanguageSelector(
                 currentLanguage = appLanguage, onLanguageSelected = { viewModel.updateAppLanguage(it) })
@@ -232,12 +243,12 @@ fun SettingsScreen(
             )
 
             // 通知设置
-            SettingsCategory(title = stringResource(R.string.notification_settings))
+            SettingsCategory(title = resources.getString(R.string.notification_settings))
 
             SettingsToggleItem(
                 icon = Icons.Default.Notifications,
-                title = stringResource(R.string.download_notification),
-                subtitle = stringResource(R.string.download_notification_desc),
+                title = resources.getString(R.string.download_notification),
+                subtitle = resources.getString(R.string.download_notification_desc),
                 checked = showDownloadNotification,
                 onCheckedChange = {
                     currentNotificationType = NotificationType.DOWNLOAD
@@ -246,8 +257,8 @@ fun SettingsScreen(
 
             SettingsToggleItem(
                 icon = Icons.Default.Notifications,
-                title = stringResource(R.string.wallpaper_change_notification),
-                subtitle = stringResource(R.string.wallpaper_change_notification_desc),
+                title = resources.getString(R.string.wallpaper_change_notification),
+                subtitle = resources.getString(R.string.wallpaper_change_notification_desc),
                 checked = showWallpaperChangeNotification,
                 onCheckedChange = {
                     currentNotificationType = NotificationType.WALLPAPER_CHANGE
@@ -259,12 +270,12 @@ fun SettingsScreen(
             )
 
             // 下载设置
-            SettingsCategory(title = stringResource(R.string.download_settings))
+            SettingsCategory(title = resources.getString(R.string.download_settings))
 
             SettingsToggleItem(
                 icon = Icons.Default.Settings,
-                title = stringResource(R.string.original_quality),
-                subtitle = stringResource(R.string.original_quality_desc),
+                title = resources.getString(R.string.original_quality),
+                subtitle = resources.getString(R.string.original_quality_desc),
                 checked = downloadOriginalQuality,
                 onCheckedChange = {
                     viewModel.updateDownloadOriginalQuality(it)
@@ -272,8 +283,8 @@ fun SettingsScreen(
 
             SettingsActionItem(
                 icon = Icons.Default.Delete,
-                title = stringResource(R.string.clear_cache),
-                subtitle = stringResource(R.string.current_cache_size, cacheSize),
+                title = resources.getString(R.string.clear_cache),
+                subtitle = resources.getString(R.string.current_cache_size, cacheSize),
                 onClick = {
                     showClearCacheDialog = true
                 },
@@ -292,11 +303,11 @@ fun SettingsScreen(
             )
 
             // 关于应用
-            SettingsCategory(title = stringResource(R.string.about_app))
+            SettingsCategory(title = resources.getString(R.string.about_app))
 
             SettingsActionItem(
                 icon = Icons.Default.Info,
-                title = stringResource(R.string.app_version),
+                title = resources.getString(R.string.app_version),
                 subtitle = "$appVersion",
                 onClick = {})
 
@@ -306,12 +317,12 @@ fun SettingsScreen(
                     modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
                 )
 
-                SettingsCategory(title = stringResource(R.string.account_settings))
+                SettingsCategory(title = resources.getString(R.string.account_settings))
 
                 SettingsActionItem(
                     icon = Icons.Default.ExitToApp,
-                    title = stringResource(R.string.sign_out),
-                    subtitle = stringResource(R.string.sign_out_desc),
+                    title = resources.getString(R.string.sign_out),
+                    subtitle = resources.getString(R.string.sign_out_desc),
                     onClick = { showLogoutConfirmDialog = true },
                     iconTint = MaterialTheme.colorScheme.error,
                     trailingContent = if (isLoggingOut) {
@@ -335,10 +346,10 @@ fun SettingsScreen(
                         viewModel.clearCache()
                         showClearCacheDialog = false
                     },
-                    title = stringResource(R.string.clear_cache_title),
-                    message = stringResource(R.string.clear_cache_message),
-                    confirmText = stringResource(R.string.clear),
-                    dismissText = stringResource(R.string.cancel),
+                    title = resources.getString(R.string.clear_cache_title),
+                    message = resources.getString(R.string.clear_cache_message),
+                    confirmText = resources.getString(R.string.clear),
+                    dismissText = resources.getString(R.string.cancel),
                     isLoading = isClearingCache
                 )
             }
@@ -351,10 +362,10 @@ fun SettingsScreen(
                         viewModel.signOut()
                         showLogoutConfirmDialog = false
                     },
-                    title = stringResource(R.string.sign_out_confirm_title),
-                    message = stringResource(R.string.sign_out_confirm_message),
-                    confirmText = stringResource(R.string.sign_out),
-                    dismissText = stringResource(R.string.cancel),
+                    title = resources.getString(R.string.sign_out_confirm_title),
+                    message = resources.getString(R.string.sign_out_confirm_message),
+                    confirmText = resources.getString(R.string.sign_out),
+                    dismissText = resources.getString(R.string.cancel),
                     isLoading = isLoggingOut
                 )
             }

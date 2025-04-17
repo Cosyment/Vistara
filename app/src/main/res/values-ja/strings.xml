@@ -99,7 +99,6 @@
     <!-- 壁紙カテゴリー -->
     <string name="category_all">すべて</string>
     <string name="category_abstract">抽象的</string>
-    <string name="category_tech">テクノロジー</string>
     <string name="category_nature">自然</string>
     <string name="category_cyberpunk">サイバーパンク</string>
     <string name="category_particle">パーティクル</string>
@@ -109,7 +108,6 @@
     <string name="category_city">都市</string>
     <string name="category_illustration">イラスト</string>
     <string name="category_minimal">ミニマル</string>
-    <string name="category_animal">動物</string>
     <string name="category_food">食べ物</string>
     <string name="category_cars">車</string>
     <string name="category_dark">ダーク</string>

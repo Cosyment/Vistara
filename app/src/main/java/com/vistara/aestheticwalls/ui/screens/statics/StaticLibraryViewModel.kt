@@ -200,8 +200,7 @@ class StaticLibraryViewModel @Inject constructor(
             R.string.category_art -> WallpaperCategory.ART
             R.string.category_space -> WallpaperCategory.SPACE
             R.string.category_illustration -> WallpaperCategory.ILLUSTRATION
-            R.string.category_tech -> WallpaperCategory.TECH
-            R.string.category_animal -> WallpaperCategory.ANIMALS
+            R.string.category_technology -> WallpaperCategory.TECHNOLOGY
             else -> WallpaperCategory.ALL
         }
 

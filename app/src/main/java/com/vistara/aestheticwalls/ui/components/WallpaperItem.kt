@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -15,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,9 +48,7 @@ fun WallpaperItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-//                .aspectRatio(wallpaper.aspectRatio)
+            modifier = Modifier.fillMaxSize()
         ) {
             // 壁纸图片
             AsyncImage(
@@ -71,7 +71,9 @@ fun WallpaperItem(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "👑", style = MaterialTheme.typography.labelSmall, color = Color.White
+                        text = "👑", 
+                        style = MaterialTheme.typography.labelSmall, 
+                        color = Color.White
                     )
                 }
             }
@@ -83,7 +85,8 @@ fun WallpaperItem(
                         .align(Alignment.TopStart)
                         .padding(8.dp)
                         .background(
-                            color = Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(4.dp)
+                            color = Color.Black.copy(alpha = 0.6f), 
+                            shape = RoundedCornerShape(4.dp)
                         )
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
@@ -95,23 +98,30 @@ fun WallpaperItem(
                 }
             }
 
-            // 作者信息
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxSize()
-                    .background(
-                        Color.Black.copy(alpha = 0.4f)
+            // 添加底部渐变和标题
+            if (wallpaper.title != null && wallpaper.title.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.6f)
+                                )
+                            )
+                        )
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = wallpaper.title,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    .padding(8.dp), contentAlignment = Alignment.BottomStart
-            ) {
-                Text(
-                    text = wallpaper.author ?: "",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                }
             }
         }
     }

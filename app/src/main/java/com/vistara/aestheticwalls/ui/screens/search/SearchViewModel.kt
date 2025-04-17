@@ -1,12 +1,15 @@
 package com.vistara.aestheticwalls.ui.screens.search
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
-    private val userPrefsRepository: UserPrefsRepository
+    private val userPrefsRepository: UserPrefsRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
@@ -45,8 +49,17 @@ class SearchViewModel @Inject constructor(
     val searchSuggestions: StateFlow<List<String>> = _searchSuggestions.asStateFlow()
 
     // 热门搜索关键词
-    private val _hotSearches = MutableStateFlow<List<String>>(
-        listOf("自然风景", "抽象艺术", "动物", "城市", "极简", "太空", "花卉", "黑白")
+    private val _hotSearches = MutableStateFlow(
+        listOf(
+            context.getString(R.string.category_nature),
+            context.getString(R.string.category_abstract),
+            context.getString(R.string.category_animals),
+            context.getString(R.string.category_city),
+            context.getString(R.string.category_minimal),
+            context.getString(R.string.category_space),
+            context.getString(R.string.category_flowers),
+            context.getString(R.string.category_dark)
+        )
     )
     val hotSearches: StateFlow<List<String>> = _hotSearches.asStateFlow()
 

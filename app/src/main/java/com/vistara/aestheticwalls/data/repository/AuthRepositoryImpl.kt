@@ -12,6 +12,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
+import com.vistara.aestheticwalls.data.remote.ApiService
+import com.vistara.aestheticwalls.data.remote.GoogleLoginRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -27,7 +29,8 @@ import javax.inject.Singleton
 class AuthRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val dataStore: DataStore<Preferences>,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val apiService: ApiService
 ) : AuthRepository {
 
     companion object {
@@ -78,13 +81,33 @@ class AuthRepositoryImpl @Inject constructor(
                     userEmail = account.email ?: "",
                     userPhotoUrl = account.photoUrl?.toString() ?: ""
                 )
-
-//                https://api.vistaraai.xyz/google/login
-                // 更新用户登录状态
-                userRepository.updateLoginStatus(true) // 设置为已登录
-                userRepository.updatePremiumStatus(false) // 默认不是高级用户
-
-                true
+                
+                try {
+                    // 构建请求体
+                    val requestBody = GoogleLoginRequest(
+                        nickname = account.displayName ?: "",
+                        email = account.email ?: "",
+                        avatar = account.photoUrl?.toString() ?: "",
+                        token = account.idToken ?: ""
+                    )
+                    
+                    // 发起后端登录请求
+                    val response = apiService.googleLogin(requestBody)
+                    if (response.isSuccessful && response.body() != null) {
+                        val loginResponse = response.body()!!
+                        // 保存后端返回的token等信息
+//                        userRepository.saveServerToken(loginResponse.token)
+                        userRepository.updateLoginStatus(true)
+                        userRepository.updatePremiumStatus(loginResponse.isPremium ?: false)
+                        true
+                    } else {
+                        Log.e(TAG, "Backend login failed: ${response.errorBody()?.string()}")
+                        false
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Backend login request failed", e)
+                    false
+                }
             } else {
                 Log.e(TAG, "Google sign in failed: account is null")
                 false

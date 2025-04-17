@@ -123,8 +123,6 @@
     <string name="category_particle">Particle</string>
     <string name="category_portrait">Portrait</string>
     <string name="category_illustration">Illustration</string>
-    <string name="category_tech">Tech</string>
-    <string name="category_animal">Animal</string>
 
     <!-- Error messages -->
     <string name="error_loading_wallpapers">Failed to load wallpapers</string>

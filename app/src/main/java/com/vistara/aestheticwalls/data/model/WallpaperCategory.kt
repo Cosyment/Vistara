@@ -5,7 +5,7 @@ import com.vistara.aestheticwalls.R
 
 /**
  * 壁纸分类枚举
- * @param apiValue 用于 API 请求的英文值
+ * @param apiValue 用于 API 请求的英文值（必须与后端 API 参数保持一致）
  * @param titleRes 显示在 UI 上的多语言资源 ID
  */
 enum class WallpaperCategory(val apiValue: String, @StringRes val titleRes: Int) {
@@ -33,17 +33,9 @@ enum class WallpaperCategory(val apiValue: String, @StringRes val titleRes: Int)
     FLUID("fluid", R.string.category_fluid),
     PARTICLE("particle", R.string.category_particle),
     PORTRAIT("portrait", R.string.category_portrait),
-    ILLUSTRATION("illustration", R.string.category_illustration),
-    TECH("tech", R.string.category_tech);
+    ILLUSTRATION("illustration", R.string.category_illustration);
 
     companion object {
-        /**
-         * 根据 API 值获取对应的分类枚举
-         */
-        fun fromApiValue(value: String): WallpaperCategory {
-            return values().find { it.apiValue.equals(value, ignoreCase = true) } ?: ALL
-        }
-
         /**
          * 获取所有分类
          */
