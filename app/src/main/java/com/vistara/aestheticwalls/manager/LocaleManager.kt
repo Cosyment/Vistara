@@ -68,6 +68,10 @@ class LocaleManager @Inject constructor(
             val localeList = LocaleListCompat.create(locale)
             AppCompatDelegate.setApplicationLocales(localeList)
         }
+
+        // 确保设置生效
+        Locale.setDefault(if (language == AppLanguage.SYSTEM) Locale.getDefault() else Locale(language.code))
+
         return true
     }
 
@@ -77,7 +81,21 @@ class LocaleManager @Inject constructor(
      */
     suspend fun applyCurrentLanguage() {
         val settings = userPrefsRepository.getUserSettings()
-        applyLanguage(settings.appLanguage)
+        val language = settings.appLanguage
+
+        // 强制应用语言设置，即使当前语言与设置的语言相同
+        if (language == AppLanguage.SYSTEM) {
+            // 使用系统默认语言
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+        } else {
+            // 设置指定语言
+            val locale = Locale.Builder().setLanguage(language.code).build()
+            val localeList = LocaleListCompat.create(locale)
+            AppCompatDelegate.setApplicationLocales(localeList)
+
+            // 确保设置生效
+            Locale.setDefault(locale)
+        }
     }
 
     /**

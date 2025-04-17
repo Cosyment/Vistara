@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.vistara.aestheticwalls.manager.LocaleManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -39,6 +40,11 @@ class VistaraApp : Application() {
         // 使用协程异步加载语言设置
         MainScope().launch {
             try {
+                // 先获取当前设置的语言
+                val settings = localeManager.appLanguageFlow.first()
+                Log.d("VistaraApp", "Applying language settings: $settings")
+
+                // 应用语言设置
                 localeManager.applyCurrentLanguage()
             } catch (e: Exception) {
                 Log.e("VistaraApp", "Failed to apply language settings: ${e.message}")

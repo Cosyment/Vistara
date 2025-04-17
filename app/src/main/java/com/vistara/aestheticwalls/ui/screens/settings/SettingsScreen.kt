@@ -3,6 +3,8 @@ package com.vistara.aestheticwalls.ui.screens.settings
 import android.Manifest
 import android.app.Activity
 import android.os.Build
+import android.util.Log
+import kotlinx.coroutines.delay
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -59,6 +61,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.components.ConfirmDialog
 import com.vistara.aestheticwalls.ui.components.LanguageSelector
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsViewModel.NotificationType
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -77,6 +80,8 @@ fun SettingsScreen(
     val context = LocalContext.current
     LaunchedEffect(needRecreate) {
         if (needRecreate) {
+            Log.d("SettingsScreen", "Recreating activity due to language change")
+            delay(100) // 等待一下确保语言设置已应用
             (context as? Activity)?.recreate()
             viewModel.onRecreateHandled()
         }
@@ -126,6 +131,7 @@ fun SettingsScreen(
 
     // 对话框状态
     var showClearCacheDialog by remember { mutableStateOf(false) }
+    var showLogoutConfirmDialog by remember { mutableStateOf(false) }
 
     // 显示操作结果
     LaunchedEffect(operationResult) {
@@ -262,7 +268,7 @@ fun SettingsScreen(
                     icon = Icons.Default.ExitToApp,
                     title = stringResource(R.string.sign_out),
                     subtitle = stringResource(R.string.sign_out_desc),
-                    onClick = { viewModel.signOut() },
+                    onClick = { showLogoutConfirmDialog = true },
                     iconTint = MaterialTheme.colorScheme.error,
                     trailingContent = if (isLoggingOut) {
                         {
@@ -279,26 +285,34 @@ fun SettingsScreen(
 
             // 清除缓存对话框
             if (showClearCacheDialog) {
-                AlertDialog(
-                    onDismissRequest = { showClearCacheDialog = false },
-                    title = { Text(stringResource(R.string.clear_cache_title)) },
-                    text = { Text(stringResource(R.string.clear_cache_message)) },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                viewModel.clearCache()
-                                showClearCacheDialog = false
-                            }, enabled = !isClearingCache
-                        ) {
-                            Text(stringResource(R.string.clear))
-                        }
+                ConfirmDialog(
+                    onDismiss = { showClearCacheDialog = false },
+                    onConfirm = {
+                        viewModel.clearCache()
+                        showClearCacheDialog = false
                     },
-                    dismissButton = {
-                        TextButton(
-                            onClick = { showClearCacheDialog = false }) {
-                            Text(stringResource(R.string.cancel))
-                        }
-                    })
+                    title = stringResource(R.string.clear_cache_title),
+                    message = stringResource(R.string.clear_cache_message),
+                    confirmText = stringResource(R.string.clear),
+                    dismissText = stringResource(R.string.cancel),
+                    isLoading = isClearingCache
+                )
+            }
+
+            // 退出登录确认对话框
+            if (showLogoutConfirmDialog) {
+                ConfirmDialog(
+                    onDismiss = { showLogoutConfirmDialog = false },
+                    onConfirm = {
+                        viewModel.signOut()
+                        showLogoutConfirmDialog = false
+                    },
+                    title = stringResource(R.string.sign_out_confirm_title),
+                    message = stringResource(R.string.sign_out_confirm_message),
+                    confirmText = stringResource(R.string.sign_out),
+                    dismissText = stringResource(R.string.cancel),
+                    isLoading = isLoggingOut
+                )
             }
         }
     }

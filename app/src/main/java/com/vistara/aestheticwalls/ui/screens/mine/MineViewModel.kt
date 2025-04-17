@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.BuildConfig
+import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MineViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val userPrefsRepository: UserPrefsRepository
+    private val userPrefsRepository: UserPrefsRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     companion object {
@@ -31,6 +33,10 @@ class MineViewModel @Inject constructor(
     // 用户名
     private val _username = MutableStateFlow("Vistara User")
     val username: StateFlow<String> = _username.asStateFlow()
+
+    // 用户头像
+    private val _userPhotoUrl = MutableStateFlow<String?>(null)
+    val userPhotoUrl: StateFlow<String?> = _userPhotoUrl.asStateFlow()
 
     // 高级用户状态
     private val _isPremiumUser = MutableStateFlow(false)
@@ -78,7 +84,19 @@ class MineViewModel @Inject constructor(
 
                 // 获取用户设置
                 val userSettings = userPrefsRepository.getUserSettings()
-                // 这里可以根据实际需求加载更多用户数据
+
+                // 获取用户名和头像
+                if (_isLoggedIn.value) {
+                    val name = authRepository.userName.first()
+                    if (!name.isNullOrEmpty()) {
+                        _username.value = name
+                    }
+
+                    val photoUrl = authRepository.userPhotoUrl.first()
+                    _userPhotoUrl.value = photoUrl
+
+                    Log.d(TAG, "User info loaded: name=$name, photoUrl=$photoUrl")
+                }
 
                 Log.d(TAG, "User data loaded successfully")
             } catch (e: Exception) {

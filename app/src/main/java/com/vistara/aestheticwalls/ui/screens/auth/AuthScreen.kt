@@ -267,16 +267,18 @@ fun AuthScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "壁纸", style = MaterialTheme.typography.titleMedium.copy(
+                            text = stringResource(R.string.app_subtitle),
+                            style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Medium, letterSpacing = 4.sp
-                            ), color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // 应用描述
+                        // App description
                         Text(
-                            text = "精美壁纸，让您的设备焕然一新",
+                            text = stringResource(R.string.app_description),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
@@ -321,14 +323,14 @@ fun AuthScreen(
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "使用Google账号登录",
+                                    text = stringResource(R.string.sign_in_with_google),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium
                                 )
                             }
                         }
 
-                        // 跳过登录按钮
+                        // Skip login button
                         TextButton(
                             onClick = onSkipLogin,
                             modifier = Modifier
@@ -337,7 +339,7 @@ fun AuthScreen(
                             shape = RoundedCornerShape(24.dp)
                         ) {
                             Text(
-                                text = "跳过登录，直接体验",
+                                text = stringResource(R.string.skip_login),
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)

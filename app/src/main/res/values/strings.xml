@@ -48,6 +48,8 @@
     <string name="account_settings">Account Settings</string>
     <string name="sign_out">Sign Out</string>
     <string name="sign_out_desc">Sign out from current account</string>
+    <string name="sign_out_confirm_title">Sign Out Confirmation</string>
+    <string name="sign_out_confirm_message">Are you sure you want to sign out from your account?</string>
     <string name="clear_cache_title">Clear Cache</string>
     <string name="clear_cache_message">Are you sure you want to clear the app cache? This will delete all cached images and data.</string>
     <string name="clear">Clear</string>
@@ -276,6 +278,12 @@
     <string name="upgrade_to_premium">Upgrade to Premium</string>
     <string name="restore_purchases">Restore Purchases</string>
     <string name="payment_success_notice">After successful payment, you will immediately get premium features. Subscription can be canceled at any time.</string>
+
+    <!-- Auth screen related -->
+    <string name="app_subtitle">Wallpaper</string>
+    <string name="app_description">Beautiful wallpapers to refresh your device</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="skip_login">Skip login and explore</string>
 
     <!-- Test tools related -->
     <string name="check_login_status_failed">Check login status failed: %1$s</string>

@@ -48,12 +48,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -81,6 +85,7 @@ fun MineScreen(
 ) {
     // 从ViewModel获取状态
     val username by viewModel.username.collectAsState()
+    val userPhotoUrl by viewModel.userPhotoUrl.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isDebugMode by viewModel.isDebugMode.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
@@ -146,7 +151,11 @@ fun MineScreen(
         ) {
             // 用户信息区域
             MineHeader(
-                username = username, isPremiumUser = isPremiumUser, isLoggedIn = isLoggedIn, onLoginClick = onLoginClick
+                username = username,
+                userPhotoUrl = userPhotoUrl,
+                isPremiumUser = isPremiumUser,
+                isLoggedIn = isLoggedIn,
+                onLoginClick = onLoginClick
             )
 
             // 升级横幅
@@ -241,7 +250,12 @@ fun MineScreen(
  */
 @Composable
 private fun MineHeader(
-    username: String, isPremiumUser: Boolean, isLoggedIn: Boolean, onLoginClick: () -> Unit = {}, modifier: Modifier = Modifier
+    username: String,
+    userPhotoUrl: String?,
+    isPremiumUser: Boolean,
+    isLoggedIn: Boolean,
+    onLoginClick: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
@@ -257,12 +271,26 @@ private fun MineHeader(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
         ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(40.dp)
-            )
+            if (isLoggedIn && !userPhotoUrl.isNullOrEmpty()) {
+                // 使用 AsyncImage 加载用户头像
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(userPhotoUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // 默认头像图标
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))

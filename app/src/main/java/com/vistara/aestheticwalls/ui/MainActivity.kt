@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,6 +23,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -46,7 +48,13 @@ class MainActivity : ComponentActivity() {
 
         // 应用语言设置
         CoroutineScope(Dispatchers.Main).launch {
-            localeManager.applyCurrentLanguage()
+            try {
+                val settings = localeManager.appLanguageFlow.first()
+                Log.d("MainActivity", "Applying language settings: $settings")
+                localeManager.applyCurrentLanguage()
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Failed to apply language settings: ${e.message}")
+            }
         }
 
         // 处理导航意图
