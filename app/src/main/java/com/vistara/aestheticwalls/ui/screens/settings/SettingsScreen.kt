@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.ui.screens.settings
 import android.Manifest
 import android.app.Activity
 import android.os.Build
+import android.os.LocaleList
 import android.util.Log
 import kotlinx.coroutines.delay
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -65,6 +66,7 @@ import com.vistara.aestheticwalls.ui.components.ConfirmDialog
 import com.vistara.aestheticwalls.ui.components.LanguageSelector
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsViewModel.NotificationType
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import java.util.Locale
 
 /**
  * 设置页面
@@ -75,15 +77,57 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 fun SettingsScreen(
     onBackPressed: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    // 监听 needRecreate 并重建 Activity
-    val needRecreate by viewModel.needRecreate.collectAsState()
+    // 监听语言更新状态
+    val languageUpdated by viewModel.languageUpdated.collectAsState()
     val context = LocalContext.current
+
+    // 保留原有的 Activity 重建逻辑，作为备用方案
+    val needRecreate by viewModel.needRecreate.collectAsState()
     LaunchedEffect(needRecreate) {
         if (needRecreate) {
             Log.d("SettingsScreen", "Recreating activity due to language change")
-            delay(100) // 等待一下确保语言设置已应用
-            (context as? Activity)?.recreate()
+            // 等待足够时间确保语言设置已应用
+            delay(500)
+            try {
+                Log.d("SettingsScreen", "About to recreate activity")
+                (context as? Activity)?.let { activity ->
+                    // 使用 Intent 重启 Activity
+                    val intent = activity.intent
+                    activity.finish()
+                    activity.startActivity(intent)
+                    // 添加过渡动画
+                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                }
+            } catch (e: Exception) {
+                Log.e("SettingsScreen", "Error recreating activity: ${e.message}")
+                e.printStackTrace()
+                // 如果上面的方法失败，尝试直接调用 recreate()
+                (context as? Activity)?.recreate()
+            }
             viewModel.onRecreateHandled()
+        }
+    }
+
+    // 监听语言更新状态，触发 UI 刷新
+    LaunchedEffect(languageUpdated) {
+        if (languageUpdated) {
+            Log.d("SettingsScreen", "Language updated, refreshing UI without recreating activity")
+            // 强制更新当前 Activity 的 Resources 配置
+            try {
+                val config = context.resources.configuration
+                val settings = viewModel.appLanguage.value
+                if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
+                    val locale = java.util.Locale(settings.code)
+                    val localeList = android.os.LocaleList(locale)
+                    config.setLocales(localeList)
+                } else {
+                    config.setLocales(android.os.LocaleList.getDefault())
+                }
+                context.resources.updateConfiguration(config, context.resources.displayMetrics)
+                Log.d("SettingsScreen", "Updated resources configuration with locale: ${java.util.Locale.getDefault()}")
+            } catch (e: Exception) {
+                Log.e("SettingsScreen", "Error updating resources: ${e.message}")
+            }
         }
     }
     // 从ViewModel获取状态

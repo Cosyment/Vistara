@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.ErrorState
 import com.vistara.aestheticwalls.ui.components.LoadingState
@@ -104,8 +105,8 @@ fun StaticLibraryScreen(
             CategorySelector(
                 categories = categories,
                 selectedCategory = selectedCategory,
-                onCategorySelected = { categoryResId ->
-                    viewModel.filterByCategory(categoryResId)
+                onCategorySelected = { category ->
+                    viewModel.filterByCategory(category)
                 })
 
             // 根据状态显示不同的内容

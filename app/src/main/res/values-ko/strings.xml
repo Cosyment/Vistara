@@ -48,6 +48,8 @@
     <string name="account_settings">계정 설정</string>
     <string name="sign_out">로그아웃</string>
     <string name="sign_out_desc">현재 계정에서 로그아웃</string>
+    <string name="sign_out_confirm_title">로그아웃 확인</string>
+    <string name="sign_out_confirm_message">정말로 계정에서 로그아웃하시겠습니까?</string>
     <string name="clear_cache_title">캐시 지우기</string>
     <string name="clear_cache_message">앱 캐시를 지우시겠습니까? 이렇게 하면 캐시된 모든 이미지와 데이터가 삭제됩니다.</string>
     <string name="clear">지우기</string>
@@ -259,6 +261,20 @@
     <string name="reset">초기화</string>
     <string name="reset_edits">편집 초기화</string>
     <string name="filter">필터</string>
+    <string name="loading_image">이미지 로딩 중...</string>
+    <string name="free_crop">자유 크롭</string>
+    <string name="square">정사각형</string>
+    <string name="circle">원형</string>
+    <string name="apply">적용</string>
+    <string name="crop_applied">크롭 적용됨</string>
+    <string name="recrop">다시 크롭</string>
+    <string name="original">원본</string>
+    <string name="grayscale">회색조</string>
+    <string name="sepia">셈피아</string>
+    <string name="vintage">빈티지</string>
+    <string name="cold">차가움</string>
+    <string name="warm">따뜻함</string>
+    <string name="crop">크롭</string>
 
     <!-- 피드백 관련 -->
     <string name="direct_feedback">직접 피드백</string>

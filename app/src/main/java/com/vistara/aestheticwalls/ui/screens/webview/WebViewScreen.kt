@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.ui.screens.webview
 
 import android.graphics.Bitmap
+import android.util.Log
 import android.view.ViewGroup
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -114,6 +115,7 @@ fun WebViewScreen(
                             builtInZoomControls = true
                             displayZoomControls = false
                         }
+                        Log.d("WebViewScreen", "Loading URL: $url")
                         loadUrl(url)
                     }
                 },

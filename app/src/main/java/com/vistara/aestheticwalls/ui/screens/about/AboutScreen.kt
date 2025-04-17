@@ -45,6 +45,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
@@ -54,10 +56,15 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(
-    onBackPressed: () -> Unit, viewModel: AboutViewModel = hiltViewModel()
+    onBackPressed: () -> Unit,
+    navController: NavController = rememberNavController(),
+    viewModel: AboutViewModel = hiltViewModel()
 ) {
     val appVersion by viewModel.appVersion.collectAsState()
     val openSourceLibraries by viewModel.openSourceLibraries.collectAsState()
+
+    // 设置导航控制器
+    viewModel.setNavController(navController)
 
     Scaffold(
         topBar = {
@@ -81,7 +88,7 @@ fun AboutScreen(
                 appVersion = appVersion,
                 onPrivacyPolicyClick = { viewModel.openPrivacyPolicy() },
                 onTermsOfServiceClick = { viewModel.openTermsOfService() },
-                onGitHubRepoClick = { viewModel.openGitHubRepo() })
+                onUserAgreementClick = { viewModel.openUserAgreement() })
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -97,7 +104,7 @@ fun AboutScreen(
  */
 @Composable
 private fun AppInfoSection(
-    appVersion: String, onPrivacyPolicyClick: () -> Unit, onTermsOfServiceClick: () -> Unit, onGitHubRepoClick: () -> Unit
+    appVersion: String, onPrivacyPolicyClick: () -> Unit, onTermsOfServiceClick: () -> Unit, onUserAgreementClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()
@@ -141,7 +148,7 @@ private fun AppInfoSection(
         Spacer(modifier = Modifier.height(16.dp))
 
         LinkItem(
-            title = stringResource(R.string.user_agreement), onClick = onGitHubRepoClick
+            title = stringResource(R.string.user_agreement), onClick = onUserAgreementClick
         )
 
         // 链接
@@ -258,7 +265,10 @@ fun AboutScreenPreview() {
         Box(modifier = Modifier.fillMaxSize()) {
             // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
             // 这里只是UI预览
-            AboutScreen(onBackPressed = {})
+            AboutScreen(
+                onBackPressed = {},
+                navController = rememberNavController()
+            )
         }
     }
 }

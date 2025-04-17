@@ -422,13 +422,13 @@ fun EditToolButton(
         ) {
             Icon(
                 imageVector = icon,
-                contentDescription = tool.title,
+                contentDescription = stringResource(tool.titleRes),
                 tint = if (isSelected) MaterialTheme.colorScheme.onPrimary
                 else MaterialTheme.colorScheme.onSurface
             )
         }
         Text(
-            text = tool.title,
+            text = stringResource(tool.titleRes),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) MaterialTheme.colorScheme.primary
@@ -516,7 +516,7 @@ fun CropOptions(
 ) {
     if (originalBitmap == null) {
         Text(
-            text = "加载图片中...",
+            text = stringResource(R.string.loading_image),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(16.dp)
         )
@@ -573,7 +573,7 @@ fun CropOptions(
                 // 显示原始图片
                 Image(
                     bitmap = originalBitmap.asImageBitmap(),
-                    contentDescription = "原始图片",
+                    contentDescription = stringResource(R.string.original),
                     contentScale = ContentScale.Fit,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -625,17 +625,17 @@ fun CropOptions(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 CropTypeButton(
-                    title = "自由裁剪",
+                    title = stringResource(R.string.free_crop),
                     isSelected = cropType == CropType.FREE,
                     onClick = { cropType = CropType.FREE }
                 )
                 CropTypeButton(
-                    title = "正方形",
+                    title = stringResource(R.string.square),
                     isSelected = cropType == CropType.SQUARE,
                     onClick = { cropType = CropType.SQUARE }
                 )
                 CropTypeButton(
-                    title = "圆形",
+                    title = stringResource(R.string.circle),
                     isSelected = cropType == CropType.CIRCLE,
                     onClick = { cropType = CropType.CIRCLE }
                 )
@@ -661,10 +661,10 @@ fun CropOptions(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "取消",
+                        contentDescription = stringResource(R.string.cancel),
                         modifier = Modifier.padding(end = 4.dp)
                     )
-                    Text("取消")
+                    Text(stringResource(R.string.cancel))
                 }
 
                 Button(
@@ -703,10 +703,10 @@ fun CropOptions(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "应用",
+                        contentDescription = stringResource(R.string.apply),
                         modifier = Modifier.padding(end = 4.dp)
                     )
-                    Text("应用")
+                    Text(stringResource(R.string.apply))
                 }
             }
         } else {
@@ -718,7 +718,7 @@ fun CropOptions(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "裁剪已应用",
+                    text = stringResource(R.string.crop_applied),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -731,10 +731,10 @@ fun CropOptions(
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
-                    contentDescription = "重新裁剪",
+                    contentDescription = stringResource(R.string.recrop),
                     modifier = Modifier.padding(end = 4.dp)
                 )
-                Text("重新裁剪")
+                Text(stringResource(R.string.recrop))
             }
         }
     }
@@ -863,7 +863,7 @@ fun FilterOption(
             )
         }
         Text(
-            text = filter.title,
+            text = stringResource(filter.titleRes),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) MaterialTheme.colorScheme.primary
@@ -878,24 +878,24 @@ fun FilterOption(
 /**
  * 编辑工具枚举
  */
-enum class EditTool(val title: String) {
-    BRIGHTNESS("亮度"),
-    CONTRAST("对比度"),
-    SATURATION("饱和度"),
-    FILTER("滤镜"),
-    CROP("裁剪")
+enum class EditTool(val titleRes: Int) {
+    BRIGHTNESS(R.string.brightness),
+    CONTRAST(R.string.contrast),
+    SATURATION(R.string.saturation),
+    FILTER(R.string.filter),
+    CROP(R.string.crop)
 }
 
 /**
  * 图片滤镜枚举
  */
-enum class ImageFilter(val title: String, val previewColor: Color) {
-    NONE("原图", Color.White),
-    GRAYSCALE("黑白", Color.Gray),
-    SEPIA("复古", Color(0xFFD2B48C)),
-    VINTAGE("怀旧", Color(0xFFCDC9A5)),
-    COLD("冷色", Color(0xFF87CEFA)),
-    WARM("暖色", Color(0xFFFFB347))
+enum class ImageFilter(val titleRes: Int, val previewColor: Color) {
+    NONE(R.string.original, Color.White),
+    GRAYSCALE(R.string.grayscale, Color.Gray),
+    SEPIA(R.string.sepia, Color(0xFFD2B48C)),
+    VINTAGE(R.string.vintage, Color(0xFFCDC9A5)),
+    COLD(R.string.cold, Color(0xFF87CEFA)),
+    WARM(R.string.warm, Color(0xFFFFB347))
 }
 
 /**

@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.LiveVideoGrid
 import com.vistara.aestheticwalls.ui.components.LoadingState
@@ -126,8 +127,8 @@ fun LiveLibraryScreen(
             CategorySelector(
                 categories = categories,
                 selectedCategory = selectedCategory,
-                onCategorySelected = { categoryResId: Int ->
-                    viewModel.filterByCategory(categoryResId)
+                onCategorySelected = { category ->
+                    viewModel.filterByCategory(category)
                 })
             // 将整个when表达式包裹在一个组合函数中
             val content = @Composable {

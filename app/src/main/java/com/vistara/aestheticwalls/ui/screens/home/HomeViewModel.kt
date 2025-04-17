@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.data.repository.BannerRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.remote.ApiResult
@@ -187,7 +188,7 @@ class HomeViewModel @Inject constructor(
     }
 
     // 当前选中的分类
-    private val _selectedCategory = MutableStateFlow<String?>(null)
+    private val _selectedCategory = MutableStateFlow<WallpaperCategory?>(null)
     val selectedCategory = _selectedCategory.asStateFlow()
 
     // 分类壁纸
@@ -199,19 +200,24 @@ class HomeViewModel @Inject constructor(
     val isCategoryLoading = _isCategoryLoading.asStateFlow()
 
     /**
-     * 按分类加载壁纸
+     * 按分类加载壁纸（使用枚举类型）
      */
-    fun loadWallpapersByCategory(category: String) {
+    fun loadWallpapersByCategory(category: WallpaperCategory) {
         _selectedCategory.value = category
 
         viewModelScope.launch {
             _isCategoryLoading.value = true
 
             try {
-                // 根据分类加载壁纸
-                Log.d(TAG, "开始加载分类壁纸: $category")
+                // 根据分类加载壁纸，使用正确的分类 ID 格式
+                val categoryId = if (category == WallpaperCategory.ALL) {
+                    "all"
+                } else {
+                    "unsplash_${category.apiValue}"
+                }
+                Log.d(TAG, "开始加载分类壁纸: $categoryId (${category.titleRes})")
 
-                when (val result = wallpaperRepository.getWallpapersByCategory(category, 1, 10)) {
+                when (val result = wallpaperRepository.getWallpapersByCategory(categoryId, 1, 10)) {
                     is ApiResult.Success -> {
                         Log.d(TAG, "分类壁纸加载成功: 获取到${result.data.size}个壁纸")
                         _categoryWallpapers.value = result.data
@@ -232,5 +238,17 @@ class HomeViewModel @Inject constructor(
                 _isCategoryLoading.value = false
             }
         }
+    }
+
+    /**
+     * 按分类加载壁纸（兼容字符串参数）
+     */
+    fun loadWallpapersByCategory(category: String) {
+        // 将字符串转换为枚举类型
+        val categoryEnum = WallpaperCategory.values().find {
+            it.apiValue.equals(category, ignoreCase = true)
+        } ?: WallpaperCategory.ALL
+
+        loadWallpapersByCategory(categoryEnum)
     }
 }

@@ -98,20 +98,33 @@
     <!-- Wallpaper categories -->
     <string name="category_all">All</string>
     <string name="category_abstract">Abstract</string>
-    <string name="category_tech">Tech</string>
-    <string name="category_nature">Nature</string>
-    <string name="category_cyberpunk">Cyberpunk</string>
-    <string name="category_particle">Particle</string>
-    <string name="category_fluid">Fluid</string>
-    <string name="category_landscape">Landscape</string>
-    <string name="category_portrait">Portrait</string>
+    <string name="category_animals">Animals</string>
+    <string name="category_architecture">Architecture</string>
+    <string name="category_art">Art</string>
+    <string name="category_cars">Cars</string>
     <string name="category_city">City</string>
-    <string name="category_illustration">Illustration</string>
-    <string name="category_minimal">Minimal</string>
-    <string name="category_animal">Animal</string>
+    <string name="category_dark">Dark</string>
+    <string name="category_fashion">Fashion</string>
+    <string name="category_flowers">Flowers</string>
     <string name="category_food">Food</string>
-    <string name="category_static">Static Wallpapers</string>
-    <string name="category_live">Live Wallpapers</string>
+    <string name="category_landscape">Landscape</string>
+    <string name="category_love">Love</string>
+    <string name="category_minimal">Minimal</string>
+    <string name="category_nature">Nature</string>
+    <string name="category_people">People</string>
+    <string name="category_space">Space</string>
+    <string name="category_sports">Sports</string>
+    <string name="category_technology">Technology</string>
+    <string name="category_travel">Travel</string>
+    <string name="category_static">Static</string>
+    <string name="category_live">Live</string>
+    <string name="category_cyberpunk">Cyberpunk</string>
+    <string name="category_fluid">Fluid</string>
+    <string name="category_particle">Particle</string>
+    <string name="category_portrait">Portrait</string>
+    <string name="category_illustration">Illustration</string>
+    <string name="category_tech">Tech</string>
+    <string name="category_animal">Animal</string>
 
     <!-- Error messages -->
     <string name="error_loading_wallpapers">Failed to load wallpapers</string>
@@ -261,6 +274,20 @@
     <string name="reset">Reset</string>
     <string name="reset_edits">Reset Edits</string>
     <string name="filter">Filter</string>
+    <string name="loading_image">Loading image...</string>
+    <string name="free_crop">Free Crop</string>
+    <string name="square">Square</string>
+    <string name="circle">Circle</string>
+    <string name="apply">Apply</string>
+    <string name="crop_applied">Crop Applied</string>
+    <string name="recrop">Recrop</string>
+    <string name="original">Original</string>
+    <string name="grayscale">Grayscale</string>
+    <string name="sepia">Sepia</string>
+    <string name="vintage">Vintage</string>
+    <string name="cold">Cold</string>
+    <string name="warm">Warm</string>
+    <string name="crop">Crop</string>
 
     <!-- Feedback related -->
     <string name="direct_feedback">Direct Feedback</string>
@@ -281,7 +308,7 @@
 
     <!-- Auth screen related -->
     <string name="app_subtitle">Wallpaper</string>
-    <string name="app_description">Beautiful wallpapers to refresh your device</string>
+    <string name="auth_app_description">Beautiful wallpapers to refresh your device</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="skip_login">Skip login and explore</string>
 

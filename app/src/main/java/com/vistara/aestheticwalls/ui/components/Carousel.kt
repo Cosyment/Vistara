@@ -36,8 +36,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.BannerActionType
 import kotlinx.coroutines.delay
@@ -65,7 +67,7 @@ fun Carousel(
 
     val coroutineScope = rememberCoroutineScope()
     val pageCount = banners.size
-    
+
     // 使用 HorizontalPager 的 PagerState
     val pagerState = rememberPagerState(pageCount = { pageCount })
 
@@ -193,14 +195,14 @@ private fun BannerItem(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "高级 👑",
+                        text = stringResource(id = R.string.premium),
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
-            
+
             // Banner文字
             Column(
                 modifier = Modifier

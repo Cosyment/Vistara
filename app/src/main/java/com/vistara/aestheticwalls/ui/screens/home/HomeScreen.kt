@@ -61,7 +61,9 @@ import coil.compose.AsyncImage
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.Carousel
+import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.FeaturedWallpaperSection
 import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.WallpaperItem
@@ -366,12 +368,8 @@ private fun CategorySection(
     onWallpaperClick: (Wallpaper) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    // 临时分类数据
-    val demoCategories = listOf(
-        stringResource(R.string.nature_scenery), stringResource(R.string.architecture),
-        stringResource(R.string.animals), stringResource(R.string.category_abstract),
-        stringResource(R.string.space), stringResource(R.string.minimal)
-    )
+    // 使用枚举类型的分类列表
+    val categories = remember { WallpaperCategory.getCommonCategories() }
 
     // 获取当前上下文
     val context = LocalContext.current
@@ -383,8 +381,8 @@ private fun CategorySection(
 
     // 默认选择第一个分类
     LaunchedEffect(Unit) {
-        if (selectedCategory == null && demoCategories.isNotEmpty()) {
-            viewModel.loadWallpapersByCategory(demoCategories.first())
+        if (selectedCategory == null && categories.isNotEmpty()) {
+            viewModel.loadWallpapersByCategory(categories.first())
         }
     }
 
@@ -397,33 +395,15 @@ private fun CategorySection(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
-            items(demoCategories) { category ->
-                val isSelected = selectedCategory == category
-
-                // 使用动画效果切换分类标签的颜色
-                Surface(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .animateContentSize(animationSpec = tween(300)), // 添加大小变化动画
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-                    onClick = {
-                        // 处理分类点击，加载对应分类的壁纸
-                        // 直接调用 ViewModel 的方法加载对应分类的壁纸，不显示 Toast
-                        viewModel.loadWallpapersByCategory(category)
-                    }) {
-                    Text(
-                        text = category,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                    )
-                }
-            }
-        }
+        // 使用 CategorySelector 组件显示分类
+        CategorySelector(
+            categories = categories,
+            selectedCategory = selectedCategory ?: categories.first(),
+            onCategorySelected = { category ->
+                viewModel.loadWallpapersByCategory(category)
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // 显示分类壁纸
         if (selectedCategory != null) {

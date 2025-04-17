@@ -48,6 +48,8 @@
     <string name="account_settings">账户设置</string>
     <string name="sign_out">退出登录</string>
     <string name="sign_out_desc">退出当前账户</string>
+    <string name="sign_out_confirm_title">退出登录确认</string>
+    <string name="sign_out_confirm_message">确定要退出当前账户吗？</string>
     <string name="clear_cache_title">清除缓存</string>
     <string name="clear_cache_message">确定要清除应用缓存吗？这将删除所有缓存的图片和数据。</string>
     <string name="clear">清除</string>
@@ -96,20 +98,33 @@
     <!-- 壁纸分类 -->
     <string name="category_all">全部</string>
     <string name="category_abstract">抽象</string>
-    <string name="category_tech">科技感</string>
-    <string name="category_nature">自然</string>
-    <string name="category_cyberpunk">赛博朋克</string>
-    <string name="category_particle">粒子</string>
-    <string name="category_fluid">流体</string>
-    <string name="category_landscape">风景</string>
-    <string name="category_portrait">人像</string>
+    <string name="category_animals">动物</string>
+    <string name="category_architecture">建筑</string>
+    <string name="category_art">艺术</string>
+    <string name="category_cars">汽车</string>
     <string name="category_city">城市</string>
-    <string name="category_illustration">插画</string>
-    <string name="category_minimal">简约</string>
-    <string name="category_animal">动物</string>
+    <string name="category_dark">暗黑</string>
+    <string name="category_fashion">时尚</string>
+    <string name="category_flowers">花卉</string>
     <string name="category_food">食物</string>
+    <string name="category_landscape">风景</string>
+    <string name="category_love">爱情</string>
+    <string name="category_minimal">简约</string>
+    <string name="category_nature">自然</string>
+    <string name="category_people">人物</string>
+    <string name="category_space">太空</string>
+    <string name="category_sports">运动</string>
+    <string name="category_technology">科技</string>
+    <string name="category_travel">旅行</string>
     <string name="category_static">静态壁纸</string>
     <string name="category_live">动态壁纸</string>
+    <string name="category_cyberpunk">赛博朋克</string>
+    <string name="category_fluid">流体</string>
+    <string name="category_particle">粒子</string>
+    <string name="category_portrait">人像</string>
+    <string name="category_illustration">插画</string>
+    <string name="category_tech">科技感</string>
+    <string name="category_animal">动物</string>
 
     <!-- 错误消息 -->
     <string name="error_loading_wallpapers">加载壁纸失败</string>
@@ -259,6 +274,20 @@
     <string name="reset">重置</string>
     <string name="reset_edits">重置编辑</string>
     <string name="filter">滤镜</string>
+    <string name="loading_image">正在加载图片...</string>
+    <string name="free_crop">自由裁剪</string>
+    <string name="square">正方形</string>
+    <string name="circle">圆形</string>
+    <string name="apply">应用</string>
+    <string name="crop_applied">裁剪已应用</string>
+    <string name="recrop">重新裁剪</string>
+    <string name="original">原始</string>
+    <string name="grayscale">灰度</string>
+    <string name="sepia">复古</string>
+    <string name="vintage">复古风</string>
+    <string name="cold">冷色调</string>
+    <string name="warm">暖色调</string>
+    <string name="crop">裁剪</string>
 
     <!-- 反馈相关 -->
     <string name="direct_feedback">直接反馈</string>
@@ -288,4 +317,10 @@
     <string name="simulate_login_failed">模拟登录失败: %1$s</string>
     <string name="simulate_logout_success">模拟退出登录成功</string>
     <string name="simulate_logout_failed">模拟退出登录失败: %1$s</string>
+
+    <!-- 认证页面相关 -->
+    <string name="app_subtitle">壁纸</string>
+    <string name="auth_app_description">精美壁纸，让您的设备焕然一新</string>
+    <string name="sign_in_with_google">使用Google账号登录</string>
+    <string name="skip_login">跳过登录并浏览</string>
 </resources>

@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.vistara.aestheticwalls.manager.LocaleManager
 import com.vistara.aestheticwalls.manager.ThemeManager
@@ -52,6 +51,18 @@ class MainActivity : ComponentActivity() {
                 val settings = localeManager.appLanguageFlow.first()
                 Log.d("MainActivity", "Applying language settings: $settings")
                 localeManager.applyCurrentLanguage()
+
+                // 强制应用语言设置到当前 Activity
+                val config = resources.configuration
+                val locale = java.util.Locale.getDefault()
+                if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
+                    val localeList = android.os.LocaleList(java.util.Locale(settings.code))
+                    config.setLocales(localeList)
+                } else {
+                    config.setLocales(android.os.LocaleList.getDefault())
+                }
+                resources.updateConfiguration(config, resources.displayMetrics)
+                Log.d("MainActivity", "Updated activity resources with locale: ${locale}")
             } catch (e: Exception) {
                 Log.e("MainActivity", "Failed to apply language settings: ${e.message}")
             }
@@ -65,23 +76,29 @@ class MainActivity : ComponentActivity() {
             val darkTheme by themeManager.darkTheme()
             val dynamicColors by themeManager.dynamicColors()
 
-            VistaraTheme(darkTheme = darkTheme, dynamicColor = dynamicColors) {
-                val navController = rememberNavController()
-                var startDestination by rememberSaveable { mutableStateOf(initialNavigation) }
+            // 监听语言设置变化
+            val language by localeManager.appLanguageFlow.collectAsState(initial = com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM)
 
-                // 如果有初始导航路径，导航到该路径
-                if (startDestination != null) {
-                    LaunchedEffect(startDestination) {
-                        navController.navigate(startDestination!!) {
-                            launchSingleTop = true
+            // 使用 LocaleProvider 提供本地化资源
+            com.vistara.aestheticwalls.ui.theme.LocaleProvider(language = language) {
+                VistaraTheme(darkTheme = darkTheme, dynamicColor = dynamicColors) {
+                    val navController = rememberNavController()
+                    var startDestination by rememberSaveable { mutableStateOf(initialNavigation) }
+
+                    // 如果有初始导航路径，导航到该路径
+                    if (startDestination != null) {
+                        LaunchedEffect(startDestination) {
+                            navController.navigate(startDestination!!) {
+                                launchSingleTop = true
+                            }
+                            // 重置初始导航，避免重复导航
+                            startDestination = null
+                            initialNavigation = null
                         }
-                        // 重置初始导航，避免重复导航
-                        startDestination = null
-                        initialNavigation = null
                     }
-                }
 
-                MainNavigation(navController = navController)
+                    MainNavigation(navController = navController)
+                }
             }
         }
     }
@@ -89,6 +106,29 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleNavigationIntent(intent)
+    }
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        // 在创建 Activity 之前应用语言设置
+        val localeManager =
+            (newBase.applicationContext as com.vistara.aestheticwalls.VistaraApp).localeManager
+        val settings = kotlinx.coroutines.runBlocking { localeManager.appLanguageFlow.first() }
+
+        // 创建带有语言设置的新 Context
+        val config = android.content.res.Configuration(newBase.resources.configuration)
+        if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
+            val locale = java.util.Locale(settings.code)
+            java.util.Locale.setDefault(locale)
+            val localeList = android.os.LocaleList(locale)
+            config.setLocales(localeList)
+        } else {
+            config.setLocales(android.os.LocaleList.getDefault())
+        }
+
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+
+        Log.d("MainActivity", "attachBaseContext with language: $settings")
     }
 
     /**

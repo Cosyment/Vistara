@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.R
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -198,22 +201,49 @@ class SettingsViewModel @Inject constructor(
     private val _needRecreate = MutableStateFlow(false)
     val needRecreate: StateFlow<Boolean> = _needRecreate.asStateFlow()
 
+    // 语言更新状态，用于触发 UI 刷新
+    private val _languageUpdated = MutableStateFlow(false)
+    val languageUpdated: StateFlow<Boolean> = _languageUpdated.asStateFlow()
+
     fun onRecreateHandled() {
         _needRecreate.value = false
     }
 
     fun updateAppLanguage(language: AppLanguage) {
-        if (_appLanguage.value == language) return
+        Log.d(TAG, "updateAppLanguage called with language: $language")
 
+        // 获取当前语言设置
+        val currentLocale = AppCompatDelegate.getApplicationLocales()
+        Log.d(TAG, "Current ApplicationLocales in ViewModel: $currentLocale, isEmpty: ${currentLocale.isEmpty}")
+        Log.d(TAG, "Current default locale in ViewModel: ${Locale.getDefault()}")
+
+        // 即使语言相同，也强制应用语言设置
         _appLanguage.value = language
+        Log.d(TAG, "Saving language setting: $language")
         saveSettings()
+
         // 应用语言设置
         viewModelScope.launch {
-            val needRestart = localeManager.updateAppLanguage(language)
-            if (needRestart) {
+            try {
+                Log.d(TAG, "Calling localeManager.updateAppLanguage with: $language")
+                val needRestart = localeManager.updateAppLanguage(language)
+                Log.d(TAG, "Need restart: $needRestart")
+
+                // 再次检查设置后的结果
+                val afterLocale = AppCompatDelegate.getApplicationLocales()
+                Log.d(TAG, "After updateAppLanguage, ApplicationLocales: $afterLocale, isEmpty: ${afterLocale.isEmpty}")
+                Log.d(TAG, "After updateAppLanguage, default locale: ${Locale.getDefault()}")
+
+                // 通知 UI 语言已更新，但不重启 Activity
                 _operationResult.value = context.getString(R.string.language_changed)
-                delay(500)
-                _needRecreate.value = true
+
+                // 触发 UI 刷新
+                _languageUpdated.value = true
+                delay(100)
+                _languageUpdated.value = false
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating language: ${e.message}")
+                _operationResult.value = "Error updating language: ${e.message}"
             }
         }
     }

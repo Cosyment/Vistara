@@ -108,8 +108,8 @@
     <string name="category_minimal">Minimalis</string>
     <string name="category_animal">Hewan</string>
     <string name="category_food">Makanan</string>
-    <string name="category_static">Wallpaper Statis</string>
-    <string name="category_live">Wallpaper Hidup</string>
+    <string name="category_static">Statis</string>
+    <string name="category_live">Hidup</string>
 
     <!-- Error messages -->
     <string name="error_loading_wallpapers">Gagal memuat wallpaper</string>

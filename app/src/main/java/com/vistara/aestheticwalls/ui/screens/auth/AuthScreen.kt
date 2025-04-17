@@ -278,7 +278,7 @@ fun AuthScreen(
 
                         // App description
                         Text(
-                            text = stringResource(R.string.app_description),
+                            text = stringResource(R.string.auth_app_description),
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
