@@ -72,6 +72,7 @@
     <string name="my_downloads_desc">查看所有下载的壁纸</string>
     <string name="auto_change_wallpaper">自动更换壁纸</string>
     <string name="auto_change_wallpaper_desc">设置自动更换壁纸的频率和来源</string>
+    <string name="settings_applied_successfully">设置应用成功</string>
     <string name="settings_desc">调整应用偏好和通知</string>
     <string name="rate_feedback">评分与反馈</string>
     <string name="rate_feedback_desc">帮助我们改进应用</string>
@@ -199,6 +200,7 @@
     <string name="live_wallpaper">动态壁纸</string>
     <string name="tags">标签:</string>
     <string name="set_as_wallpaper">设置为壁纸</string>
+    <string name="setting_wallpaper">正在设置壁纸...</string>
     <string name="download">下载</string>
     <string name="share">分享</string>
     <string name="edit">编辑</string>
@@ -298,11 +300,17 @@
     <string name="vintage">复古风</string>
     <string name="cold">冷色调</string>
     <string name="warm">暖色调</string>
+    <string name="purple">紫色</string>
+    <string name="blue">蓝色</string>
+    <string name="green">绿色</string>
+    <string name="pink">粉色</string>
+    <string name="orange">橙色</string>
     <string name="crop">裁剪</string>
     <string name="wallpaper">壁纸</string>
     <string name="go_back">返回</string>
     <string name="add_to_favorites">收藏</string>
     <string name="remove_from_favorites">取消收藏</string>
+    <string name="loading_failed">加载失败</string>
 
     <!-- 反馈相关 -->
     <string name="direct_feedback">直接反馈</string>

@@ -350,6 +350,66 @@ class WallpaperEditViewModel @Inject constructor(
                 }
                 colorMatrix.postConcat(warmMatrix)
             }
+            ImageFilter.PURPLE -> {
+                val purpleMatrix = ColorMatrix().apply {
+                    val matrix = floatArrayOf(
+                        0.9f, 0.1f, 0.2f, 0f, 0f,
+                        0.1f, 0.8f, 0.2f, 0f, 0f,
+                        0.2f, 0.2f, 1.0f, 0f, 10f,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                    set(matrix)
+                }
+                colorMatrix.postConcat(purpleMatrix)
+            }
+            ImageFilter.BLUE -> {
+                val blueMatrix = ColorMatrix().apply {
+                    val matrix = floatArrayOf(
+                        0.8f, 0f, 0f, 0f, 0f,
+                        0f, 0.9f, 0f, 0f, 0f,
+                        0.2f, 0.2f, 1.2f, 0f, 10f,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                    set(matrix)
+                }
+                colorMatrix.postConcat(blueMatrix)
+            }
+            ImageFilter.GREEN -> {
+                val greenMatrix = ColorMatrix().apply {
+                    val matrix = floatArrayOf(
+                        0.8f, 0.1f, 0f, 0f, 0f,
+                        0.1f, 1.1f, 0.1f, 0f, 10f,
+                        0f, 0.1f, 0.8f, 0f, 0f,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                    set(matrix)
+                }
+                colorMatrix.postConcat(greenMatrix)
+            }
+            ImageFilter.PINK -> {
+                val pinkMatrix = ColorMatrix().apply {
+                    val matrix = floatArrayOf(
+                        1.2f, 0.1f, 0.1f, 0f, 10f,
+                        0.1f, 0.9f, 0.1f, 0f, 0f,
+                        0.1f, 0.1f, 0.8f, 0f, 0f,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                    set(matrix)
+                }
+                colorMatrix.postConcat(pinkMatrix)
+            }
+            ImageFilter.ORANGE -> {
+                val orangeMatrix = ColorMatrix().apply {
+                    val matrix = floatArrayOf(
+                        1.3f, 0.1f, 0f, 0f, 10f,
+                        0.1f, 0.9f, 0f, 0f, 5f,
+                        0f, 0f, 0.7f, 0f, 0f,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                    set(matrix)
+                }
+                colorMatrix.postConcat(orangeMatrix)
+            }
             ImageFilter.NONE -> {
                 // 不应用滤镜
             }

@@ -131,6 +131,10 @@ class WallpaperDetailViewModel @Inject constructor(
     private val _isProcessingWallpaper = mutableStateOf(false)
     val isProcessingWallpaper: State<Boolean> = _isProcessingWallpaper
 
+    // 壁纸设置成功状态
+    private val _wallpaperSetSuccess = MutableStateFlow<String?>(null)
+    val wallpaperSetSuccess: StateFlow<String?> = _wallpaperSetSuccess.asStateFlow()
+
     // 壁纸信息展开状态
     private val _isInfoExpanded = mutableStateOf(false)
     val isInfoExpanded: State<Boolean> = _isInfoExpanded
@@ -404,6 +408,15 @@ class WallpaperDetailViewModel @Inject constructor(
                 activity = context, wallpaper = currentWallpaper, target = target, editedBitmap = _editedBitmap.value
             ) { success ->
                 _isProcessingWallpaper.value = false
+                if (success) {
+                    // 设置成功，更新成功消息
+                    val message = when (target) {
+                        WallpaperTarget.HOME -> context.getString(R.string.home_screen_wallpaper_set)
+                        WallpaperTarget.LOCK -> context.getString(R.string.lock_screen_wallpaper_set)
+                        WallpaperTarget.BOTH -> context.getString(R.string.both_screens_wallpaper_set)
+                    }
+                    _wallpaperSetSuccess.value = message
+                }
             }
         }
     }
@@ -856,6 +869,13 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun clearUpgradeResult() {
         _upgradeResult.value = null
+    }
+
+    /**
+     * 清除壁纸设置成功消息
+     */
+    fun clearWallpaperSetSuccess() {
+        _wallpaperSetSuccess.value = null
     }
 
     /**

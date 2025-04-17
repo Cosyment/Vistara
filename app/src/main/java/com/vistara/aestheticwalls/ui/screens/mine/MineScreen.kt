@@ -18,13 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -173,7 +170,7 @@ fun MineScreen(
 
             // 功能列表
             FeatureItem(
-                icon = Icons.Default.Favorite,
+                icon = AppIcons.Favorite,
                 title = stringResource(R.string.my_favorites),
                 subtitle = stringResource(R.string.my_favorites_desc),
                 onClick = {
@@ -183,7 +180,7 @@ fun MineScreen(
                 })
 
             FeatureItem(
-                icon = Icons.Default.Star,
+                icon = AppIcons.Download,
                 title = stringResource(R.string.my_downloads),
                 subtitle = stringResource(R.string.my_downloads_desc),
                 onClick = {
@@ -193,7 +190,7 @@ fun MineScreen(
                 })
 
             FeatureItem(
-                icon = Icons.Default.Refresh,
+                icon = AppIcons.Refresh,
                 title = stringResource(R.string.auto_change_wallpaper),
                 subtitle = stringResource(R.string.auto_change_wallpaper_desc),
                 onClick = {
@@ -207,21 +204,21 @@ fun MineScreen(
             )
 
             FeatureItem(
-                icon = Icons.Default.Settings,
+                icon = AppIcons.Settings,
                 title = stringResource(R.string.settings),
                 subtitle = stringResource(R.string.settings_desc),
                 onClick = onSettingsClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Star,
+                icon = AppIcons.Star,
                 title = stringResource(R.string.rate_feedback),
                 subtitle = stringResource(R.string.rate_feedback_desc),
                 onClick = onFeedbackClick
             )
 
             FeatureItem(
-                icon = Icons.Default.Info,
+                icon = AppIcons.Info,
                 title = stringResource(R.string.about_credits),
                 subtitle = stringResource(R.string.about_credits_desc),
                 onClick = onAboutClick
@@ -235,7 +232,7 @@ fun MineScreen(
                 )
 
                 FeatureItem(
-                    icon = Icons.Default.Build,
+                    icon = AppIcons.Build,
                     title = stringResource(R.string.test_tools),
                     subtitle = stringResource(R.string.test_tools_desc),
                     onClick = onTestToolsClick
@@ -285,7 +282,7 @@ private fun MineHeader(
             } else {
                 // 默认头像图标
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = AppIcons.Person,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(40.dp)

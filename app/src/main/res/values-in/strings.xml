@@ -142,7 +142,7 @@
     <!-- Home screen related -->
     <string name="home">Beranda</string>
     <string name="search_icon">Ikon pencarian</string>
-    <string name="search_high_quality_wallpapers">Cari wallpaper berkualitas tinggi, efek dinamis...</string>
+    <string name="search_high_quality_wallpapers">Cari kertas dinding...</string>
     <string name="loading_wallpapers">Memuat wallpaper...</string>
     <string name="unknown_error">Kesalahan tidak diketahui</string>
     <string name="refresh">Segarkan</string>
@@ -222,6 +222,7 @@
     <string name="live_wallpaper">Wallpaper Hidup</string>
     <string name="tags">Tag:</string>
     <string name="set_as_wallpaper">Atur sebagai Wallpaper</string>
+    <string name="setting_wallpaper">Mengatur wallpaper...</string>
     <string name="download">Unduh</string>
     <string name="share">Bagikan</string>
     <string name="edit">Edit</string>
@@ -289,6 +290,11 @@
     <string name="vintage">Vintage</string>
     <string name="cold">Dingin</string>
     <string name="warm">Hangat</string>
+    <string name="purple">Ungu</string>
+    <string name="blue">Biru</string>
+    <string name="green">Hijau</string>
+    <string name="pink">Merah Muda</string>
+    <string name="orange">Oranye</string>
     <string name="crop">Potong</string>
 
     <!-- Feedback related -->
@@ -334,6 +340,7 @@
     <string name="go_back">Kembali</string>
     <string name="add_to_favorites">Tambahkan ke favorit</string>
     <string name="remove_from_favorites">Hapus dari favorit</string>
+<string name="loading_failed">Gagal memuat</string>
     <string name="nav_home">Beranda</string>
     <string name="nav_static">Statis</string>
     <string name="nav_live">Live</string>

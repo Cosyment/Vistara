@@ -4,10 +4,11 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
+import com.vistara.aestheticwalls.utils.EventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val eventBus: EventBus
 ) : ViewModel() {
 
     companion object {
@@ -49,18 +51,7 @@ class SearchViewModel @Inject constructor(
     val searchSuggestions: StateFlow<List<String>> = _searchSuggestions.asStateFlow()
 
     // 热门搜索关键词
-    private val _hotSearches = MutableStateFlow(
-        listOf(
-            context.getString(R.string.category_nature),
-            context.getString(R.string.category_abstract),
-            context.getString(R.string.category_animals),
-            context.getString(R.string.category_city),
-            context.getString(R.string.category_minimal),
-            context.getString(R.string.category_space),
-            context.getString(R.string.category_flowers),
-            context.getString(R.string.category_dark)
-        )
-    )
+    private val _hotSearches = MutableStateFlow<List<String>>(emptyList())
     val hotSearches: StateFlow<List<String>> = _hotSearches.asStateFlow()
 
     // 加载状态
@@ -73,6 +64,30 @@ class SearchViewModel @Inject constructor(
 
     init {
         loadSearchHistory()
+        loadHotSearches()
+
+        // 监听语言变化事件
+        viewModelScope.launch {
+            eventBus.languageChangedEvent.collect {
+                // 语言变化时刷新热门搜索类别
+                loadHotSearches()
+                Log.d(TAG, "语言变化，已刷新热门搜索类别")
+            }
+        }
+    }
+
+    /**
+     * 加载热门搜索类别
+     */
+    private fun loadHotSearches() {
+        _hotSearches.value = WallpaperCategory.getAllCategories().map { it.name }.subList(0, 5)
+    }
+
+    /**
+     * 当语言变化时更新热门搜索类别
+     */
+    fun refreshHotSearches() {
+        loadHotSearches()
     }
 
     /**

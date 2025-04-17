@@ -22,11 +22,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Settings
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -188,15 +184,15 @@ fun SettingsScreen(
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
         TopAppBar(
-            title = { 
+            title = {
                 val resources = LocalAppResources.current
-                Text(resources.getString(R.string.settings)) 
-            }, 
+                Text(resources.getString(R.string.settings))
+            },
             navigationIcon = {
                 IconButton(onClick = onBackPressed) {
                     val resources = LocalAppResources.current
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = resources.getString(R.string.back)
                     )
                 }
@@ -215,14 +211,14 @@ fun SettingsScreen(
             SettingsCategory(title = resources.getString(R.string.theme_settings))
 
             SettingsToggleItem(
-                icon = Icons.Default.Info,
+                icon = AppIcons.DarkMode,
                 title = resources.getString(R.string.dark_theme),
                 subtitle = resources.getString(R.string.dark_theme_desc),
                 checked = darkTheme,
                 onCheckedChange = { viewModel.updateDarkTheme(it) })
 
             SettingsToggleItem(
-                icon = Icons.Default.Settings,
+                icon = AppIcons.Palette,
                 title = resources.getString(R.string.dynamic_colors),
                 subtitle = resources.getString(R.string.dynamic_colors_desc),
                 checked = dynamicColors,
@@ -246,7 +242,7 @@ fun SettingsScreen(
             SettingsCategory(title = resources.getString(R.string.notification_settings))
 
             SettingsToggleItem(
-                icon = Icons.Default.Notifications,
+                icon = AppIcons.Notifications,
                 title = resources.getString(R.string.download_notification),
                 subtitle = resources.getString(R.string.download_notification_desc),
                 checked = showDownloadNotification,
@@ -256,7 +252,7 @@ fun SettingsScreen(
                 })
 
             SettingsToggleItem(
-                icon = Icons.Default.Notifications,
+                icon = AppIcons.Notifications,
                 title = resources.getString(R.string.wallpaper_change_notification),
                 subtitle = resources.getString(R.string.wallpaper_change_notification_desc),
                 checked = showWallpaperChangeNotification,
@@ -273,7 +269,7 @@ fun SettingsScreen(
             SettingsCategory(title = resources.getString(R.string.download_settings))
 
             SettingsToggleItem(
-                icon = Icons.Default.Settings,
+                icon = AppIcons.HighQuality,
                 title = resources.getString(R.string.original_quality),
                 subtitle = resources.getString(R.string.original_quality_desc),
                 checked = downloadOriginalQuality,
@@ -282,7 +278,7 @@ fun SettingsScreen(
                 })
 
             SettingsActionItem(
-                icon = Icons.Default.Delete,
+                icon = AppIcons.Delete,
                 title = resources.getString(R.string.clear_cache),
                 subtitle = resources.getString(R.string.current_cache_size, cacheSize),
                 onClick = {
@@ -306,7 +302,7 @@ fun SettingsScreen(
             SettingsCategory(title = resources.getString(R.string.about_app))
 
             SettingsActionItem(
-                icon = Icons.Default.Info,
+                icon = AppIcons.Version,
                 title = resources.getString(R.string.app_version),
                 subtitle = "$appVersion",
                 onClick = {})
@@ -320,7 +316,7 @@ fun SettingsScreen(
                 SettingsCategory(title = resources.getString(R.string.account_settings))
 
                 SettingsActionItem(
-                    icon = Icons.Default.ExitToApp,
+                    icon = AppIcons.ExitToApp,
                     title = resources.getString(R.string.sign_out),
                     subtitle = resources.getString(R.string.sign_out_desc),
                     onClick = { showLogoutConfirmDialog = true },

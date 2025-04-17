@@ -224,6 +224,7 @@
     <string name="live_wallpaper">ライブ壁紙</string>
     <string name="tags">タグ:</string>
     <string name="set_as_wallpaper">壁紙に設定</string>
+    <string name="setting_wallpaper">壁紙を設定中...</string>
     <string name="download">ダウンロード</string>
     <string name="share">共有</string>
     <string name="edit">編集</string>
@@ -291,6 +292,11 @@
     <string name="vintage">ヴィンテージ</string>
     <string name="cold">コールド</string>
     <string name="warm">ウォーム</string>
+    <string name="purple">パープル</string>
+    <string name="blue">ブルー</string>
+    <string name="green">グリーン</string>
+    <string name="pink">ピンク</string>
+    <string name="orange">オレンジ</string>
     <string name="crop">切り抜き</string>
 
     <!-- フィードバック関連 -->
@@ -333,6 +339,7 @@
     <string name="go_back">戻る</string>
     <string name="add_to_favorites">お気に入りに追加</string>
     <string name="remove_from_favorites">お気に入りから削除</string>
+<string name="loading_failed">読み込み失敗</string>
     <string name="nav_home">ホーム</string>
     <string name="nav_static">静的</string>
     <string name="nav_live">ライブ</string>

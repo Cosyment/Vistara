@@ -144,7 +144,7 @@
     <!-- Home screen related -->
     <string name="home">Home</string>
     <string name="search_icon">Search icon</string>
-    <string name="search_high_quality_wallpapers">Search high-quality wallpapers, dynamic effects...</string>
+    <string name="search_high_quality_wallpapers">Search high-quality wallpapers...</string>
     <string name="loading_wallpapers">Loading wallpapers...</string>
     <string name="unknown_error">Unknown error</string>
     <string name="refresh">Refresh</string>
@@ -224,6 +224,7 @@
     <string name="live_wallpaper">Live Wallpaper</string>
     <string name="tags">Tags:</string>
     <string name="set_as_wallpaper">Set as Wallpaper</string>
+    <string name="setting_wallpaper">Setting wallpaper...</string>
     <string name="download">Download</string>
     <string name="share">Share</string>
     <string name="edit">Edit</string>
@@ -291,6 +292,11 @@
     <string name="vintage">Vintage</string>
     <string name="cold">Cold</string>
     <string name="warm">Warm</string>
+    <string name="purple">Purple</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+    <string name="pink">Pink</string>
+    <string name="orange">Orange</string>
     <string name="crop">Crop</string>
 
     <!-- Feedback related -->
@@ -333,6 +339,7 @@
     <string name="go_back">Go back</string>
     <string name="add_to_favorites">Add to favorites</string>
     <string name="remove_from_favorites">Remove from favorites</string>
+<string name="loading_failed">Loading failed</string>
     <string name="nav_home">Home</string>
     <string name="nav_static">Static</string>
     <string name="nav_live">Live</string>

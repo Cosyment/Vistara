@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -77,7 +79,8 @@ fun WallpaperDetail(
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
     isPremiumUser: Boolean = false,
-    editedBitmap: Bitmap? = null
+    editedBitmap: Bitmap? = null,
+    isProcessingWallpaper: Boolean = false
 ) {
     var showControls by remember { mutableStateOf(true) }
 
@@ -381,8 +384,8 @@ fun WallpaperDetail(
                 val canSetWallpaper = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
                 Button(
                     onClick = onSetWallpaper,
-                    // 始终启用按钮，但对于高级壁纸和非高级用户，点击会显示升级提示
-                    enabled = true, modifier = Modifier
+                    // 当正在处理壁纸时禁用按钮
+                    enabled = !isProcessingWallpaper, modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                         .height(48.dp), colors = ButtonDefaults.buttonColors(
@@ -392,7 +395,15 @@ fun WallpaperDetail(
                     Row(
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
                     ) {
-                        if (!canSetWallpaper) {
+                        if (isProcessingWallpaper) {
+                            // 显示加载指示器
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        } else if (!canSetWallpaper) {
                             // 对于高级壁纸和非高级用户，显示皇冠图标
                             Text(
                                 text = "👑", // 皇冠emoji
@@ -400,7 +411,9 @@ fun WallpaperDetail(
                             )
                         }
                         Text(
-                            text = if (canSetWallpaper) stringResource(R.string.set_as_wallpaper) else stringResource(R.string.upgrade_to_unlock),
+                            text = if (isProcessingWallpaper) stringResource(R.string.setting_wallpaper)
+                                  else if (canSetWallpaper) stringResource(R.string.set_as_wallpaper)
+                                  else stringResource(R.string.upgrade_to_unlock),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }

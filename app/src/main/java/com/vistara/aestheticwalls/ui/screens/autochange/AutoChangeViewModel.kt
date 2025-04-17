@@ -14,6 +14,9 @@ import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
+import com.vistara.aestheticwalls.manager.AppWallpaperManager
+import com.vistara.aestheticwalls.utils.NotificationUtil
+import com.vistara.aestheticwalls.utils.StringProvider
 import com.vistara.aestheticwalls.worker.AutoWallpaperWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -29,10 +32,11 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class AutoChangeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val userPrefsRepository: UserPrefsRepository,
     private val userRepository: UserRepository,
     private val wallpaperRepository: WallpaperRepository,
-    @ApplicationContext private val context: Context
+    private val notificationUtil: NotificationUtil
 ) : ViewModel() {
 
     companion object {
@@ -86,6 +90,10 @@ class AutoChangeViewModel @Inject constructor(
     // 测试更换状态
     private val _isChangingWallpaper = MutableStateFlow(false)
     val isChangingWallpaper: StateFlow<Boolean> = _isChangingWallpaper.asStateFlow()
+
+    // 设置应用成功事件
+    private val _settingsApplied = MutableStateFlow(false)
+    val settingsApplied: StateFlow<Boolean> = _settingsApplied.asStateFlow()
 
     init {
         checkLoginStatus()
@@ -325,8 +333,23 @@ class AutoChangeViewModel @Inject constructor(
                     )
                     wallpaperRepository.recordAutoChangeHistory(history)
 
-                    // TODO: 实际设置壁纸的逻辑
-                    // 这里需要实现下载并设置壁纸的逻辑
+                    // 实际设置壁纸的逻辑
+                    if (wallpaper != null) {
+                        // 使用AppWallpaperManager设置壁纸
+                        val stringProvider = StringProvider(context)
+                        val wallpaperManager = AppWallpaperManager(context, notificationUtil, stringProvider)
+                        wallpaperManager.setWallpaper(
+                            activity = activity,
+                            wallpaper = wallpaper,
+                            target = _autoChangeTarget.value
+                        ) { success ->
+                            if (success) {
+                                Log.d(TAG, "Auto change wallpaper set successfully")
+                            } else {
+                                Log.e(TAG, "Failed to set auto change wallpaper")
+                            }
+                        }
+                    }
 
                     Log.d(TAG, "Test auto change completed successfully")
                 } else {
@@ -359,6 +382,9 @@ class AutoChangeViewModel @Inject constructor(
             AutoWallpaperWorker.cancelAutoWallpaperChange(context)
             Log.d(TAG, "Auto change cancelled")
         }
+
+        // 设置应用成功，触发返回上级页面
+        _settingsApplied.value = true
     }
 
     /**

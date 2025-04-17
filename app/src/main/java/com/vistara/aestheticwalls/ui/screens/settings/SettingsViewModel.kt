@@ -17,6 +17,7 @@ import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.LocaleManager
+import com.vistara.aestheticwalls.utils.EventBus
 import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -40,7 +41,8 @@ class SettingsViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val localeManager: LocaleManager,
     @ApplicationContext private val context: Context,
-    private val stringProvider: StringProvider
+    private val stringProvider: StringProvider,
+    private val eventBus: EventBus
 ) : ViewModel() {
 
     companion object {
@@ -237,7 +239,11 @@ class SettingsViewModel @Inject constructor(
                 Log.d(TAG, "After updateAppLanguage, default locale: ${Locale.getDefault()}")
 
                 // 通知 UI 语言已更新，但不重启 Activity
-                _operationResult.value = context.getString(R.string.language_changed)
+                // 使用 stringProvider 而不是直接使用 context.getString 来确保使用更新后的语言资源
+                _operationResult.value = stringProvider.getString(R.string.language_changed)
+
+                // 发送语言变化事件，通知其他组件刷新
+                eventBus.emitLanguageChanged()
 
                 // 触发 UI 刷新
                 _languageUpdated.value = true

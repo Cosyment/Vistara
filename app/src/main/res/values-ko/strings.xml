@@ -224,6 +224,7 @@
     <string name="live_wallpaper">라이브</string>
     <string name="tags">태그:</string>
     <string name="set_as_wallpaper">배경화면으로 설정</string>
+    <string name="setting_wallpaper">배경화면 설정 중...</string>
     <string name="download">다운로드</string>
     <string name="share">공유</string>
     <string name="edit">편집</string>
@@ -291,6 +292,11 @@
     <string name="vintage">빈티지</string>
     <string name="cold">차가운</string>
     <string name="warm">따뜻한</string>
+    <string name="purple">보라색</string>
+    <string name="blue">파란색</string>
+    <string name="green">초록색</string>
+    <string name="pink">분홍색</string>
+    <string name="orange">주황색</string>
     <string name="crop">자르기</string>
 
     <!-- 피드백 관련 -->
@@ -333,6 +339,7 @@
     <string name="go_back">뒤로 가기</string>
     <string name="add_to_favorites">즐겨찾기에 추가</string>
     <string name="remove_from_favorites">즐겨찾기에서 제거</string>
+<string name="loading_failed">로딩 실패</string>
     <string name="nav_home">홈</string>
     <string name="nav_static">정적</string>
     <string name="nav_live">라이브</string>

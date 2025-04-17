@@ -64,6 +64,8 @@ fun WallpaperDetailScreen(
     val isInfoExpanded by viewModel.isInfoExpanded
     val needStoragePermission by viewModel.needStoragePermission
     val upgradeResult by viewModel.upgradeResult.collectAsState()
+    val isProcessingWallpaper by viewModel.isProcessingWallpaper
+    val wallpaperSetSuccess by viewModel.wallpaperSetSuccess.collectAsState()
 
     // 登录相关状态
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
@@ -94,6 +96,15 @@ fun WallpaperDetailScreen(
             }
             // 清除升级结果，避免重复显示
             viewModel.clearUpgradeResult()
+        }
+    }
+
+    // 处理壁纸设置成功消息
+    LaunchedEffect(wallpaperSetSuccess) {
+        wallpaperSetSuccess?.let { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            // 清除成功消息，避免重复显示
+            viewModel.clearWallpaperSetSuccess()
         }
     }
 
@@ -223,7 +234,8 @@ fun WallpaperDetailScreen(
                             }
                         },
                         isPremiumUser = isPremiumUser,
-                        editedBitmap = editedBitmap
+                        editedBitmap = editedBitmap,
+                        isProcessingWallpaper = isProcessingWallpaper
                     )
 
                     // 设置壁纸选项对话框 - 使用半透明背景

@@ -73,6 +73,7 @@
     <string name="my_downloads_desc">View all your downloaded wallpapers</string>
     <string name="auto_change_wallpaper">Auto Change Wallpaper</string>
     <string name="auto_change_wallpaper_desc">Set frequency and source for auto wallpaper changes</string>
+    <string name="settings_applied_successfully">Settings applied successfully</string>
     <string name="settings_desc">Adjust app preferences and notifications</string>
     <string name="rate_feedback">Rate &amp; Feedback</string>
     <string name="rate_feedback_desc">Help us improve the app</string>
@@ -150,7 +151,7 @@
     <!-- Home screen related -->
     <string name="home">Home</string>
     <string name="search_icon">Search icon</string>
-    <string name="search_high_quality_wallpapers">Search high-quality wallpapers, dynamic effects...</string>
+    <string name="search_high_quality_wallpapers">Search high-quality wallpapers...</string>
     <string name="loading_wallpapers">Loading wallpapers...</string>
     <string name="unknown_error">Unknown error</string>
     <string name="refresh">Refresh</string>
@@ -230,6 +231,7 @@
     <string name="live_wallpaper">Live Wallpaper</string>
     <string name="tags">Tags:</string>
     <string name="set_as_wallpaper">Set as Wallpaper</string>
+    <string name="setting_wallpaper">Setting wallpaper...</string>
     <string name="download">Download</string>
     <string name="share">Share</string>
     <string name="edit">Edit</string>
@@ -298,6 +300,11 @@
     <string name="vintage">Vintage</string>
     <string name="cold">Cold</string>
     <string name="warm">Warm</string>
+    <string name="purple">Purple</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+    <string name="pink">Pink</string>
+    <string name="orange">Orange</string>
     <string name="crop">Crop</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="go_back">Go back</string>

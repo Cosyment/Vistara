@@ -31,8 +31,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import com.vistara.aestheticwalls.ui.screens.edit.EditIcons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -272,25 +271,25 @@ fun WallpaperEditScreen(
                         ) {
                             EditToolButton(
                                 tool = EditTool.BRIGHTNESS,
-                                icon = Icons.Default.Star,
+                                icon = EditIcons.Brightness,
                                 isSelected = selectedTool == EditTool.BRIGHTNESS,
                                 onClick = { selectedTool = EditTool.BRIGHTNESS }
                             )
                             EditToolButton(
                                 tool = EditTool.CONTRAST,
-                                icon = Icons.Default.Star,
+                                icon = EditIcons.Contrast,
                                 isSelected = selectedTool == EditTool.CONTRAST,
                                 onClick = { selectedTool = EditTool.CONTRAST }
                             )
                             EditToolButton(
                                 tool = EditTool.SATURATION,
-                                icon = Icons.Default.Star,
+                                icon = EditIcons.Saturation,
                                 isSelected = selectedTool == EditTool.SATURATION,
                                 onClick = { selectedTool = EditTool.SATURATION }
                             )
                             EditToolButton(
                                 tool = EditTool.FILTER,
-                                icon = Icons.Default.Settings,
+                                icon = EditIcons.Filter,
                                 isSelected = selectedTool == EditTool.FILTER,
                                 onClick = { selectedTool = EditTool.FILTER }
                             )
@@ -895,7 +894,12 @@ enum class ImageFilter(val titleRes: Int, val previewColor: Color) {
     SEPIA(R.string.sepia, Color(0xFFD2B48C)),
     VINTAGE(R.string.vintage, Color(0xFFCDC9A5)),
     COLD(R.string.cold, Color(0xFF87CEFA)),
-    WARM(R.string.warm, Color(0xFFFFB347))
+    WARM(R.string.warm, Color(0xFFFFB347)),
+    PURPLE(R.string.purple, Color(0xFFB19CD9)),
+    BLUE(R.string.blue, Color(0xFF6495ED)),
+    GREEN(R.string.green, Color(0xFF90EE90)),
+    PINK(R.string.pink, Color(0xFFFFB6C1)),
+    ORANGE(R.string.orange, Color(0xFFFF8C00))
 }
 
 /**
@@ -937,6 +941,11 @@ fun createPreviewColorMatrix(
         ImageFilter.VINTAGE -> ColorMatrix().apply { setToScale(0.7f, 0.7f, 0.5f, 1f) }
         ImageFilter.COLD -> ColorMatrix().apply { setToScale(0.6f, 0.8f, 1.2f, 1f) }
         ImageFilter.WARM -> ColorMatrix().apply { setToScale(1.2f, 0.8f, 0.6f, 1f) }
+        ImageFilter.PURPLE -> ColorMatrix().apply { setToScale(0.9f, 0.5f, 1.2f, 1f) }
+        ImageFilter.BLUE -> ColorMatrix().apply { setToScale(0.5f, 0.7f, 1.5f, 1f) }
+        ImageFilter.GREEN -> ColorMatrix().apply { setToScale(0.6f, 1.2f, 0.6f, 1f) }
+        ImageFilter.PINK -> ColorMatrix().apply { setToScale(1.4f, 0.7f, 0.9f, 1f) }
+        ImageFilter.ORANGE -> ColorMatrix().apply { setToScale(1.5f, 0.9f, 0.5f, 1f) }
         ImageFilter.NONE -> null
     }
 

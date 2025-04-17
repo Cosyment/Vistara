@@ -57,6 +57,7 @@ fun FeedbackScreen(
     val contactInfo by viewModel.contactInfo.collectAsState()
     val isSubmitting by viewModel.isSubmitting.collectAsState()
     val submitResult by viewModel.submitResult.collectAsState()
+    val shouldNavigateBack by viewModel.shouldNavigateBack.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -74,6 +75,16 @@ fun FeedbackScreen(
                     viewModel.clearSubmitResult()
                 }
             }
+        }
+    }
+
+    // 当提交成功后返回上级页面
+    LaunchedEffect(shouldNavigateBack) {
+        if (shouldNavigateBack) {
+            // 重置导航状态
+            viewModel.resetNavigationState()
+            // 返回上级页面
+            onBackPressed()
         }
     }
 

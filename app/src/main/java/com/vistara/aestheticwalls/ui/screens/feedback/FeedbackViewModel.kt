@@ -34,7 +34,7 @@ class FeedbackViewModel @Inject constructor(
 
     // Firestore 实例
     private val firestore = FirebaseFirestore.getInstance()
-    
+
     // 反馈内容
     private val _feedbackText = MutableStateFlow("")
     val feedbackText: StateFlow<String> = _feedbackText.asStateFlow()
@@ -50,6 +50,10 @@ class FeedbackViewModel @Inject constructor(
     // 提交结果
     private val _submitResult = MutableStateFlow<SubmitResult?>(null)
     val submitResult: StateFlow<SubmitResult?> = _submitResult.asStateFlow()
+
+    // 提交成功后返回上级页面
+    private val _shouldNavigateBack = MutableStateFlow(false)
+    val shouldNavigateBack: StateFlow<Boolean> = _shouldNavigateBack.asStateFlow()
 
     /**
      * 更新反馈内容
@@ -77,7 +81,7 @@ class FeedbackViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _isSubmitting.value = true
-                
+
                 // 创建反馈数据模型
                 val feedback = hashMapOf(
                     "content" to _feedbackText.value,
@@ -86,18 +90,20 @@ class FeedbackViewModel @Inject constructor(
                     "deviceInfo" to android.os.Build.MODEL,
                     "appVersion" to context.packageManager.getPackageInfo(context.packageName, 0).versionName
                 )
-                
+
                 // 将反馈保存到 Firestore
                 firestore.collection(FIRESTORE_COLLECTION)
                     .add(feedback)
                     .await()
-                
+
                 Log.d(TAG, "Feedback submitted to Firestore successfully")
-                
+
                 _submitResult.value = SubmitResult.Success("反馈提交成功，感谢您的宝贵意见！")
                 // 清空输入
                 _feedbackText.value = ""
                 _contactInfo.value = ""
+                // 设置返回上级页面标志
+                _shouldNavigateBack.value = true
             } catch (e: Exception) {
                 Log.e(TAG, "Error submitting feedback to Firestore: ${e.message}")
                 _submitResult.value = SubmitResult.Error("提交失败，请稍后再试")
@@ -112,6 +118,13 @@ class FeedbackViewModel @Inject constructor(
      */
     fun clearSubmitResult() {
         _submitResult.value = null
+    }
+
+    /**
+     * 重置返回上级页面标志
+     */
+    fun resetNavigationState() {
+        _shouldNavigateBack.value = false
     }
 
     /**

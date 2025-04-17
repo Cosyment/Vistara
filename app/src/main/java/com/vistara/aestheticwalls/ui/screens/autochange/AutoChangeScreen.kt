@@ -16,9 +16,7 @@ import com.vistara.aestheticwalls.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -36,6 +34,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,10 +43,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
 import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
@@ -65,6 +66,7 @@ fun AutoChangeScreen(
     onNavigateToLogin: () -> Unit = {},
     viewModel: AutoChangeViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     // 从ViewModel获取状态
     val autoChangeEnabled by viewModel.autoChangeEnabled.collectAsState()
     val autoChangeFrequency by viewModel.autoChangeFrequency.collectAsState()
@@ -75,6 +77,7 @@ fun AutoChangeScreen(
     val isChangingWallpaper by viewModel.isChangingWallpaper.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val needLogin by viewModel.needLogin.collectAsState()
+    val settingsApplied by viewModel.settingsApplied.collectAsState()
 
     // 登录提示对话框
     if (needLogin) {
@@ -89,6 +92,16 @@ fun AutoChangeScreen(
             },
             message = stringResource(R.string.auto_wallpaper_login_required)
         )
+    }
+
+    // 当设置应用成功时返回上级页面
+    LaunchedEffect(settingsApplied) {
+        if (settingsApplied) {
+            // 显示成功提示
+            Toast.makeText(context, R.string.settings_applied_successfully, Toast.LENGTH_SHORT).show()
+            // 返回上级页面
+            onBackPressed()
+        }
     }
 
     Scaffold(
@@ -168,7 +181,7 @@ fun AutoChangeScreen(
 
                 // 仅在WiFi下更换
                 SettingsToggleItem(
-                    icon = Icons.Default.Settings,
+                    icon = AppIcons.Wifi,
                     title = stringResource(R.string.wifi_only_change),
                     subtitle = stringResource(R.string.avoid_mobile_data),
                     checked = autoChangeWifiOnly,
@@ -247,7 +260,7 @@ private fun FrequencySelector(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Info,
+                imageVector = AppIcons.Frequency,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 16.dp)
@@ -336,7 +349,7 @@ private fun SourceSelector(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Refresh,
+                imageVector = AppIcons.AutoChange,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 16.dp)
@@ -504,7 +517,7 @@ private fun TargetSelector(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = Icons.Default.Settings,
+                imageVector = AppIcons.WallpaperTarget,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 16.dp)
