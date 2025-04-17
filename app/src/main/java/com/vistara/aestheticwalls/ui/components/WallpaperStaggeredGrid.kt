@@ -26,7 +26,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import kotlinx.coroutines.flow.collectLatest
 
 /**
@@ -215,7 +217,7 @@ fun WallpaperStaggeredGrid(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "已经到底了",
+                        text = stringResource(R.string.end_of_list),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         textAlign = TextAlign.Center

@@ -15,6 +15,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.service.LiveWallpaperService
@@ -30,6 +31,7 @@ import java.io.InputStream
 import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.vistara.aestheticwalls.utils.StringProvider
 
 /**
  * 壁纸管理器
@@ -38,7 +40,8 @@ import javax.inject.Singleton
 @Singleton
 class AppWallpaperManager @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val notificationUtil: NotificationUtil
+    private val notificationUtil: NotificationUtil,
+    private val stringProvider: StringProvider
 ) {
     companion object {
         private const val TAG = "AppWallpaperManager"
@@ -65,7 +68,7 @@ class AppWallpaperManager @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error setting wallpaper", e)
             withContext(Dispatchers.Main) {
-                Toast.makeText(activity, "设置壁纸失败", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, stringProvider.getString(R.string.set_wallpaper_failed), Toast.LENGTH_SHORT).show()
                 onComplete(false)
             }
         }
@@ -149,7 +152,7 @@ class AppWallpaperManager @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error setting static wallpaper", e)
             withContext(Dispatchers.Main) {
-                Toast.makeText(activity, "设置壁纸失败", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, stringProvider.getString(R.string.set_wallpaper_failed), Toast.LENGTH_SHORT).show()
                 onComplete(false)
             }
         }
@@ -169,7 +172,7 @@ class AppWallpaperManager @Inject constructor(
             if (videoUrl.isNullOrEmpty()) {
                 Log.e(TAG, "Video URL is null or empty")
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(activity, "视频URL无效", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, stringProvider.getString(R.string.invalid_video_url), Toast.LENGTH_SHORT).show()
                     onComplete(false)
                 }
                 return
@@ -190,7 +193,7 @@ class AppWallpaperManager @Inject constructor(
                 if (downloadedFile == null) {
                     Log.e(TAG, "Failed to download video")
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(activity, "下载视频失败", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, stringProvider.getString(R.string.video_download_failed), Toast.LENGTH_SHORT).show()
                         onComplete(false)
                     }
                     return
@@ -253,7 +256,7 @@ class AppWallpaperManager @Inject constructor(
                     }
                 } else if (!result.anyMethodSucceeded) {
                     // 如果所有方法都失败，显示失败提示
-                    Toast.makeText(activity, "设置壁纸失败", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, stringProvider.getString(R.string.set_wallpaper_failed), Toast.LENGTH_SHORT).show()
                 }
                 // 如果使用了系统界面方法，不显示任何提示，让用户在系统界面完成操作
                 onComplete(result.anyMethodSucceeded)
@@ -261,7 +264,7 @@ class AppWallpaperManager @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error setting live wallpaper", e)
             withContext(Dispatchers.Main) {
-                Toast.makeText(activity, "设置壁纸失败", Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, stringProvider.getString(R.string.set_wallpaper_failed), Toast.LENGTH_SHORT).show()
                 onComplete(false)
             }
         }
@@ -381,9 +384,9 @@ class AppWallpaperManager @Inject constructor(
      */
     private fun getSuccessMessage(target: WallpaperTarget): String {
         return when (target) {
-            WallpaperTarget.HOME -> "已设置为主屏幕壁纸"
-            WallpaperTarget.LOCK -> "已设置为锁屏壁纸"
-            WallpaperTarget.BOTH -> "已设置为主屏幕和锁屏壁纸"
+            WallpaperTarget.HOME -> stringProvider.getString(R.string.home_screen_wallpaper_set)
+            WallpaperTarget.LOCK -> stringProvider.getString(R.string.lock_screen_wallpaper_set)
+            WallpaperTarget.BOTH -> stringProvider.getString(R.string.both_screens_wallpaper_set)
         }
     }
 }

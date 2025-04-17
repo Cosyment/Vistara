@@ -22,7 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Category
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 分类导航组件，水平滚动的分类按钮
@@ -68,18 +70,18 @@ fun CategoryIconItem(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val containerColor = if (isSelected) 
-        MaterialTheme.colorScheme.primary 
-    else 
+    val containerColor = if (isSelected)
+        MaterialTheme.colorScheme.primary
+    else
         MaterialTheme.colorScheme.surfaceVariant
-        
-    val contentColor = if (isSelected) 
-        MaterialTheme.colorScheme.onPrimary 
-    else 
+
+    val contentColor = if (isSelected)
+        MaterialTheme.colorScheme.onPrimary
+    else
         MaterialTheme.colorScheme.onSurfaceVariant
-    
+
     val isAccessible = !category.isPremium || isPremiumUser
-    
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.width(72.dp)
@@ -113,7 +115,7 @@ fun CategoryIconItem(
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             // Premium标记
             if (category.isPremium && !isPremiumUser) {
                 Box(
@@ -133,15 +135,15 @@ fun CategoryIconItem(
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         Text(
             text = category.name,
             style = MaterialTheme.typography.labelSmall,
-            color = if (isAccessible) 
-                MaterialTheme.colorScheme.onBackground 
-            else 
+            color = if (isAccessible)
+                MaterialTheme.colorScheme.onBackground
+            else
                 MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
             textAlign = TextAlign.Center,
             maxLines = 1,
@@ -163,7 +165,7 @@ fun CategoryItem(
 ) {
     val context = LocalContext.current
     val isAccessible = !category.isPremium || isPremiumUser
-    
+
     Card(
         modifier = modifier
             .width(100.dp)
@@ -172,9 +174,9 @@ fun CategoryItem(
         elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 4.dp else 1.dp
         ),
-        border = if (isSelected) 
-            CardDefaults.outlinedCardBorder().copy(width = 2.dp) 
-        else 
+        border = if (isSelected)
+            CardDefaults.outlinedCardBorder().copy(width = 2.dp)
+        else
             null,
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
@@ -212,14 +214,14 @@ fun CategoryItem(
                         )
                 )
             }
-            
+
             // 叠加一层暗色背景，使文字更清晰
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.4f))
             )
-            
+
             // 分类名称
             Text(
                 text = category.name,
@@ -229,7 +231,7 @@ fun CategoryItem(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
-            
+
             // Premium标记
             if (category.isPremium && !isPremiumUser) {
                 Surface(
@@ -260,7 +262,7 @@ fun CategoryCard(
 ) {
     val context = LocalContext.current
     val isAccessible = !category.isPremium || isPremiumUser
-    
+
     Card(
         modifier = modifier
             .aspectRatio(1.5f),
@@ -303,7 +305,7 @@ fun CategoryCard(
                         )
                 )
             }
-            
+
             // 渐变叠加层
             Box(
                 modifier = Modifier
@@ -317,7 +319,7 @@ fun CategoryCard(
                         )
                     )
             )
-            
+
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -329,7 +331,7 @@ fun CategoryCard(
                     color = Color.White,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 if (category.wallpaperCount > 0) {
                     Text(
                         text = "${category.wallpaperCount}张壁纸",
@@ -338,7 +340,7 @@ fun CategoryCard(
                     )
                 }
             }
-            
+
             // Premium标记
             if (category.isPremium && !isPremiumUser) {
                 Surface(
@@ -347,7 +349,7 @@ fun CategoryCard(
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     Text(
-                        text = "高级 👑",
+                        text = stringResource(R.string.premium_crown),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -356,4 +358,4 @@ fun CategoryCard(
             }
         }
     }
-} 
+}

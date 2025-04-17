@@ -8,7 +8,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.repository.AuthRepository
+import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val context: StringProvider
 ) : ViewModel() {
 
     companion object {
@@ -96,16 +99,16 @@ class AuthViewModel @Inject constructor(
                 if (success) {
                     _isLoggedIn.value = true
                     loadUserInfo()
-                    _loginResult.value = LoginResult.Success("登录成功")
+                    _loginResult.value = LoginResult.Success(context.getString(R.string.login_success))
                 } else {
-                    _loginResult.value = LoginResult.Error("登录失败")
+                    _loginResult.value = LoginResult.Error(context.getString(R.string.login_failed))
                 }
             } catch (e: ApiException) {
                 Log.e(TAG, "Google sign in failed", e)
-                _loginResult.value = LoginResult.Error("登录失败: ${e.statusCode}")
+                _loginResult.value = LoginResult.Error(context.getString(R.string.login_failed_with_status, e.statusCode))
             } catch (e: Exception) {
                 Log.e(TAG, "Error handling sign in result", e)
-                _loginResult.value = LoginResult.Error("登录失败: ${e.message}")
+                _loginResult.value = LoginResult.Error(context.getString(R.string.login_failed_with_message, e.message.orEmpty()))
             }
         }
     }
@@ -121,10 +124,10 @@ class AuthViewModel @Inject constructor(
                 _userName.value = null
                 _userPhotoUrl.value = null
                 _userEmail.value = null
-                _loginResult.value = LoginResult.Success("已退出登录")
+                _loginResult.value = LoginResult.Success(context.getString(R.string.logout_success))
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing out", e)
-                _loginResult.value = LoginResult.Error("退出登录失败: ${e.message}")
+                _loginResult.value = LoginResult.Error(context.getString(R.string.logout_failed, e.message.orEmpty()))
             }
         }
     }

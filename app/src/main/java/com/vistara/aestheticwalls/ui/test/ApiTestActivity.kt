@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
 import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.remote.ApiResult
@@ -129,7 +130,7 @@ class ApiTestActivity : ComponentActivity() {
                     .show()
             } catch (e: Exception) {
                 Log.e("ApiTest", "测试过程中发生错误", e)
-                Toast.makeText(this@ApiTestActivity, "测试失败: ${e.message}", Toast.LENGTH_LONG)
+                Toast.makeText(this@ApiTestActivity, getString(R.string.test_failed, e.message), Toast.LENGTH_LONG)
                     .show()
             }
         }
@@ -193,7 +194,7 @@ class ApiTestActivity : ComponentActivity() {
                     .show()
             } catch (e: Exception) {
                 Log.e("ApiTest", "测试过程中发生错误", e)
-                Toast.makeText(this@ApiTestActivity, "测试失败: ${e.message}", Toast.LENGTH_LONG)
+                Toast.makeText(this@ApiTestActivity, getString(R.string.test_failed, e.message), Toast.LENGTH_LONG)
                     .show()
             }
         }

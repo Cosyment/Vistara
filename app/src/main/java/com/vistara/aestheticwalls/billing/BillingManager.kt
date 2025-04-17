@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.android.billingclient.api.*
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -378,18 +379,18 @@ class BillingManager @Inject constructor(
      * 获取商品价格
      */
     fun getProductPrice(productId: String): String {
-        val productDetails = _productDetails.value[productId] ?: return "价格未知"
+        val productDetails = _productDetails.value[productId] ?: return context.getString(R.string.price_unknown)
 
         return when (productId) {
             SUBSCRIPTION_MONTHLY, SUBSCRIPTION_YEARLY -> {
                 val offerDetails = productDetails.subscriptionOfferDetails?.firstOrNull()
                 val pricingPhase = offerDetails?.pricingPhases?.pricingPhaseList?.firstOrNull()
-                pricingPhase?.formattedPrice ?: "价格未知"
+                pricingPhase?.formattedPrice ?: context.getString(R.string.price_unknown)
             }
             PREMIUM_LIFETIME -> {
-                productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: "价格未知"
+                productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: context.getString(R.string.price_unknown)
             }
-            else -> "价格未知"
+            else -> context.getString(R.string.price_unknown)
         }
     }
 
@@ -398,11 +399,11 @@ class BillingManager @Inject constructor(
      */
     fun getProductPeriod(productId: String): String {
         return when (productId) {
-            SUBSCRIPTION_WEEKLY -> "周"
-            SUBSCRIPTION_MONTHLY -> "月"
-            SUBSCRIPTION_QUARTERLY -> "季度"
-            SUBSCRIPTION_YEARLY -> "年"
-            PREMIUM_LIFETIME -> "终身"
+            SUBSCRIPTION_WEEKLY -> context.getString(R.string.subscription_weekly)
+            SUBSCRIPTION_MONTHLY -> context.getString(R.string.subscription_monthly)
+            SUBSCRIPTION_QUARTERLY -> context.getString(R.string.subscription_quarterly)
+            SUBSCRIPTION_YEARLY -> context.getString(R.string.subscription_yearly)
+            PREMIUM_LIFETIME -> context.getString(R.string.premium_lifetime)
             else -> ""
         }
     }

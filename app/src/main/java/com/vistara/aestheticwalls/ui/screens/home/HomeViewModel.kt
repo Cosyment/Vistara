@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.ui.screens.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperCategory
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.vistara.aestheticwalls.utils.StringProvider
 
 /**
  * 首页ViewModel
@@ -23,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
-    private val bannerRepository: BannerRepository
+    private val bannerRepository: BannerRepository,
+    private val stringProvider: StringProvider
 ) : ViewModel() {
 
     // Banner数据
@@ -161,7 +164,7 @@ class HomeViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 Log.e(TAG, "加载数据时发生异常", e)
-                _error.value = e.message ?: "加载数据时发生未知错误"
+                _error.value = e.message ?: stringProvider.getString(R.string.error_loading_data)
             } finally {
                 _isLoading.value = false
                 Log.d(TAG, "数据加载完成")
@@ -233,7 +236,7 @@ class HomeViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "分类壁纸加载异常", e)
-                _error.value = e.message ?: "加载分类壁纸时发生未知错误"
+                _error.value = e.message ?: stringProvider.getString(R.string.error_loading_category_wallpapers)
             } finally {
                 _isCategoryLoading.value = false
             }

@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import com.vistara.aestheticwalls.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,21 +113,21 @@ class AboutViewModel @Inject constructor(
      * 打开隐私政策
      */
     fun openPrivacyPolicy() {
-        openInWebView(PRIVACY_POLICY_URL, "隐私政策")
+        openInWebView(PRIVACY_POLICY_URL, context.getString(R.string.privacy_policy))
     }
 
     /**
      * 打开服务条款
      */
     fun openTermsOfService() {
-        openInWebView(TERMS_OF_SERVICE_URL, "服务条款")
+        openInWebView(TERMS_OF_SERVICE_URL, context.getString(R.string.terms_of_service))
     }
 
     /**
      * 打开用户协议
      */
     fun openUserAgreement() {
-        openInWebView(USER_AGREEMENT_URL, "用户协议")
+        openInWebView(USER_AGREEMENT_URL, context.getString(R.string.user_agreement))
     }
 
     /**
@@ -172,7 +173,7 @@ class AboutViewModel @Inject constructor(
      * 打开开源库URL
      */
     fun openLibraryUrl(url: String) {
-        openInWebView(url, "开源库")
+        openInWebView(url, context.getString(R.string.open_source_libraries))
     }
 }
 

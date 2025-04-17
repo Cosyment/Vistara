@@ -110,7 +110,7 @@ fun LanguageSelector(
 @Composable
 private fun getLanguageText(language: AppLanguage): String {
     return when (language) {
-        AppLanguage.SYSTEM -> "跟随系统 / System"
+        AppLanguage.SYSTEM -> "System"
         AppLanguage.ENGLISH -> "English"
         AppLanguage.CHINESE -> "中文"
         AppLanguage.JAPANESE -> "日本語"

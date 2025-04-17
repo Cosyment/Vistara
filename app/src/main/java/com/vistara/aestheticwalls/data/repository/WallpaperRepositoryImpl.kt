@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.data.repository
 
 import android.util.Log
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
 import com.vistara.aestheticwalls.data.mapper.PixabayMapper
@@ -10,9 +11,9 @@ import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.Category
 import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
 import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.ApiSource
-import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiAdapter
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
@@ -22,15 +23,11 @@ import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import com.vistara.aestheticwalls.data.remote.safeApiCall
 import com.vistara.aestheticwalls.utils.NetworkMonitor
-
+import com.vistara.aestheticwalls.utils.StringProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.*
-import java.util.Date
-import java.util.Random
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,7 +50,8 @@ class WallpaperRepositoryImpl @Inject constructor(
     private val apiUsageTracker: ApiUsageTracker,
     private val networkMonitor: NetworkMonitor,
     private val wallpaperApiAdapter: WallpaperApiAdapter, // 新增的壁纸API适配器
-    private val pexelsApiAdapter: WallpaperApiAdapter // Pexels API适配器，用于获取视频
+    private val pexelsApiAdapter: WallpaperApiAdapter, // Pexels API适配器，用于获取视频
+    private val stringProvider: StringProvider // 字符串提供者，用于获取字符串资源
 ) : WallpaperRepository {
 
     companion object {
@@ -75,7 +73,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 }
                 // 如果本地没有数据，返回错误
                 return@withContext ApiResult.Error(
-                    message = "无网络连接，无法获取壁纸",
+                    message = stringProvider.getString(R.string.no_network_wallpapers),
                     source = wallpaperApiAdapter.getApiSource()
                 )
             }
@@ -84,7 +82,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             return@withContext wallpaperApiAdapter.getFeaturedWallpapers(page, pageSize)
         } catch (e: Exception) {
             ApiResult.Error(
-                message = e.message ?: "获取推荐壁纸失败",
+                message = e.message ?: stringProvider.getString(R.string.failed_to_get_recommended_wallpapers),
                 source = wallpaperApiAdapter.getApiSource()
             )
         }
@@ -119,6 +117,7 @@ class WallpaperRepositoryImpl @Inject constructor(
 
                     unsplashWallpapers + pexelsWallpapers
                 }
+
                 "live" -> {
                     // 使用 Pexels 的视频 API 获取动态壁纸
                     val pexelsAdapter = pexelsApiAdapter as PexelsApiAdapter
@@ -174,7 +173,7 @@ class WallpaperRepositoryImpl @Inject constructor(
 
                             // 使用更真实的缩略图 URL
                             val imageId = (index + page * pageSize) % 1000 + 100
-                            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+                            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
 
                             // 使用不同的视频URL来确保每个壁纸都有不同的视频
                             val videoUrl = when (index % 5) {
@@ -190,7 +189,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                                 title = title,
                                 url = videoUrl,
                                 thumbnailUrl = thumbnailUrl,
-                                previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
+                                previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}",
                                 author = "动画师 ${index + 1}",
                                 source = "Vistara",
                                 isPremium = index % 3 == 0, // 每三个视频中有一个是高级内容
@@ -205,12 +204,13 @@ class WallpaperRepositoryImpl @Inject constructor(
                         pexelsVideos
                     }
                 }
+
                 else -> emptyList()
             }
 
             ApiResult.Success(wallpapers)
         } catch (e: Exception) {
-            ApiResult.Error(message = e.message ?: "获取壁纸失败", source = ApiSource.UNSPLASH)
+            ApiResult.Error(message = e.message ?: stringProvider.getString(R.string.failed_to_get_wallpapers), source = ApiSource.UNSPLASH)
         }
     }
 
@@ -236,85 +236,89 @@ class WallpaperRepositoryImpl @Inject constructor(
     /**
      * 按分类获取壁纸
      */
-    override suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
-        try {
-            // 检查网络连接
-            if (!networkMonitor.isNetworkAvailable()) {
-                // 如果无网络连接，尝试从本地获取数据
-                val localWallpapers = wallpaperDao.getFavoritesList()
-                if (localWallpapers.isNotEmpty()) {
-                    return@withContext ApiResult.Success(localWallpapers)
+    override suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): ApiResult<List<Wallpaper>> =
+        withContext(Dispatchers.IO) {
+            try {
+                // 检查网络连接
+                if (!networkMonitor.isNetworkAvailable()) {
+                    // 如果无网络连接，尝试从本地获取数据
+                    val localWallpapers = wallpaperDao.getFavoritesList()
+                    if (localWallpapers.isNotEmpty()) {
+                        return@withContext ApiResult.Success(localWallpapers)
+                    }
+                    // 如果本地没有数据，返回错误
+                    return@withContext ApiResult.Error(
+                        message = stringProvider.getString(R.string.no_network_category_wallpapers),
+                        source = ApiSource.UNSPLASH
+                    )
                 }
-                // 如果本地没有数据，返回错误
-                return@withContext ApiResult.Error(
-                    message = "无网络连接，无法获取分类壁纸",
+
+                // 根据分类ID确定搜索关键词和API源
+                val (apiSource, query) = getCategoryInfo(categoryId)
+
+                // 根据不同的API源获取壁纸
+                val wallpapers = when (apiSource) {
+                    ApiSource.UNSPLASH -> {
+                        val response = safeApiCall(ApiSource.UNSPLASH) {
+                            unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
+                        }
+
+                        when (response) {
+                            is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
+                            else -> emptyList()
+                        }
+                    }
+
+                    ApiSource.PEXELS -> {
+                        val response = safeApiCall(ApiSource.PEXELS) {
+                            pexelsApiService.searchPhotos(query = query, page = page, perPage = pageSize)
+                        }
+
+                        when (response) {
+                            is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(response.data.photos)
+                            else -> emptyList()
+                        }
+                    }
+
+                    ApiSource.PIXABAY -> {
+                        val response = safeApiCall(ApiSource.PIXABAY) {
+                            pixabayApiService.searchImages(query = query, page = page, perPage = pageSize)
+                        }
+
+                        when (response) {
+                            is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
+                            else -> emptyList()
+                        }
+                    }
+
+                    ApiSource.WALLHAVEN -> {
+                        val response = safeApiCall(ApiSource.WALLHAVEN) {
+                            wallhavenApiService.search(query = query, page = page)
+                        }
+
+                        when (response) {
+                            is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
+                            else -> emptyList()
+                        }
+                    }
+                }
+
+                // 如果获取到的壁纸为空，生成模拟数据
+                if (wallpapers.isEmpty()) {
+                    // 生成模拟数据
+                    val mockWallpapers = generateMockWallpapers(categoryId, page, pageSize)
+                    return@withContext ApiResult.Success(mockWallpapers)
+                }
+
+                ApiResult.Success(wallpapers)
+            } catch (e: Exception) {
+                Log.e(TAG, "按分类获取壁纸失败", e)
+                ApiResult.Error(
+                    message = e.message ?: stringProvider.getString(R.string.failed_to_get_category_wallpapers),
                     source = ApiSource.UNSPLASH
                 )
             }
-
-            // 根据分类ID确定搜索关键词和API源
-            val (apiSource, query) = getCategoryInfo(categoryId)
-
-            // 根据不同的API源获取壁纸
-            val wallpapers = when (apiSource) {
-            ApiSource.UNSPLASH -> {
-                val response = safeApiCall(ApiSource.UNSPLASH) {
-                    unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
-                    else -> emptyList()
-                }
-            }
-            ApiSource.PEXELS -> {
-                val response = safeApiCall(ApiSource.PEXELS) {
-                    pexelsApiService.searchPhotos(query = query, page = page, perPage = pageSize)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(response.data.photos)
-                    else -> emptyList()
-                }
-            }
-            ApiSource.PIXABAY -> {
-                val response = safeApiCall(ApiSource.PIXABAY) {
-                    pixabayApiService.searchImages(query = query, page = page, perPage = pageSize)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
-                    else -> emptyList()
-                }
-            }
-            ApiSource.WALLHAVEN -> {
-                val response = safeApiCall(ApiSource.WALLHAVEN) {
-                    wallhavenApiService.search(query = query, page = page)
-                }
-
-                when (response) {
-                    is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
-                    else -> emptyList()
-                }
-            }
-            }
-
-            // 如果获取到的壁纸为空，生成模拟数据
-            if (wallpapers.isEmpty()) {
-                // 生成模拟数据
-                val mockWallpapers = generateMockWallpapers(categoryId, page, pageSize)
-                return@withContext ApiResult.Success(mockWallpapers)
-            }
-
-            ApiResult.Success(wallpapers)
-        } catch (e: Exception) {
-            Log.e(TAG, "按分类获取壁纸失败", e)
-            ApiResult.Error(
-                message = e.message ?: "获取分类壁纸失败",
-                source = ApiSource.UNSPLASH
-            )
         }
-    }
 
     /**
      * 生成模拟壁纸数据
@@ -351,14 +355,14 @@ class WallpaperRepositoryImpl @Inject constructor(
 
             // 使用更真实的缩略图 URL
             val imageId = (index + page * pageSize) % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
 
             Wallpaper(
                 id = "${categoryId}_${page}_$index",
                 title = title,
                 url = "https://picsum.photos/id/$imageId/$width/$height",
                 thumbnailUrl = thumbnailUrl,
-                previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
+                previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}",
                 author = "Vistara",
                 source = "Vistara",
                 isPremium = index % 5 == 0, // 每五个壁纸中有一个是高级内容
@@ -554,6 +558,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     return createMockPhotoWallpaper(id, originalId, "Unsplash")
                 }
             }
+
             "pixabay" -> {
                 try {
                     val response = safeApiCall(ApiSource.PIXABAY) {
@@ -575,6 +580,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                                 return createMockPhotoWallpaper(id, originalId, "Pixabay")
                             }
                         }
+
                         else -> {
                             // 如果API调用失败，尝试从缓存中获取
                             val cachedWallpaper = wallpaperDao.getWallpaperById(id)
@@ -597,6 +603,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     return createMockPhotoWallpaper(id, originalId, "Pixabay")
                 }
             }
+
             "wallhaven" -> {
                 try {
                     val response = safeApiCall(ApiSource.WALLHAVEN) {
@@ -627,6 +634,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     return createMockPhotoWallpaper(id, originalId, "Wallhaven")
                 }
             }
+
             else -> {
                 // 对于未知来源，尝试从缓存中获取
                 val cachedWallpaper = wallpaperDao.getWallpaperById(id)
@@ -695,7 +703,7 @@ class WallpaperRepositoryImpl @Inject constructor(
             // 使用与原始生成逻辑相同的pageSize值(20)
             val pageSize = 20
             val imageId = (index + page * pageSize) % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
 
             // 使用不同的视频URL来确保每个壁纸都有不同的视频
             val videoUrl = when (index % 5) {
@@ -711,7 +719,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 title = title,
                 url = videoUrl,
                 thumbnailUrl = thumbnailUrl,
-                previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}",
+                previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}",
                 author = "动画师 ${index + 1}",
                 source = "Vistara",
                 isPremium = index % 3 == 0, // 每三个视频中有一个是高级内容
@@ -772,7 +780,7 @@ class WallpaperRepositoryImpl @Inject constructor(
 
             // 使用更真实的缩略图 URL
             val imageId = videoId % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}"
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}"
 
             // 使用不同的视频URL来确保每个壁纸都有不同的视频
             val videoUrl = when (videoId % 5) {
@@ -849,8 +857,8 @@ class WallpaperRepositoryImpl @Inject constructor(
 
             // 使用更真实的缩略图 URL
             val imageId = Math.abs(numericId) % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width/4}/${height/4}"
-            val previewUrl = "https://picsum.photos/id/$imageId/${width/2}/${height/2}"
+            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
+            val previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}"
             val fullUrl = "https://picsum.photos/id/$imageId/$width/$height"
 
             return Wallpaper(
@@ -913,6 +921,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     unsplashMapper.toWallpaper(response.data[0])
                 } else null
             }
+
             else -> null
         }
     }
@@ -926,11 +935,21 @@ class WallpaperRepositoryImpl @Inject constructor(
             Category("unsplash_nature", "自然风景", "大自然的壮丽景色", "https://images.unsplash.com/photo-1433086966358-54859d0ed716"),
             Category("unsplash_architecture", "建筑设计", "令人惊叹的建筑作品", "https://images.unsplash.com/photo-1487958449943-2429e8be8625"),
             Category("pexels_animals", "动物世界", "可爱与野性的动物", "https://images.pexels.com/photos/567540/pexels-photo-567540.jpeg"),
-            Category("pixabay_space", "太空星空", "浩瀚宇宙的奥秘", "https://pixabay.com/get/g3c5223df6fab2f7a71dc0dc74302a6bcaef06ea54b1eeef55fb66c81c3fac9aa1e673c4e5de69e7ee61c8b83acb47458_1280.jpg"),
+            Category(
+                "pixabay_space",
+                "太空星空",
+                "浩瀚宇宙的奥秘",
+                "https://pixabay.com/get/g3c5223df6fab2f7a71dc0dc74302a6bcaef06ea54b1eeef55fb66c81c3fac9aa1e673c4e5de69e7ee61c8b83acb47458_1280.jpg"
+            ),
             Category("wallhaven_digital-art", "数字艺术", "创意设计与数字艺术", "https://w.wallhaven.cc/full/dp/wallhaven-dpevlo.jpg"),
             Category("unsplash_minimal", "简约风格", "极简主义设计美学", "https://images.unsplash.com/photo-1449247709967-d4461a6a6103"),
             Category("pexels_abstract", "抽象艺术", "抽象与超现实主义", "https://images.pexels.com/photos/2110951/pexels-photo-2110951.jpeg"),
-            Category("pixabay_flowers", "花卉植物", "绚丽多彩的花卉世界", "https://pixabay.com/get/gbaed09c11ef0d9fb5d6b08e92a2784dfb5b32c3a7fd5bdf11dafbe60e11c3eaa3e5c58ffcaef0e621687e97c7a4b08fc_1280.jpg")
+            Category(
+                "pixabay_flowers",
+                "花卉植物",
+                "绚丽多彩的花卉世界",
+                "https://pixabay.com/get/gbaed09c11ef0d9fb5d6b08e92a2784dfb5b32c3a7fd5bdf11dafbe60e11c3eaa3e5c58ffcaef0e621687e97c7a4b08fc_1280.jpg"
+            )
         )
     }
 
@@ -1015,7 +1034,6 @@ class WallpaperRepositoryImpl @Inject constructor(
     override fun getAutoChangeHistory(): Flow<List<AutoChangeHistory>> {
         return wallpaperDao.getAutoChangeHistory()
     }
-
 
 
     /**

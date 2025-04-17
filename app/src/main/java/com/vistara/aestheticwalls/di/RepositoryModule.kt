@@ -26,6 +26,7 @@ import com.vistara.aestheticwalls.data.repository.UserRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepositoryImpl
 import com.vistara.aestheticwalls.manager.ThemeManager
+import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,7 +55,8 @@ object RepositoryModule {
         apiUsageTracker: ApiUsageTracker,
         networkMonitor: NetworkMonitor,
         wallpaperApiAdapter: WallpaperApiAdapter,
-        @Named("pexelsApiAdapter") pexelsApiAdapter: WallpaperApiAdapter
+        @Named("pexelsApiAdapter") pexelsApiAdapter: WallpaperApiAdapter,
+        stringProvider: StringProvider
     ): WallpaperRepository {
         return WallpaperRepositoryImpl(
             unsplashApiService = unsplashApiService,
@@ -70,7 +72,8 @@ object RepositoryModule {
             apiUsageTracker = apiUsageTracker,
             networkMonitor = networkMonitor,
             wallpaperApiAdapter = wallpaperApiAdapter,
-            pexelsApiAdapter = pexelsApiAdapter
+            pexelsApiAdapter = pexelsApiAdapter,
+            stringProvider = stringProvider
         )
     }
 
@@ -94,9 +97,10 @@ object RepositoryModule {
     @Singleton
     fun provideBannerRepository(
         @ApplicationContext context: Context,
-        networkMonitor: NetworkMonitor
+        networkMonitor: NetworkMonitor,
+        stringProvider: StringProvider
     ): BannerRepository {
-        return BannerRepositoryImpl(context, networkMonitor)
+        return BannerRepositoryImpl(context, networkMonitor, stringProvider)
     }
 
     @Provides

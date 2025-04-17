@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.data.repository
 
 import android.content.Context
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Banner
 import com.vistara.aestheticwalls.data.model.BannerActionType
 import com.vistara.aestheticwalls.data.remote.ApiResult
@@ -11,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.vistara.aestheticwalls.utils.StringProvider
 
 /**
  * Banner 仓库实现类
@@ -19,7 +21,8 @@ import javax.inject.Singleton
 @Singleton
 class BannerRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val networkMonitor: NetworkMonitor
+    private val networkMonitor: NetworkMonitor,
+    private val stringProvider: StringProvider
 ) : BannerRepository {
 
     /**
@@ -31,7 +34,7 @@ class BannerRepositoryImpl @Inject constructor(
             // 检查网络连接
             if (!networkMonitor.isNetworkAvailable()) {
                 return@withContext ApiResult.Error(
-                    message = "无网络连接，无法获取轮播图数据",
+                    message = stringProvider.getString(R.string.no_network_banner_data),
                     source = ApiSource.UNSPLASH // 使用一个默认的API来源
                 )
             }
@@ -42,24 +45,24 @@ class BannerRepositoryImpl @Inject constructor(
                 Banner(
                     id = "1",
                     imageUrl = "https://picsum.photos/id/237/800/400",
-                    title = "精选壁纸",
-                    subtitle = "发现最新最美壁纸",
+                    title = stringProvider.getString(R.string.featured_wallpapers),
+                    subtitle = stringProvider.getString(R.string.discover_latest_wallpapers),
                     actionType = BannerActionType.WALLPAPER,
                     actionTarget = "unsplash_Dwu85P9SOIk"
                 ),
                 Banner(
                     id = "2",
                     imageUrl = "https://picsum.photos/id/1015/800/400",
-                    title = "高级会员",
-                    subtitle = "解锁所有高清壁纸",
+                    title = stringProvider.getString(R.string.premium_membership),
+                    subtitle = stringProvider.getString(R.string.unlock_all_hd_wallpapers),
                     actionType = BannerActionType.PREMIUM,
                     actionTarget = "premium"
                 ),
                 Banner(
                     id = "3",
                     imageUrl = "https://picsum.photos/id/1018/800/400",
-                    title = "动态壁纸",
-                    subtitle = "让你的屏幕动起来",
+                    title = stringProvider.getString(R.string.live_wallpapers),
+                    subtitle = stringProvider.getString(R.string.make_your_screen_come_alive),
                     actionType = BannerActionType.WALLPAPER,
                     actionTarget = "pexels_photo_2014422"
                 )
@@ -68,7 +71,7 @@ class BannerRepositoryImpl @Inject constructor(
             ApiResult.Success(banners)
         } catch (e: Exception) {
             ApiResult.Error(
-                message = e.message ?: "获取轮播图数据失败",
+                message = e.message ?: stringProvider.getString(R.string.failed_to_get_banner_data),
                 source = ApiSource.UNSPLASH // 使用一个默认的API来源
             )
         }

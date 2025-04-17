@@ -311,12 +311,12 @@ private fun PlanCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = plan.title,
+                        text = stringResource(plan.titleResId),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    plan.discount?.let {
+                    plan.discountResId?.let {
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Box(
@@ -326,7 +326,7 @@ private fun PlanCard(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = it,
+                                text = stringResource(it),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
@@ -337,7 +337,7 @@ private fun PlanCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = plan.description,
+                    text = stringResource(plan.descriptionResId),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

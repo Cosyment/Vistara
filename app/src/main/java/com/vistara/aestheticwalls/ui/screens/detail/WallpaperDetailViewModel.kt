@@ -22,6 +22,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
@@ -59,13 +60,13 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class WallpaperDetailViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
     private val userRepository: UserRepository,
     private val billingManager: BillingManager,
     private val wallpaperManager: AppWallpaperManager,
     private val notificationUtil: NotificationUtil,
-    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -192,15 +193,15 @@ class WallpaperDetailViewModel @Inject constructor(
                 when (state) {
                     is PurchaseState.Completed -> {
                         _isPremiumUser.value = true
-                        _upgradeResult.value = UpgradeResult.Success("升级成功！感谢您的支持")
+                        _upgradeResult.value = UpgradeResult.Success(context.getString(R.string.upgrade_success))
                     }
 
                     is PurchaseState.Failed -> {
-                        _upgradeResult.value = UpgradeResult.Error("升级失败: ${state.message}")
+                        _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.upgrade_failed, state.message))
                     }
 
                     is PurchaseState.Cancelled -> {
-                        _upgradeResult.value = UpgradeResult.Error("升级已取消")
+                        _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.upgrade_cancelled))
                     }
 
                     else -> {
@@ -234,10 +235,10 @@ class WallpaperDetailViewModel @Inject constructor(
                     _wallpaperState.value = UiState.Success(wallpaper)
                     checkFavoriteStatus()
                 } else {
-                    _wallpaperState.value = UiState.Error("壁纸不存在")
+                    _wallpaperState.value = UiState.Error(context.getString(R.string.wallpaper_not_exist))
                 }
             } catch (e: Exception) {
-                _wallpaperState.value = UiState.Error(e.message ?: "加载壁纸失败")
+                _wallpaperState.value = UiState.Error(e.message ?: context.getString(R.string.load_wallpaper_failed))
             }
         }
     }
@@ -699,7 +700,14 @@ class WallpaperDetailViewModel @Inject constructor(
 
             // 分享壁纸信息
             val shareText =
-                "\u6211发现了一张精美的壁纸\n" + "\u6807题: ${currentWallpaper.title ?: "未命名壁纸"}\n" + "\u4f5c者: ${currentWallpaper.author}\n" + "\u6765源: ${currentWallpaper.source}\n" + "\u5206辨率: ${currentWallpaper.resolution?.width} x ${currentWallpaper.resolution?.height}\n" + "\u4e0b载 Vistara 壁纸应用以获取更多精美壁纸!"
+                context.getString(
+                    R.string.share_wallpaper_text,
+                    currentWallpaper.title ?: context.getString(R.string.unnamed_wallpaper),
+                    currentWallpaper.author,
+                    currentWallpaper.source,
+                    currentWallpaper.resolution?.width ?: 0,
+                    currentWallpaper.resolution?.height ?: 0
+                )
 
             try {
                 // 下载图片并生成分享图
@@ -746,7 +754,7 @@ class WallpaperDetailViewModel @Inject constructor(
                 }
 
                 // 创建选择器对话框
-                val chooserIntent = Intent.createChooser(shareIntent, "分享壁纸")
+                val chooserIntent = Intent.createChooser(shareIntent, context.getString(R.string.share_wallpaper))
                 chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
                 // 启动分享选择器
@@ -759,7 +767,7 @@ class WallpaperDetailViewModel @Inject constructor(
                         putExtra(Intent.EXTRA_TEXT, shareText)
                         type = "text/plain"
                     }
-                    val chooserIntent = Intent.createChooser(simpleShareIntent, "分享壁纸")
+                    val chooserIntent = Intent.createChooser(simpleShareIntent, context.getString(R.string.share_wallpaper))
                     chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(chooserIntent)
                 } catch (e2: Exception) {
@@ -810,7 +818,7 @@ class WallpaperDetailViewModel @Inject constructor(
         paint.isFakeBoldText = true
 
         // 绘制壁纸标题
-        val title = wallpaper.title ?: "精美壁纸"
+        val title = wallpaper.title ?: context.getString(R.string.beautiful_wallpaper)
         canvas.drawText(title, 20f, scaledHeight + 40f, paint)
 
         // 绘制来源信息

@@ -10,6 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.vistara.aestheticwalls.utils.StringProvider
 
 // 创建单例DataStore实例
 private val Context.dataStore by preferencesDataStore(name = "vistara_preferences")
@@ -32,5 +33,14 @@ object AppModule {
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.dataStore
+    }
+
+    /**
+     * 提供StringProvider实例
+     */
+    @Provides
+    @Singleton
+    fun provideStringProvider(@ApplicationContext context: Context): StringProvider {
+        return StringProvider(context)
     }
 }

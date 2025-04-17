@@ -40,8 +40,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Collection
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 专题详情页组件
@@ -137,7 +139,7 @@ fun CollectionDetail(
                                 shape = RoundedCornerShape(16.dp)
                             ) {
                                 Text(
-                                    text = "高级 👑",
+                                    text = stringResource(R.string.premium_crown),
                                     style = MaterialTheme.typography.labelSmall,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                     fontWeight = FontWeight.Bold
@@ -159,7 +161,7 @@ fun CollectionDetail(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "返回",
+                        contentDescription = stringResource(R.string.go_back),
                         tint = Color.White
                     )
                 }
@@ -179,7 +181,7 @@ fun CollectionDetail(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "专题介绍",
+                        text = stringResource(R.string.collection_introduction),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -209,7 +211,7 @@ fun CollectionDetail(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "相关标签",
+                            text = stringResource(R.string.related_tags),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -262,14 +264,14 @@ fun CollectionDetail(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "高级专题内容",
+                                text = stringResource(R.string.premium_collection_content),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
 
                             Text(
-                                text = "升级到高级版解锁所有壁纸",
+                                text = stringResource(R.string.upgrade_to_unlock_all_wallpapers),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
@@ -282,7 +284,7 @@ fun CollectionDetail(
                             )
                         ) {
                             Text(
-                                text = "立即升级",
+                                text = stringResource(R.string.upgrade_now_button),
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -307,7 +309,7 @@ fun CollectionDetail(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "壁纸列表",
+                            text = stringResource(R.string.wallpaper_list),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -394,7 +396,7 @@ fun CollectionItem(
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     Text(
-                        text = "高级 👑",
+                        text = stringResource(R.string.premium_crown),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -425,4 +427,4 @@ fun CollectionItem(
             }
         }
     }
-} 
+}

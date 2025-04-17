@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.utils.StringProvider
 
 /**
  * 升级页面的ViewModel
@@ -23,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PremiumViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val billingManager: BillingManager
+    private val billingManager: BillingManager,
+    private val stringProvider: StringProvider
 ) : ViewModel() {
 
     companion object {
@@ -104,15 +107,15 @@ class PremiumViewModel @Inject constructor(
                     is PurchaseState.Completed -> {
                         _isUpgrading.value = false
                         _isPremiumUser.value = true
-                        _upgradeResult.value = UpgradeResult.Success("升级成功！感谢您的支持")
+                        _upgradeResult.value = UpgradeResult.Success(stringProvider.getString(R.string.upgrade_success))
                     }
                     is PurchaseState.Failed -> {
                         _isUpgrading.value = false
-                        _upgradeResult.value = UpgradeResult.Error("升级失败: ${state.message}")
+                        _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.upgrade_failed, state.message))
                     }
                     is PurchaseState.Cancelled -> {
                         _isUpgrading.value = false
-                        _upgradeResult.value = UpgradeResult.Error("升级已取消")
+                        _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.upgrade_cancelled))
                     }
                     is PurchaseState.Restoring -> {
                         _isUpgrading.value = true
@@ -155,12 +158,12 @@ class PremiumViewModel @Inject constructor(
      */
     fun upgrade(activity: Activity?) {
         if (_isPremiumUser.value) {
-            _upgradeResult.value = UpgradeResult.Error("您已经是高级用户")
+            _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.already_premium_user))
             return
         }
 
         if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
+            _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
             return
         }
 
@@ -180,7 +183,7 @@ class PremiumViewModel @Inject constructor(
      */
     fun restorePurchases() {
         if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error("支付服务未连接，请稍后再试")
+            _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
             return
         }
 
@@ -198,10 +201,10 @@ class PremiumViewModel @Inject constructor(
 /**
  * 升级套餐
  */
-enum class UpgradePlan(val title: String, val description: String, val discount: String? = null) {
-    MONTHLY("月度套餐", "每月自动续费，随时可取消"),
-    YEARLY("年度套餐", "每年自动续费，随时可取消", "节省约27%"),
-    LIFETIME("终身套餐", "一次性付费，永久使用")
+enum class UpgradePlan(val titleResId: Int, val descriptionResId: Int, val discountResId: Int? = null) {
+    MONTHLY(R.string.monthly_plan, R.string.monthly_plan_description),
+    YEARLY(R.string.yearly_plan, R.string.yearly_plan_description, R.string.save_about),
+    LIFETIME(R.string.lifetime_plan, R.string.lifetime_plan_description)
 }
 
 /**

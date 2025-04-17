@@ -17,6 +17,7 @@ import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.LocaleManager
+import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
@@ -38,7 +39,8 @@ class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val localeManager: LocaleManager,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val stringProvider: StringProvider
 ) : ViewModel() {
 
     companion object {
@@ -136,12 +138,12 @@ class SettingsViewModel @Inject constructor(
 
                 // 更新登录状态
                 _isLoggedIn.value = false
-                _operationResult.value = "退出登录成功"
+                _operationResult.value = context.getString(R.string.sign_out_success)
 
                 Log.d(TAG, "User signed out successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error signing out: ${e.message}")
-                _operationResult.value = "退出登录失败: ${e.message}"
+                _operationResult.value = context.getString(R.string.sign_out_failed, e.message)
             } finally {
                 _isLoggingOut.value = false
             }

@@ -335,20 +335,20 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
 /**
  * 导航目的地枚举
  */
-enum class NavDestination(val route: String, val title: String) {
-    Home("home", "首页") {
+enum class NavDestination(val route: String, val titleResId: Int) {
+    Home("home", R.string.nav_home) {
         @Composable
         override fun getTitle(): String = stringResource(R.string.home)
     },
-    StaticWallpapers("static", "静态") {
+    StaticWallpapers("static", R.string.nav_static) {
         @Composable
         override fun getTitle(): String = stringResource(R.string.category_static)
     },
-    LiveWallpapers("live", "动态") {
+    LiveWallpapers("live", R.string.nav_live) {
         @Composable
         override fun getTitle(): String = stringResource(R.string.category_live)
     },
-    Mine("mine", "我的") {
+    Mine("mine", R.string.nav_mine) {
         @Composable
         override fun getTitle(): String = stringResource(R.string.mine)
     };

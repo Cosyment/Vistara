@@ -142,6 +142,12 @@
     <string name="close">关闭</string>
     <string name="maybe_later">稍后再说</string>
 
+    <!-- 导航相关 -->
+    <string name="nav_home">首页</string>
+    <string name="nav_static">静态</string>
+    <string name="nav_live">动态</string>
+    <string name="nav_mine">我的</string>
+
     <!-- 高级会员相关 -->
     <string name="premium_title">解锁高级功能</string>
     <string name="premium_user_title">您已是高级会员</string>
@@ -161,6 +167,13 @@
     <string name="yearly_price">¥168.99</string>
     <string name="quarterly_discount">省17%</string>
     <string name="yearly_discount">省27%</string>
+    <string name="already_premium_user">您已经是高级用户</string>
+    <string name="payment_service_not_connected">支付服务未连接，请稍后再试</string>
+    <string name="monthly_plan_description">每月自动续费，随时可取消</string>
+    <string name="yearly_plan_description">每年自动续费，随时可取消</string>
+    <string name="save_about">节省约27%</string>
+    <string name="lifetime_plan">终身套餐</string>
+    <string name="lifetime_plan_description">一次性付费，永久使用</string>
     <string name="upgrade_now">立即升级</string>
     <string name="connecting_payment">正在连接支付服务...</string>
     <string name="all_premium_features_unlocked">已解锁全部高级功能</string>
@@ -205,7 +218,6 @@
     <string name="search_icon">搜索图标</string>
     <string name="search_high_quality_wallpapers">搜索高清壁纸、动态效果...</string>
     <string name="loading_wallpapers">正在加载壁纸...</string>
-    <string name="loading_failed">加载失败</string>
     <string name="unknown_error">未知错误</string>
     <string name="refresh">刷新</string>
     <string name="partial_data_loading_failed">部分数据加载失败，请刷新重试</string>
@@ -241,6 +253,7 @@
     <string name="apply_settings">应用设置</string>
     <string name="change_frequency">更换频率</string>
     <string name="premium">高级</string>
+    <string name="premium_crown">高级 👑</string>
     <string name="daily_featured">每日精选</string>
     <string name="featured_wallpaper">精选壁纸</string>
     <string name="unknown_author">未知作者</string>
@@ -286,6 +299,10 @@
     <string name="cold">冷色调</string>
     <string name="warm">暖色调</string>
     <string name="crop">裁剪</string>
+    <string name="wallpaper">壁纸</string>
+    <string name="go_back">返回</string>
+    <string name="add_to_favorites">收藏</string>
+    <string name="remove_from_favorites">取消收藏</string>
 
     <!-- 反馈相关 -->
     <string name="direct_feedback">直接反馈</string>
@@ -305,6 +322,23 @@
     <string name="payment_success_notice">支付成功后，您将立即获得高级功能。订阅可随时取消。</string>
 
     <!-- 测试工具相关 -->
+    <string name="api_test_tool">API测试工具</string>
+    <string name="test_tool">测试工具</string>
+    <string name="back_button">返回</string>
+    <string name="test_results_in_logcat">测试结果将显示在Logcat中</string>
+    <string name="filter_tag">过滤标签: ApiTest</string>
+    <string name="test_pexels_api">测试Pexels API</string>
+    <string name="test_unsplash_api">测试Unsplash API</string>
+    <string name="api_test">API测试</string>
+    <string name="launch_pexels_api_test">启动Pexels API测试</string>
+    <string name="user_status_test">用户状态测试</string>
+    <string name="premium_user_status">高级用户状态</string>
+    <string name="current_status_premium">当前状态: 高级用户</string>
+    <string name="current_status_regular">当前状态: 普通用户</string>
+    <string name="login_status_test">登录状态测试</string>
+    <string name="login_status">登录状态</string>
+    <string name="current_status_logged_in">当前状态: 已登录</string>
+    <string name="current_status_not_logged_in">当前状态: 未登录</string>
     <string name="check_login_status_failed">检查登录状态失败: %1$s</string>
     <string name="check_premium_status_failed">检查用户状态失败: %1$s</string>
     <string name="set_premium_success">已成功设置为高级用户</string>
@@ -315,6 +349,64 @@
     <string name="simulate_login_failed">模拟登录失败: %1$s</string>
     <string name="simulate_logout_success">模拟退出登录成功</string>
     <string name="simulate_logout_failed">模拟退出登录失败: %1$s</string>
+
+    <!-- 壁纸管理相关 -->
+    <string name="set_wallpaper_failed">设置壁纸失败</string>
+    <string name="invalid_video_url">视频URL无效</string>
+    <string name="video_download_failed">下载视频失败</string>
+    <string name="home_screen_wallpaper_set">已设置为主屏幕壁纸</string>
+    <string name="lock_screen_wallpaper_set">已设置为锁屏壁纸</string>
+    <string name="both_screens_wallpaper_set">已设置为主屏幕和锁屏壁纸</string>
+    <string name="pexels_api_test_complete">Pexels API测试完成，请查看日志</string>
+    <string name="unsplash_api_test_complete">Unsplash API测试完成，请查看日志</string>
+    <string name="test_failed">测试失败: %1$s</string>
+    <string name="collection_wallpapers_failed">获取集合壁纸失败: %1$s</string>
+    <string name="end_of_list">已经到底了</string>
+    <string name="collection_introduction">专题介绍</string>
+    <string name="related_tags">相关标签</string>
+    <string name="premium_collection_content">高级专题内容</string>
+    <string name="upgrade_to_unlock_all_wallpapers">升级到高级版解锁所有壁纸</string>
+    <string name="upgrade_now_button">立即升级</string>
+    <string name="wallpaper_list">壁纸列表</string>
+    <string name="upgrade_success">升级成功！感谢您的支持</string>
+    <string name="upgrade_failed">升级失败: %1$s</string>
+    <string name="upgrade_cancelled">升级已取消</string>
+    <string name="wallpaper_not_exist">壁纸不存在</string>
+    <string name="load_wallpaper_failed">加载壁纸失败</string>
+    <string name="share_wallpaper">分享壁纸</string>
+    <string name="beautiful_wallpaper">精美壁纸</string>
+    <string name="share_wallpaper_text">我发现了一张精美的壁纸\n标题: %1$s\n作者: %2$s\n来源: %3$s\n分辨率: %4$d x %5$d\n下载 Vistara 壁纸应用以获取更多精美壁纸!</string>
+    <string name="unnamed_wallpaper">未命名壁纸</string>
+    <string name="price_unknown">价格未知</string>
+    <string name="subscription_weekly">周</string>
+    <string name="subscription_monthly">月</string>
+    <string name="subscription_quarterly">季度</string>
+    <string name="subscription_yearly">年</string>
+    <string name="premium_lifetime">终身</string>
+    <string name="sign_out_success">退出登录成功</string>
+    <string name="sign_out_failed">退出登录失败: %1$s</string>
+    <string name="error_loading_data">加载数据时发生未知错误</string>
+    <string name="error_loading_category_wallpapers">加载分类壁纸时发生未知错误</string>
+    <string name="network_request_failed">网络请求失败</string>
+    <string name="no_network_banner_data">无网络连接，无法获取轮播图数据</string>
+    <string name="failed_to_get_banner_data">获取轮播图数据失败</string>
+    <string name="featured_wallpapers">精选壁纸</string>
+    <string name="discover_latest_wallpapers">发现最新最美壁纸</string>
+    <string name="premium_membership">高级会员</string>
+    <string name="unlock_all_hd_wallpapers">解锁所有高清壁纸</string>
+    <string name="live_wallpapers">动态壁纸</string>
+    <string name="make_your_screen_come_alive">让你的屏幕动起来</string>
+    <string name="no_network_wallpapers">无网络连接，无法获取壁纸</string>
+    <string name="failed_to_get_recommended_wallpapers">获取推荐壁纸失败</string>
+    <string name="failed_to_get_wallpapers">获取壁纸失败</string>
+    <string name="no_network_category_wallpapers">无网络连接，无法获取分类壁纸</string>
+    <string name="failed_to_get_category_wallpapers">获取分类壁纸失败</string>
+    <string name="login_success">登录成功</string>
+    <string name="login_failed">登录失败</string>
+    <string name="login_failed_with_status">登录失败: %1$s</string>
+    <string name="login_failed_with_message">登录失败: %1$s</string>
+    <string name="logout_success">已退出登录</string>
+    <string name="logout_failed">退出登录失败: %1$s</string>
 
     <!-- 认证页面相关 -->
     <string name="app_subtitle">壁纸</string>
