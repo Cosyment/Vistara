@@ -6,12 +6,15 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.Date
 import javax.inject.Inject
 
 /**
@@ -26,8 +29,12 @@ class FeedbackViewModel @Inject constructor(
         private const val TAG = "FeedbackViewModel"
         private const val APP_PACKAGE_NAME = "com.vistara.aestheticwalls"
         private const val FEEDBACK_EMAIL = "support@vistara.com"
+        private const val FIRESTORE_COLLECTION = "feedback"
     }
 
+    // Firestore 实例
+    private val firestore = FirebaseFirestore.getInstance()
+    
     // 反馈内容
     private val _feedbackText = MutableStateFlow("")
     val feedbackText: StateFlow<String> = _feedbackText.asStateFlow()
@@ -59,7 +66,7 @@ class FeedbackViewModel @Inject constructor(
     }
 
     /**
-     * 提交反馈
+     * 提交反馈到 Firestore
      */
     fun submitFeedback() {
         if (_feedbackText.value.isBlank()) {
@@ -71,19 +78,28 @@ class FeedbackViewModel @Inject constructor(
             try {
                 _isSubmitting.value = true
                 
-                // 模拟网络请求
-                // 在实际应用中，这里应该调用API发送反馈
-                Log.d(TAG, "Submitting feedback: ${_feedbackText.value}, contact: ${_contactInfo.value}")
+                // 创建反馈数据模型
+                val feedback = hashMapOf(
+                    "content" to _feedbackText.value,
+                    "contactInfo" to _contactInfo.value,
+                    "timestamp" to Date(),
+                    "deviceInfo" to android.os.Build.MODEL,
+                    "appVersion" to context.packageManager.getPackageInfo(context.packageName, 0).versionName
+                )
                 
-                // 延迟1秒模拟网络请求
-                kotlinx.coroutines.delay(1000)
+                // 将反馈保存到 Firestore
+                firestore.collection(FIRESTORE_COLLECTION)
+                    .add(feedback)
+                    .await()
+                
+                Log.d(TAG, "Feedback submitted to Firestore successfully")
                 
                 _submitResult.value = SubmitResult.Success("反馈提交成功，感谢您的宝贵意见！")
                 // 清空输入
                 _feedbackText.value = ""
                 _contactInfo.value = ""
             } catch (e: Exception) {
-                Log.e(TAG, "Error submitting feedback: ${e.message}")
+                Log.e(TAG, "Error submitting feedback to Firestore: ${e.message}")
                 _submitResult.value = SubmitResult.Error("提交失败，请稍后再试")
             } finally {
                 _isSubmitting.value = false

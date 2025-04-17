@@ -1,5 +1,10 @@
 package com.vistara.aestheticwalls.ui.screens.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,11 +37,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,30 +44,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import android.widget.Toast
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Banner
-import com.vistara.aestheticwalls.data.model.BannerActionType
-import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.components.Carousel
 import com.vistara.aestheticwalls.ui.components.FeaturedWallpaperSection
 import com.vistara.aestheticwalls.ui.components.LoadingState
-import com.vistara.aestheticwalls.ui.components.SearchBar
 import com.vistara.aestheticwalls.ui.components.WallpaperItem
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import kotlinx.coroutines.delay
@@ -97,7 +93,8 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "首页", style = MaterialTheme.typography.titleLarge.copy(
+                        stringResource(R.string.home),
+                        style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.SemiBold
                         )
                     )
@@ -117,7 +114,7 @@ fun HomeScreen(
 
         // 显示加载状态
         if (isLoading) {
-            LoadingState(message = "正在加载壁纸...")
+            LoadingState(message = stringResource(R.string.loading_wallpapers))
             return@Scaffold
         }
 
@@ -136,13 +133,13 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "加载失败",
+                        text = stringResource(R.string.loading_failed),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = error ?: "未知错误",
+                        text = error ?: stringResource(R.string.unknown_error),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -153,7 +150,7 @@ fun HomeScreen(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "重试",
+                            text = stringResource(R.string.retry),
                             color = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                         )
@@ -186,7 +183,7 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "部分数据加载失败，请刷新重试",
+                                text = stringResource(R.string.partial_data_loading_failed),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                                 modifier = Modifier.weight(1f)
@@ -197,7 +194,7 @@ fun HomeScreen(
                                 shape = RoundedCornerShape(4.dp)
                             ) {
                                 Text(
-                                    text = "刷新",
+                                    text = stringResource(R.string.refresh),
                                     color = MaterialTheme.colorScheme.onError,
                                     style = MaterialTheme.typography.labelMedium,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -228,14 +225,14 @@ fun HomeScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "搜索图标",
+                            contentDescription = stringResource(R.string.search_icon),
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Text(
-                            text = "搜索高清壁纸、动态效果...",
+                            text = stringResource(R.string.search_high_quality_wallpapers),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                             modifier = Modifier.weight(1f)
@@ -285,7 +282,8 @@ fun HomeScreen(
                 // 热门静态标题
                 item {
                     WallpaperSectionTitle(
-                        title = "热门静态", modifier = Modifier.padding(horizontal = 16.dp)
+                        title = stringResource(R.string.hot_static),
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
 
@@ -307,7 +305,7 @@ fun HomeScreen(
                 // 炫酷动态标题
                 item {
                     WallpaperSectionTitle(
-                        title = "炫酷动态",
+                        title = stringResource(R.string.cool_dynamic),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
@@ -330,7 +328,7 @@ fun HomeScreen(
                 // 最新上传标题
                 item {
                     WallpaperSectionTitle(
-                        title = "最新上传",
+                        title = stringResource(R.string.latest_uploads),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 0.dp)
                     )
                 }
@@ -370,7 +368,9 @@ private fun CategorySection(
 ) {
     // 临时分类数据
     val demoCategories = listOf(
-        "自然风景", "建筑", "动物", "抽象", "太空", "简约"
+        stringResource(R.string.nature_scenery), stringResource(R.string.architecture),
+        stringResource(R.string.animals), stringResource(R.string.category_abstract),
+        stringResource(R.string.space), stringResource(R.string.minimal)
     )
 
     // 获取当前上下文
@@ -390,9 +390,11 @@ private fun CategorySection(
 
     Column(modifier = modifier) {
         Text(
-            text = "探索分类", style = MaterialTheme.typography.titleLarge.copy(
+            text = stringResource(R.string.explore_categories),
+            style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.SemiBold
-            ), modifier = Modifier.padding(bottom = 8.dp)
+            ),
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
         LazyRow(
@@ -451,9 +453,10 @@ private fun CategorySection(
                 enter = fadeIn(animationSpec = tween(300)),
                 exit = fadeOut(animationSpec = tween(300))
             ) {
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -472,7 +475,8 @@ private fun CategorySection(
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
                     // 根据状态显示当前或上一次的壁纸
-                    val wallpapersToShow = if (showPrevious) previousWallpapers else categoryWallpapers
+                    val wallpapersToShow =
+                        if (showPrevious) previousWallpapers else categoryWallpapers
 
                     items(wallpapersToShow.take(6)) { wallpaper ->
                         CategoryWallpaperItem(

@@ -23,8 +23,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.vistara.aestheticwalls.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
@@ -50,12 +52,12 @@ fun DownloadsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("我的下载") },
+                title = { Text(stringResource(R.string.my_downloads)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -76,12 +78,12 @@ fun DownloadsScreen(
 
                 is UiState.Error -> {
                     val errorMessage = (downloadsState as UiState.Error).message
-                    if (errorMessage == "需要登录才能查看下载列表") {
+                    if (errorMessage == stringResource(R.string.login_required_to_view_downloads)) {
                         // 显示登录提示对话框
                         LoginPromptDialog(
                             onDismiss = { onBackPressed() },
                             onConfirm = { onNavigateToLogin() },
-                            message = "下载列表需要登录后才能使用"
+                            message = stringResource(R.string.downloads_login_required)
                         )
                     } else {
                         ErrorState(
@@ -129,7 +131,7 @@ private fun EmptyDownloadsContent() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "暂无下载壁纸",
+            text = stringResource(R.string.no_downloaded_wallpapers),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -137,7 +139,7 @@ private fun EmptyDownloadsContent() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "浏览壁纸并点击下载按钮，下载的壁纸将显示在这里",
+            text = stringResource(R.string.browse_and_download_tip),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

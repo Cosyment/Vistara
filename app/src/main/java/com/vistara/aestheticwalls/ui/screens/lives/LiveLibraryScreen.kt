@@ -199,7 +199,7 @@ fun LiveLibraryScreenPreview() {
         // 注意：Preview中不能使用hiltViewModel，所以这里只是一个简单的预览
         // 实际使用时需要提供真实的ViewModel
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("动态壁纸页面预览")
+            Text(stringResource(R.string.category_live))
         }
     }
 }

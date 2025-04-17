@@ -61,10 +61,10 @@ fun AboutScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("关于与致谢") }, navigationIcon = {
+            TopAppBar(title = { Text(stringResource(R.string.about_credits)) }, navigationIcon = {
                 IconButton(onClick = onBackPressed) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回"
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
                     )
                 }
             })
@@ -110,7 +110,7 @@ private fun AppInfoSection(
                 .background(MaterialTheme.colorScheme.primary)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), contentDescription = stringResource(R.string.app_name), modifier = Modifier.fillMaxSize()
+                painter = painterResource(id = R.drawable.ic_launcher), contentDescription = stringResource(R.string.app_name), modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -164,7 +164,7 @@ private fun OpenSourceSection(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "开源库", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
+            text = stringResource(R.string.open_source_libraries), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
         )
 
         Spacer(modifier = Modifier.height(8.dp))

@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -142,7 +143,8 @@ fun AuthScreen(
 
     // 启动Google登录
     fun launchGoogleSignIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build()
+        val gso =
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build()
         val googleSignInClient = GoogleSignIn.getClient(context, gso)
         val signInIntent = googleSignInClient.signInIntent
         googleSignInLauncher.launch(signInIntent)
@@ -163,7 +165,8 @@ fun AuthScreen(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surfaceVariant
+                                MaterialTheme.colorScheme.surface,
+                                MaterialTheme.colorScheme.surfaceVariant
                             )
                         )
                     )
@@ -178,7 +181,8 @@ fun AuthScreen(
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0f)
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0f)
                             )
                         ), shape = CircleShape
                     )
@@ -193,7 +197,8 @@ fun AuthScreen(
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.tertiary.copy(alpha = 0f)
+                                MaterialTheme.colorScheme.tertiary,
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0f)
                             )
                         ), shape = CircleShape
                     )
@@ -209,7 +214,8 @@ fun AuthScreen(
             ) {
                 // 应用Logo
                 AnimatedVisibility(
-                    visible = isLogoVisible, enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }) {
+                    visible = isLogoVisible,
+                    enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }) {
                     Box(modifier = Modifier
                         .size(120.dp)
                         .graphicsLayer {
@@ -221,17 +227,17 @@ fun AuthScreen(
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                                 )
                             )
                         ), contentAlignment = Alignment.Center) {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                            painter = painterResource(id = R.drawable.ic_launcher_round),
                             contentDescription = "App Logo",
                             modifier = Modifier
                                 .size(80.dp)
-                                .alpha(0.9f),
-                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color.White)
+                                .alpha(0.9f)
                         )
                     }
                 }
@@ -245,13 +251,15 @@ fun AuthScreen(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         // 应用名称
                         Text(
-                            text = "VISTARA", style = TextStyle(
+                            text = stringResource(R.string.app_name), style = TextStyle(
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 2.sp,
                                 color = MaterialTheme.colorScheme.onBackground,
                                 shadow = Shadow(
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), offset = Offset(0f, 2f), blurRadius = 4f
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                    offset = Offset(0f, 2f),
+                                    blurRadius = 4f
                                 )
                             )
                         )
@@ -302,7 +310,8 @@ fun AuthScreen(
                             )
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.mipmap.ic_google),
@@ -312,16 +321,20 @@ fun AuthScreen(
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "使用Google账号登录", fontSize = 16.sp, fontWeight = FontWeight.Medium
+                                    text = "使用Google账号登录",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium
                                 )
                             }
                         }
 
                         // 跳过登录按钮
                         TextButton(
-                            onClick = onSkipLogin, modifier = Modifier
+                            onClick = onSkipLogin,
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .height(48.dp), shape = RoundedCornerShape(24.dp)
+                                .height(48.dp),
+                            shape = RoundedCornerShape(24.dp)
                         ) {
                             Text(
                                 text = "跳过登录，直接体验",

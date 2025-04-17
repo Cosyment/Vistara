@@ -30,27 +30,45 @@ class LocaleManager @Inject constructor(
     /**
      * 更新应用语言设置
      * @param language 要设置的语言
+     * @return 是否需要重启应用
      */
-    suspend fun updateAppLanguage(language: AppLanguage) {
+    suspend fun updateAppLanguage(language: AppLanguage): Boolean {
         val currentSettings = userPrefsRepository.getUserSettings()
         val updatedSettings = currentSettings.copy(appLanguage = language)
         userPrefsRepository.saveUserSettings(updatedSettings)
-        applyLanguage(language)
+        return applyLanguage(language)
     }
 
     /**
      * 应用语言设置
      * @param language 要应用的语言
+     * @return 是否需要重启应用
      */
-    fun applyLanguage(language: AppLanguage) {
+    fun applyLanguage(language: AppLanguage): Boolean {
+        // 获取当前语言设置
+        val currentLocale = AppCompatDelegate.getApplicationLocales()
+        val currentLanguage = if (currentLocale.isEmpty) {
+            AppLanguage.SYSTEM
+        } else {
+            val localeCode = currentLocale[0]?.language ?: ""
+            AppLanguage.values().find { it.code == localeCode } ?: AppLanguage.SYSTEM
+        }
+
+        // 如果语言没有变化，则不需要重启
+        if (language == currentLanguage) {
+            return false
+        }
+
         if (language == AppLanguage.SYSTEM) {
             // 使用系统默认语言
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
         } else {
             // 设置指定语言
-            val localeList = LocaleListCompat.create(Locale(language.code))
+            val locale = Locale.Builder().setLanguage(language.code).build()
+            val localeList = LocaleListCompat.create(locale)
             AppCompatDelegate.setApplicationLocales(localeList)
         }
+        return true
     }
 
     /**
@@ -88,7 +106,7 @@ class LocaleManager @Inject constructor(
             return baseContext
         }
 
-        val locale = Locale(language.code)
+        val locale = Locale.Builder().setLanguage(language.code).build()
         Locale.setDefault(locale)
 
         val config = Configuration(baseContext.resources.configuration)

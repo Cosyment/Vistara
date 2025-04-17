@@ -24,6 +24,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.vistara.aestheticwalls.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -104,13 +106,13 @@ fun SearchScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "未找到相关壁纸",
+                            text = stringResource(R.string.no_wallpapers_found),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "尝试使用其他关键词搜索",
+                            text = stringResource(R.string.try_different_keywords),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -127,7 +129,7 @@ fun SearchScreen(
                     // 显示搜索结果数量
                     item {
                         Text(
-                            text = "找到 ${searchResults.size} 个结果",
+                            text = stringResource(R.string.found_results, searchResults.size),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -174,7 +176,7 @@ private fun InitialSearchState(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "热门搜索",
+            text = stringResource(R.string.hot_searches),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -195,7 +197,7 @@ private fun InitialSearchState(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "搜索提示",
+            text = stringResource(R.string.search_tips),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -205,18 +207,18 @@ private fun InitialSearchState(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SearchTip(
-                title = "使用具体描述",
-                description = "例如：'山水风景'、'黑白抽象'、'城市夜景'"
+                title = stringResource(R.string.use_specific_descriptions),
+                description = stringResource(R.string.specific_description_examples)
             )
 
             SearchTip(
-                title = "尝试不同语言",
-                description = "有时英文关键词可能会有更多结果"
+                title = stringResource(R.string.try_different_languages),
+                description = stringResource(R.string.english_keywords_tip)
             )
 
             SearchTip(
-                title = "组合关键词",
-                description = "例如：'极简 黑白'、'自然 绿色'"
+                title = stringResource(R.string.combine_keywords),
+                description = stringResource(R.string.keyword_combination_examples)
             )
         }
     }

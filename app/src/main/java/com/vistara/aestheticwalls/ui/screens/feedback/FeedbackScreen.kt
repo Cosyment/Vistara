@@ -36,11 +36,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -49,8 +51,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FeedbackScreen(
-    onBackPressed: () -> Unit,
-    viewModel: FeedbackViewModel = hiltViewModel()
+    onBackPressed: () -> Unit, viewModel: FeedbackViewModel = hiltViewModel()
 ) {
     val feedbackText by viewModel.feedbackText.collectAsState()
     val contactInfo by viewModel.contactInfo.collectAsState()
@@ -67,6 +68,7 @@ fun FeedbackScreen(
                     snackbarHostState.showSnackbar(it.message)
                     viewModel.clearSubmitResult()
                 }
+
                 is SubmitResult.Error -> {
                     snackbarHostState.showSnackbar(it.message)
                     viewModel.clearSubmitResult()
@@ -75,22 +77,16 @@ fun FeedbackScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("评分与反馈") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
-                        )
-                    }
-                }
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(stringResource(R.string.rate_feedback)) }, navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back)
+                )
+            }
+        })
+    }, snackbarHost = { SnackbarHost(snackbarHostState) }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,21 +96,18 @@ fun FeedbackScreen(
         ) {
             // 应用商店评分卡片
             RatingCard(
-                onClick = { viewModel.openAppRating() }
-            )
+                onClick = { viewModel.openAppRating() })
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // 邮件反馈卡片
             EmailFeedbackCard(
-                onClick = { viewModel.sendEmailFeedback() }
-            )
+                onClick = { viewModel.sendEmailFeedback() })
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 直接反馈表单
             Text(
-                text = "直接反馈",
+                text = stringResource(R.string.direct_feedback),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -124,19 +117,19 @@ fun FeedbackScreen(
             OutlinedTextField(
                 value = feedbackText,
                 onValueChange = { viewModel.updateFeedbackText(it) },
-                label = { Text("您的反馈或建议") },
-                placeholder = { Text("请输入您对应用的反馈或建议...") },
+                label = { Text(stringResource(R.string.your_feedback_or_suggestion)) },
+                placeholder = { Text(stringResource(R.string.enter_feedback_placeholder)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 4
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = contactInfo,
                 onValueChange = { viewModel.updateContactInfo(it) },
-                label = { Text("联系方式（选填）") },
-                placeholder = { Text("邮箱或其他联系方式") },
+                label = { Text(stringResource(R.string.contact_info_optional)) },
+                placeholder = { Text(stringResource(R.string.email_or_other_contact)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -145,7 +138,7 @@ fun FeedbackScreen(
             Button(
                 onClick = { viewModel.submitFeedback() },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isSubmitting
+                enabled = !isSubmitting && feedbackText.isNotBlank()
             ) {
                 if (isSubmitting) {
                     CircularProgressIndicator(
@@ -154,7 +147,7 @@ fun FeedbackScreen(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("提交反馈")
+                    Text(stringResource(R.string.submit_feedback))
                 }
             }
         }
@@ -166,8 +159,7 @@ fun FeedbackScreen(
  */
 @Composable
 private fun RatingCard(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
@@ -193,7 +185,7 @@ private fun RatingCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "在应用商店评分",
+                text = stringResource(R.string.rate_in_app_store),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -201,7 +193,7 @@ private fun RatingCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "喜欢我们的应用吗？请给我们5星好评！",
+                text = stringResource(R.string.like_our_app_rate_us),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
@@ -215,8 +207,7 @@ private fun RatingCard(
  */
 @Composable
 private fun EmailFeedbackCard(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
@@ -242,7 +233,7 @@ private fun EmailFeedbackCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "发送邮件反馈",
+                text = stringResource(R.string.send_email_feedback),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -250,7 +241,7 @@ private fun EmailFeedbackCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "有问题或建议？发送邮件给我们的支持团队",
+                text = stringResource(R.string.have_questions_email_us),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)

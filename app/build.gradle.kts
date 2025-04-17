@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gradle.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.google.service)
 }
 
 val keystorePropertiesFile = rootProject.file("gradle.properties")
@@ -140,6 +141,8 @@ dependencies {
 
     // Google Auth
     implementation(libs.google.auth)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
 
     // Testing
     testImplementation(libs.junit)

@@ -55,6 +55,8 @@
     <string name="language_settings">Language Settings</string>
     <string name="language">Language</string>
     <string name="language_desc">Change app language</string>
+    <string name="language_change_restart">Language changed, restart app to apply</string>
+    <string name="language_changed">Language changed</string>
     <string name="system_default">System Default</string>
     <string name="english">English</string>
     <string name="chinese">Chinese</string>
@@ -89,6 +91,8 @@
     <string name="user_agreement">User Agreement</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="terms_of_service">Terms of Service</string>
+    <string name="open_source_libraries">Open Source Libraries</string>
+
     <!-- Wallpaper categories -->
     <string name="category_all">All</string>
     <string name="category_abstract">Abstract</string>
@@ -112,4 +116,176 @@
     <string name="error_filtering_wallpapers">Failed to filter wallpapers</string>
     <string name="error_already_premium">You are already a premium user</string>
     <string name="error_billing_not_connected">Payment service not connected, please try again later</string>
+    <string name="error_network_check">Failed to load, please check your network connection</string>
+
+    <!-- Common buttons and prompts -->
+    <string name="retry">Retry</string>
+    <string name="loading">Loading...</string>
+    <string name="confirm">Confirm</string>
+    <string name="login_required">Login Required</string>
+    <string name="login_required_message">This feature requires login to use. Would you like to go to the login page?</string>
+    <string name="go_to_login">Go to Login</string>
+    <string name="close">Close</string>
+    <string name="maybe_later">Maybe Later</string>
+
+    <!-- Home screen related -->
+    <string name="home">Home</string>
+    <string name="search_icon">Search icon</string>
+    <string name="search_high_quality_wallpapers">Search high-quality wallpapers, dynamic effects...</string>
+    <string name="loading_wallpapers">Loading wallpapers...</string>
+    <string name="loading_failed">Loading failed</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="refresh">Refresh</string>
+    <string name="partial_data_loading_failed">Some data failed to load, refresh to try again</string>
+    <string name="explore_categories">Explore Categories</string>
+    <string name="hot_static">Hot Static</string>
+    <string name="cool_dynamic">Cool Dynamic</string>
+    <string name="latest_uploads">Latest Uploads</string>
+    <string name="nature_scenery">Nature Scenery</string>
+    <string name="architecture">Architecture</string>
+    <string name="animals">Animals</string>
+    <string name="space">Space</string>
+    <string name="minimal">Minimal</string>
+    <string name="no_wallpapers_found">No wallpapers found</string>
+    <string name="try_different_keywords">Try different keywords</string>
+    <string name="found_results">Found %d results</string>
+    <string name="hot_searches">Hot Searches</string>
+    <string name="search_tips">Search Tips</string>
+    <string name="use_specific_descriptions">Use specific descriptions</string>
+    <string name="specific_description_examples">Examples: \'mountain landscape\', \'black and white abstract\', \'city night view\'</string>
+    <string name="try_different_languages">Try different languages</string>
+    <string name="english_keywords_tip">Sometimes English keywords might yield more results</string>
+    <string name="combine_keywords">Combine keywords</string>
+    <string name="keyword_combination_examples">Examples: \'minimal black and white\', \'nature green\'</string>
+    <string name="clear_search">Clear Search</string>
+    <string name="search_history">Search History</string>
+    <string name="mine">Mine</string>
+
+    <!-- Premium related -->
+    <string name="premium_title">Unlock Premium Features</string>
+    <string name="premium_user_title">You are a Premium User</string>
+    <string name="premium_description">Upgrade to premium, unlock all wallpapers and features</string>
+    <string name="premium_user_description">Thank you for your support, you can use all premium features</string>
+    <string name="premium_feature_1">Unlimited high-quality wallpaper downloads</string>
+    <string name="premium_feature_2">Remove all ads</string>
+    <string name="premium_feature_3">Exclusive premium wallpapers</string>
+    <string name="premium_feature_4">Advanced editing features</string>
+    <string name="premium_feature_5">Auto wallpaper change</string>
+    <string name="select_subscription">Select Subscription Plan</string>
+    <string name="monthly_plan">Monthly Plan</string>
+    <string name="quarterly_plan">Quarterly Plan</string>
+    <string name="yearly_plan">Yearly Plan</string>
+    <string name="monthly_price">$18.99</string>
+    <string name="quarterly_price">$49.99</string>
+    <string name="yearly_price">$168.99</string>
+    <string name="quarterly_discount">Save 17%</string>
+    <string name="yearly_discount">Save 27%</string>
+    <string name="upgrade_now">Upgrade Now</string>
+    <string name="connecting_payment">Connecting to payment service...</string>
+    <string name="all_premium_features_unlocked">All premium features unlocked</string>
+
+    <!-- Wallpaper detail page -->
+    <string name="start_download_wallpaper">Start downloading wallpaper</string>
+    <string name="download_failed_permission_denied">Cannot download wallpaper: storage permission denied</string>
+    <string name="storage_permission_required">Storage permission required</string>
+    <string name="storage_permission_rationale">To save wallpapers to gallery, we need storage permission. Please allow this to download wallpapers.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="download_failed_permission_required">Cannot download wallpaper: storage permission required</string>
+    <string name="favorite_login_required">Adding wallpaper to favorites requires login</string>
+    <string name="download_login_required">Downloading wallpaper requires login</string>
+    <string name="set_wallpaper_login_required">Setting wallpaper requires login</string>
+    <string name="edit_login_required">Editing wallpaper requires login</string>
+
+    <!-- Wallpaper detail components -->
+    <string name="author">Author: %1$s</string>
+    <string name="source">Source: %1$s</string>
+    <string name="resolution">Resolution: %1$d x %2$d</string>
+    <string name="wallpaper_type">Type: %1$s</string>
+    <string name="static_wallpaper">Static Wallpaper</string>
+    <string name="live_wallpaper">Live Wallpaper</string>
+    <string name="tags">Tags:</string>
+    <string name="set_as_wallpaper">Set as Wallpaper</string>
+    <string name="download">Download</string>
+    <string name="share">Share</string>
+    <string name="edit">Edit</string>
+    <string name="set_home_screen">Set to Home Screen</string>
+    <string name="set_lock_screen">Set to Lock Screen</string>
+    <string name="set_both_screens">Set Both</string>
+    <string name="collapse_info">Collapse Info</string>
+    <string name="expand_info">Expand Info</string>
+    <string name="set_as">Set as</string>
+    <string name="home_screen_wallpaper">Home Screen Wallpaper</string>
+    <string name="lock_screen_wallpaper">Lock Screen Wallpaper</string>
+    <string name="home_and_lock_screen">Home and Lock Screen</string>
+    <string name="upgrade_to_unlock">Upgrade to unlock this wallpaper</string>
+
+    <!-- Auto change wallpaper related -->
+    <string name="change_settings">Change Settings</string>
+    <string name="wifi_only_change">Change only on WiFi</string>
+    <string name="avoid_mobile_data">Avoid using mobile data</string>
+    <string name="wallpaper_source">Wallpaper Source</string>
+    <string name="wallpaper_target">Wallpaper Target</string>
+    <string name="apply_settings">Apply Settings</string>
+    <string name="change_frequency">Change Frequency</string>
+    <string name="premium">Premium</string>
+    <string name="daily_featured">Daily Featured</string>
+    <string name="featured_wallpaper">Featured Wallpaper</string>
+    <string name="unknown_author">Unknown Author</string>
+    <string name="daily">Daily</string>
+    <string name="every_twelve_hours">Every 12 Hours</string>
+    <string name="every_six_hours">Every 6 Hours</string>
+    <string name="hourly">Hourly</string>
+    <string name="each_unlock">Each Unlock</string>
+    <string name="downloaded_wallpapers">Downloaded Wallpapers</string>
+    <string name="specific_category">Specific Category</string>
+    <string name="trending_wallpapers">Trending Wallpapers</string>
+    <string name="home_screen_only">Home Screen Only</string>
+    <string name="lock_screen_only">Lock Screen Only</string>
+
+    <!-- Download and favorite related -->
+    <string name="no_downloaded_wallpapers">No downloaded wallpapers</string>
+    <string name="browse_and_download_tip">Browse wallpapers and click the download button, downloaded wallpapers will appear here</string>
+    <string name="no_favorite_wallpapers">No favorite wallpapers</string>
+    <string name="browse_and_favorite_tip">Browse wallpapers and click the favorite button, favorite wallpapers will appear here</string>
+    <string name="login_required_to_view_downloads">Login required to view downloads list</string>
+    <string name="login_required_to_view_favorites">Login required to view favorites list</string>
+
+    <!-- Edit wallpaper related -->
+    <string name="edit_wallpaper">Edit Wallpaper</string>
+    <string name="save">Save</string>
+    <string name="brightness">Brightness</string>
+    <string name="contrast">Contrast</string>
+    <string name="saturation">Saturation</string>
+    <string name="reset">Reset</string>
+    <string name="reset_edits">Reset Edits</string>
+    <string name="filter">Filter</string>
+
+    <!-- Feedback related -->
+    <string name="direct_feedback">Direct Feedback</string>
+    <string name="your_feedback_or_suggestion">Your Feedback or Suggestion</string>
+    <string name="enter_feedback_placeholder">Please enter your feedback or suggestion about the app...</string>
+    <string name="contact_info_optional">Contact Info (Optional)</string>
+    <string name="email_or_other_contact">Email or other contact method</string>
+    <string name="submit_feedback">Submit Feedback</string>
+    <string name="rate_in_app_store">Rate in App Store</string>
+    <string name="like_our_app_rate_us">Like our app? Please give us a 5-star rating!</string>
+    <string name="send_email_feedback">Send Email Feedback</string>
+    <string name="have_questions_email_us">Have questions or suggestions? Email our support team</string>
+
+    <!-- Premium membership related -->
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="restore_purchases">Restore Purchases</string>
+    <string name="payment_success_notice">After successful payment, you will immediately get premium features. Subscription can be canceled at any time.</string>
+
+    <!-- Test tools related -->
+    <string name="check_login_status_failed">Check login status failed: %1$s</string>
+    <string name="check_premium_status_failed">Check user status failed: %1$s</string>
+    <string name="set_premium_success">Successfully set as premium user</string>
+    <string name="set_premium_failed">Failed to set premium user: %1$s</string>
+    <string name="disable_premium_success">Successfully disabled premium user status</string>
+    <string name="disable_premium_failed">Failed to disable premium user status: %1$s</string>
+    <string name="simulate_login_success">Simulated login successful</string>
+    <string name="simulate_login_failed">Simulated login failed: %1$s</string>
+    <string name="simulate_logout_success">Simulated logout successful</string>
+    <string name="simulate_logout_failed">Simulated logout failed: %1$s</string>
 </resources>

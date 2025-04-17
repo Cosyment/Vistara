@@ -26,8 +26,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.R
 
 /**
  * WebView屏幕
@@ -57,7 +59,7 @@ fun WebViewScreen(
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -129,7 +131,7 @@ fun WebViewScreen(
             // 错误提示
             if (hasError) {
                 Text(
-                    text = "加载失败，请检查网络连接",
+                    text = stringResource(R.string.error_network_check),
                     modifier = Modifier.align(Alignment.Center),
                     color = MaterialTheme.colorScheme.error
                 )

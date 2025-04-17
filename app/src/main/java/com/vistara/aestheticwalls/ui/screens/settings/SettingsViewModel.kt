@@ -1,12 +1,15 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.AppLanguage
 import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
@@ -14,6 +17,7 @@ import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.LocaleManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -190,14 +194,31 @@ class SettingsViewModel @Inject constructor(
     /**
      * 更新应用语言设置
      */
+    // 新增 StateFlow 通知 UI
+    private val _needRecreate = MutableStateFlow(false)
+    val needRecreate: StateFlow<Boolean> = _needRecreate.asStateFlow()
+
+    fun onRecreateHandled() {
+        _needRecreate.value = false
+    }
+
     fun updateAppLanguage(language: AppLanguage) {
+        if (_appLanguage.value == language) return
+
         _appLanguage.value = language
         saveSettings()
         // 应用语言设置
         viewModelScope.launch {
-            localeManager.updateAppLanguage(language)
+            val needRestart = localeManager.updateAppLanguage(language)
+            if (needRestart) {
+                _operationResult.value = context.getString(R.string.language_changed)
+                delay(500)
+                _needRecreate.value = true
+            }
         }
     }
+
+
 
     /**
      * 更新下载通知设置

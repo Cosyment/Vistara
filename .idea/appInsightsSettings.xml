@@ -22,10 +22,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.vistara.aestheticwalls" />
+                  <option name="mobileSdkAppId" value="1:677640523590:android:90e7b718aeae17e39edf47" />
+                  <option name="projectId" value="vistara-efe57" />
+                  <option name="projectNumber" value="677640523590" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

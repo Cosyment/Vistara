@@ -122,7 +122,7 @@ fun StaticLibraryScreen(
                             modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "没有找到壁纸",
+                                text = stringResource(R.string.no_wallpapers_found),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )

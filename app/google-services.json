@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "677640523590",
+    "project_id": "vistara-efe57",
+    "storage_bucket": "vistara-efe57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677640523590:android:90e7b718aeae17e39edf47",
+        "android_client_info": {
+          "package_name": "com.vistara.aestheticwalls"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677640523590-91m93ireq8vgjrvg80vnl7evtin2uefa.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vistara.aestheticwalls",
+            "certificate_hash": "b521dea182d36f2d424531e841a3f3a100b4f00a"
+          }
+        },
+        {
+          "client_id": "677640523590-jjqa7drnhbgi6q3edt46ljp8q3ehnaud.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpuv8q-mF7hC0Z6WJFGCZjgzF_yPs-c84"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "677640523590-jjqa7drnhbgi6q3edt46ljp8q3ehnaud.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

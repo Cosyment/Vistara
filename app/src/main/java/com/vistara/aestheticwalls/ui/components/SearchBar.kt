@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,7 @@ fun SearchBar(
     onQueryChange: (String) -> Unit,
     onSearch: (String) -> Unit,
     modifier: Modifier = Modifier,
-    placeholder: String = "搜索壁纸...",
+    placeholder: String = stringResource(R.string.search_hint),
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     elevation: Int = 4
@@ -80,7 +81,7 @@ fun SearchBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "搜索图标",
+                    contentDescription = stringResource(R.string.search_icon),
                     tint = contentColor.copy(alpha = 0.6f)
                 )
 
@@ -125,7 +126,7 @@ fun SearchBar(
                         onClick = { onQueryChange("") }) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "清除搜索",
+                            contentDescription = stringResource(R.string.clear_search),
                             tint = contentColor.copy(alpha = 0.6f)
                         )
                     }
@@ -292,13 +293,13 @@ fun SearchBarWithHistory(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "搜索历史",
+                            text = stringResource(R.string.search_history),
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
                         TextButton(onClick = onClearHistory) {
-                            Text("清除")
+                            Text(stringResource(R.string.clear))
                         }
                     }
 
@@ -409,13 +410,13 @@ fun AdvancedSearchBar(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = "搜索历史",
+                                text = stringResource(R.string.search_history),
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
 
                             TextButton(onClick = onClearHistory) {
-                                Text("清除")
+                                Text(stringResource(R.string.clear))
                             }
                         }
 

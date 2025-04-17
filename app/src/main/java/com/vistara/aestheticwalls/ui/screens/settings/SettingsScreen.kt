@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
 import android.Manifest
+import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -70,6 +72,15 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 fun SettingsScreen(
     onBackPressed: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    // 监听 needRecreate 并重建 Activity
+    val needRecreate by viewModel.needRecreate.collectAsState()
+    val context = LocalContext.current
+    LaunchedEffect(needRecreate) {
+        if (needRecreate) {
+            (context as? Activity)?.recreate()
+            viewModel.onRecreateHandled()
+        }
+    }
     // 从ViewModel获取状态
     val darkTheme by viewModel.darkTheme.collectAsState()
     val dynamicColors by viewModel.dynamicColors.collectAsState()

@@ -3,11 +3,11 @@
     <string name="app_name">Vistara</string>
     <string name="search_hint">Cari wallpaper...</string>
 
-    <!-- String terkait notifikasi -->
+    <!-- Notification related strings -->
     <string name="notification_channel_wallpaper">Notifikasi Perubahan Wallpaper</string>
     <string name="notification_channel_wallpaper_desc">Notifikasi tentang status perubahan otomatis wallpaper</string>
     <string name="notification_channel_download">Notifikasi Unduhan</string>
-    <string name="notification_channel_download_desc">Notifikasi tentang kemajuan unduhan dan penyelesaian wallpaper</string>
+    <string name="notification_channel_download_desc">Notifikasi tentang kemajuan dan penyelesaian unduhan wallpaper</string>
 
     <string name="notification_wallpaper_changed_title">Wallpaper Telah Diubah</string>
     <string name="notification_wallpaper_changed_text">Wallpaper Anda telah berhasil diubah</string>
@@ -18,14 +18,14 @@
     <string name="notification_download_complete_title">Unduhan Wallpaper Selesai</string>
     <string name="notification_download_complete_text">Wallpaper telah berhasil diunduh ke perangkat Anda</string>
 
-    <!-- String terkait wallpaper video -->
+    <!-- Video wallpaper related strings -->
     <string name="video_wallpaper_description">Gunakan video sebagai wallpaper hidup</string>
     <string name="video_wallpaper_set_success">Wallpaper video berhasil diatur</string>
     <string name="video_wallpaper_set_failed">Gagal mengatur wallpaper video</string>
     <string name="video_wallpaper_download_failed">Unduhan video gagal</string>
     <string name="video_wallpaper_select_guide">Silakan pilih \"Vistara Video Wallpaper\" dan klik \"Atur Wallpaper\"</string>
 
-    <!-- Layar pengaturan -->
+    <!-- Settings screen -->
     <string name="settings">Pengaturan</string>
     <string name="back">Kembali</string>
     <string name="theme_settings">Pengaturan Tema</string>
@@ -55,6 +55,8 @@
     <string name="language_settings">Pengaturan Bahasa</string>
     <string name="language">Bahasa</string>
     <string name="language_desc">Ubah bahasa aplikasi</string>
+    <string name="language_change_restart">Bahasa telah diubah, mulai ulang aplikasi untuk menerapkan</string>
+    <string name="language_changed">Bahasa telah diubah</string>
     <string name="system_default">Default Sistem</string>
     <string name="english">Bahasa Inggris</string>
     <string name="chinese">Bahasa Mandarin</string>
@@ -62,34 +64,36 @@
     <string name="korean">Bahasa Korea</string>
     <string name="indonesian">Bahasa Indonesia</string>
 
-    <!-- Layar Saya -->
+    <!-- Mine screen -->
     <string name="my_favorites">Favorit Saya</string>
     <string name="my_favorites_desc">Lihat semua wallpaper favorit Anda</string>
     <string name="my_downloads">Unduhan Saya</string>
-    <string name="my_downloads_desc">Lihat semua wallpaper yang diunduh</string>
-    <string name="auto_change_wallpaper">Perubahan Wallpaper Otomatis</string>
+    <string name="my_downloads_desc">Lihat semua wallpaper yang telah Anda unduh</string>
+    <string name="auto_change_wallpaper">Ubah Wallpaper Otomatis</string>
     <string name="auto_change_wallpaper_desc">Atur frekuensi dan sumber untuk perubahan wallpaper otomatis</string>
     <string name="settings_desc">Sesuaikan preferensi aplikasi dan notifikasi</string>
     <string name="rate_feedback">Nilai &amp; Umpan Balik</string>
     <string name="rate_feedback_desc">Bantu kami meningkatkan aplikasi</string>
     <string name="about_credits">Tentang &amp; Kredit</string>
     <string name="about_credits_desc">Lihat informasi aplikasi dan hak cipta</string>
-    <string name="test_tools">Alat Uji</string>
+    <string name="test_tools">Alat Pengujian</string>
     <string name="test_tools_desc">Uji antarmuka API dan fitur lainnya</string>
     <string name="not_logged_in">Belum Masuk</string>
     <string name="login">Masuk</string>
     <string name="premium_user">Pengguna Premium</string>
-    <string name="premium_banner">✨ Buka semua hak istimewa, nikmati pengalaman HD ✨</string>
+    <string name="premium_banner">✨ Buka semua keistimewaan, nikmati pengalaman HD ✨</string>
     <string name="favorites_login_required">Anda perlu masuk untuk menggunakan daftar favorit</string>
     <string name="downloads_login_required">Anda perlu masuk untuk menggunakan daftar unduhan</string>
     <string name="auto_wallpaper_login_required">Anda perlu masuk untuk menggunakan perubahan wallpaper otomatis</string>
 
-    <!-- Layar Tentang -->
+    <!-- About screen -->
     <string name="app_description">Vistara Wallpaper adalah aplikasi wallpaper yang indah yang menyediakan wallpaper statis dan hidup berkualitas tinggi untuk menyegarkan perangkat Anda.</string>
     <string name="user_agreement">Perjanjian Pengguna</string>
     <string name="privacy_policy">Kebijakan Privasi</string>
     <string name="terms_of_service">Ketentuan Layanan</string>
-    <!-- Kategori Wallpaper -->
+    <string name="open_source_libraries">Pustaka Open Source</string>
+
+    <!-- Wallpaper categories -->
     <string name="category_all">Semua</string>
     <string name="category_abstract">Abstrak</string>
     <string name="category_tech">Teknologi</string>
@@ -107,9 +111,181 @@
     <string name="category_static">Wallpaper Statis</string>
     <string name="category_live">Wallpaper Hidup</string>
 
-    <!-- Pesan kesalahan -->
+    <!-- Error messages -->
     <string name="error_loading_wallpapers">Gagal memuat wallpaper</string>
     <string name="error_filtering_wallpapers">Gagal memfilter wallpaper</string>
     <string name="error_already_premium">Anda sudah menjadi pengguna premium</string>
     <string name="error_billing_not_connected">Layanan pembayaran tidak terhubung, silakan coba lagi nanti</string>
+    <string name="error_network_check">Gagal memuat, silakan periksa koneksi jaringan Anda</string>
+
+    <!-- Common buttons and prompts -->
+    <string name="retry">Coba Lagi</string>
+    <string name="loading">Memuat...</string>
+    <string name="confirm">Konfirmasi</string>
+    <string name="login_required">Login Diperlukan</string>
+    <string name="login_required_message">Fitur ini memerlukan login untuk digunakan. Apakah Anda ingin pergi ke halaman login?</string>
+    <string name="go_to_login">Pergi ke Login</string>
+    <string name="close">Tutup</string>
+    <string name="maybe_later">Mungkin Nanti</string>
+
+    <!-- Home screen related -->
+    <string name="home">Beranda</string>
+    <string name="search_icon">Ikon pencarian</string>
+    <string name="search_high_quality_wallpapers">Cari wallpaper berkualitas tinggi, efek dinamis...</string>
+    <string name="loading_wallpapers">Memuat wallpaper...</string>
+    <string name="loading_failed">Gagal memuat</string>
+    <string name="unknown_error">Kesalahan tidak diketahui</string>
+    <string name="refresh">Segarkan</string>
+    <string name="partial_data_loading_failed">Beberapa data gagal dimuat, segarkan untuk mencoba lagi</string>
+    <string name="explore_categories">Jelajahi Kategori</string>
+    <string name="hot_static">Statis Populer</string>
+    <string name="cool_dynamic">Dinamis Keren</string>
+    <string name="latest_uploads">Unggahan Terbaru</string>
+    <string name="nature_scenery">Pemandangan Alam</string>
+    <string name="architecture">Arsitektur</string>
+    <string name="animals">Hewan</string>
+    <string name="space">Luar Angkasa</string>
+    <string name="minimal">Minimalis</string>
+    <string name="no_wallpapers_found">Tidak ditemukan wallpaper</string>
+    <string name="try_different_keywords">Coba kata kunci yang berbeda</string>
+    <string name="found_results">Ditemukan %d hasil</string>
+    <string name="hot_searches">Pencarian Populer</string>
+    <string name="search_tips">Tips Pencarian</string>
+    <string name="use_specific_descriptions">Gunakan deskripsi spesifik</string>
+    <string name="specific_description_examples">Contoh: \'pemandangan gunung\', \'abstrak hitam putih\', \'pemandangan kota malam\'</string>
+    <string name="try_different_languages">Coba bahasa yang berbeda</string>
+    <string name="english_keywords_tip">Terkadang kata kunci bahasa Inggris mungkin memberikan lebih banyak hasil</string>
+    <string name="combine_keywords">Kombinasikan kata kunci</string>
+    <string name="keyword_combination_examples">Contoh: \'minimalis hitam putih\', \'alam hijau\'</string>
+    <string name="clear_search">Bersihkan Pencarian</string>
+    <string name="search_history">Riwayat Pencarian</string>
+    <string name="mine">Saya</string>
+
+    <!-- Premium related -->
+    <string name="premium_title">Buka Fitur Premium</string>
+    <string name="premium_user_title">Anda adalah Pengguna Premium</string>
+    <string name="premium_description">Tingkatkan ke premium, buka semua wallpaper dan fitur</string>
+    <string name="premium_user_description">Terima kasih atas dukungan Anda, Anda dapat menggunakan semua fitur premium</string>
+    <string name="premium_feature_1">Unduh wallpaper berkualitas tinggi tanpa batas</string>
+    <string name="premium_feature_2">Hapus semua iklan</string>
+    <string name="premium_feature_3">Wallpaper premium eksklusif</string>
+    <string name="premium_feature_4">Fitur pengeditan lanjutan</string>
+    <string name="premium_feature_5">Perubahan wallpaper otomatis</string>
+    <string name="select_subscription">Pilih Paket Langganan</string>
+    <string name="monthly_plan">Paket Bulanan</string>
+    <string name="quarterly_plan">Paket Triwulanan</string>
+    <string name="yearly_plan">Paket Tahunan</string>
+    <string name="monthly_price">Rp18.990</string>
+    <string name="quarterly_price">Rp49.990</string>
+    <string name="yearly_price">Rp168.990</string>
+    <string name="quarterly_discount">Hemat 17%</string>
+    <string name="yearly_discount">Hemat 27%</string>
+    <string name="upgrade_now">Tingkatkan Sekarang</string>
+    <string name="connecting_payment">Menghubungkan ke layanan pembayaran...</string>
+    <string name="all_premium_features_unlocked">Semua fitur premium telah dibuka</string>
+
+    <!-- Wallpaper detail page -->
+    <string name="start_download_wallpaper">Mulai mengunduh wallpaper</string>
+    <string name="download_failed_permission_denied">Tidak dapat mengunduh wallpaper: izin penyimpanan ditolak</string>
+    <string name="storage_permission_required">Izin penyimpanan diperlukan</string>
+    <string name="storage_permission_rationale">Untuk menyimpan wallpaper ke galeri, kami memerlukan izin penyimpanan. Harap izinkan ini untuk mengunduh wallpaper.</string>
+    <string name="grant_permission">Berikan Izin</string>
+    <string name="download_failed_permission_required">Tidak dapat mengunduh wallpaper: izin penyimpanan diperlukan</string>
+    <string name="favorite_login_required">Menambahkan wallpaper ke favorit memerlukan login</string>
+    <string name="download_login_required">Mengunduh wallpaper memerlukan login</string>
+    <string name="set_wallpaper_login_required">Mengatur wallpaper memerlukan login</string>
+    <string name="edit_login_required">Mengedit wallpaper memerlukan login</string>
+
+    <!-- Wallpaper detail components -->
+    <string name="author">Penulis: %1$s</string>
+    <string name="source">Sumber: %1$s</string>
+    <string name="resolution">Resolusi: %1$d x %2$d</string>
+    <string name="wallpaper_type">Tipe: %1$s</string>
+    <string name="static_wallpaper">Wallpaper Statis</string>
+    <string name="live_wallpaper">Wallpaper Hidup</string>
+    <string name="tags">Tag:</string>
+    <string name="set_as_wallpaper">Atur sebagai Wallpaper</string>
+    <string name="download">Unduh</string>
+    <string name="share">Bagikan</string>
+    <string name="edit">Edit</string>
+    <string name="set_home_screen">Atur ke Layar Utama</string>
+    <string name="set_lock_screen">Atur ke Layar Kunci</string>
+    <string name="set_both_screens">Atur Keduanya</string>
+    <string name="collapse_info">Ciutkan Info</string>
+    <string name="expand_info">Perluas Info</string>
+    <string name="set_as">Atur sebagai</string>
+    <string name="home_screen_wallpaper">Wallpaper Layar Utama</string>
+    <string name="lock_screen_wallpaper">Wallpaper Layar Kunci</string>
+    <string name="home_and_lock_screen">Layar Utama dan Kunci</string>
+    <string name="upgrade_to_unlock">Tingkatkan untuk membuka wallpaper ini</string>
+
+    <!-- Auto change wallpaper related -->
+    <string name="change_settings">Ubah Pengaturan</string>
+    <string name="wifi_only_change">Ubah hanya pada WiFi</string>
+    <string name="avoid_mobile_data">Hindari penggunaan data seluler</string>
+    <string name="wallpaper_source">Sumber Wallpaper</string>
+    <string name="wallpaper_target">Target Wallpaper</string>
+    <string name="apply_settings">Terapkan Pengaturan</string>
+    <string name="change_frequency">Frekuensi Perubahan</string>
+    <string name="premium">Premium</string>
+    <string name="daily_featured">Pilihan Harian</string>
+    <string name="featured_wallpaper">Wallpaper Pilihan</string>
+    <string name="unknown_author">Penulis Tidak Diketahui</string>
+    <string name="daily">Harian</string>
+    <string name="every_twelve_hours">Setiap 12 Jam</string>
+    <string name="every_six_hours">Setiap 6 Jam</string>
+    <string name="hourly">Setiap Jam</string>
+    <string name="each_unlock">Setiap Membuka Kunci</string>
+    <string name="downloaded_wallpapers">Wallpaper Terunduh</string>
+    <string name="specific_category">Kategori Tertentu</string>
+    <string name="trending_wallpapers">Wallpaper Tren</string>
+    <string name="home_screen_only">Hanya Layar Utama</string>
+    <string name="lock_screen_only">Hanya Layar Kunci</string>
+
+    <!-- Download and favorite related -->
+    <string name="no_downloaded_wallpapers">Tidak ada wallpaper terunduh</string>
+    <string name="browse_and_download_tip">Jelajahi wallpaper dan klik tombol unduh, wallpaper yang diunduh akan muncul di sini</string>
+    <string name="no_favorite_wallpapers">Tidak ada wallpaper favorit</string>
+    <string name="browse_and_favorite_tip">Jelajahi wallpaper dan klik tombol favorit, wallpaper favorit akan muncul di sini</string>
+    <string name="login_required_to_view_downloads">Login diperlukan untuk melihat daftar unduhan</string>
+    <string name="login_required_to_view_favorites">Login diperlukan untuk melihat daftar favorit</string>
+
+    <!-- Edit wallpaper related -->
+    <string name="edit_wallpaper">Sunting kertas dinding</string>
+    <string name="save">Simpan</string>
+    <string name="brightness">Kecerahan</string>
+    <string name="contrast">Kontras</string>
+    <string name="saturation">Saturasi</string>
+    <string name="reset">Reset</string>
+    <string name="reset_edits">Reset Editan</string>
+    <string name="filter">Penapis</string>
+
+    <!-- Feedback related -->
+    <string name="direct_feedback">Umpan Balik Langsung</string>
+    <string name="your_feedback_or_suggestion">Umpan Balik atau Saran Anda</string>
+    <string name="enter_feedback_placeholder">Silakan masukkan umpan balik atau saran Anda tentang aplikasi...</string>
+    <string name="contact_info_optional">Info Kontak (Opsional)</string>
+    <string name="email_or_other_contact">Email atau metode kontak lainnya</string>
+    <string name="submit_feedback">Kirim Umpan Balik</string>
+    <string name="rate_in_app_store">Beri Nilai di Toko Aplikasi</string>
+    <string name="like_our_app_rate_us">Suka aplikasi kami? Berikan kami peringkat bintang 5!</string>
+    <string name="send_email_feedback">Kirim Umpan Balik Email</string>
+    <string name="have_questions_email_us">Punya pertanyaan atau saran? Email tim dukungan kami</string>
+
+    <!-- Premium membership related -->
+    <string name="upgrade_to_premium">Tingkatkan ke Premium</string>
+    <string name="restore_purchases">Pulihkan Pembelian</string>
+    <string name="payment_success_notice">Setelah pembayaran berhasil, Anda akan langsung mendapatkan fitur premium. Langganan dapat dibatalkan kapan saja.</string>
+
+    <!-- Test tools related -->
+    <string name="check_login_status_failed">Gagal memeriksa status login: %1$s</string>
+    <string name="check_premium_status_failed">Gagal memeriksa status pengguna: %1$s</string>
+    <string name="set_premium_success">Berhasil ditetapkan sebagai pengguna premium</string>
+    <string name="set_premium_failed">Gagal menetapkan pengguna premium: %1$s</string>
+    <string name="disable_premium_success">Berhasil menonaktifkan status pengguna premium</string>
+    <string name="disable_premium_failed">Gagal menonaktifkan status pengguna premium: %1$s</string>
+    <string name="simulate_login_success">Simulasi login berhasil</string>
+    <string name="simulate_login_failed">Simulasi login gagal: %1$s</string>
+    <string name="simulate_logout_success">Simulasi logout berhasil</string>
+    <string name="simulate_logout_failed">Simulasi logout gagal: %1$s</string>
 </resources>

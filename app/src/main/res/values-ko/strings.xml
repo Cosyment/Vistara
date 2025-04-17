@@ -55,6 +55,8 @@
     <string name="language_settings">언어 설정</string>
     <string name="language">언어</string>
     <string name="language_desc">앱 언어 변경</string>
+    <string name="language_change_restart">언어가 변경되었습니다. 적용하려면 앱을 다시 시작하세요</string>
+    <string name="language_changed">언어가 변경되었습니다</string>
     <string name="system_default">시스템 기본값</string>
     <string name="english">영어</string>
     <string name="chinese">중국어</string>
@@ -80,6 +82,7 @@
     <string name="login">로그인</string>
     <string name="premium_user">프리미엄 사용자</string>
     <string name="premium_banner">✨ 모든 특권을 잠금 해제하고 HD 경험을 즐기세요 ✨</string>
+    <string name="mine">내 정보</string>
     <string name="favorites_login_required">즐겨찾기 목록을 사용하려면 로그인해야 합니다</string>
     <string name="downloads_login_required">다운로드 목록을 사용하려면 로그인해야 합니다</string>
     <string name="auto_wallpaper_login_required">자동 배경화면 변경을 사용하려면 로그인해야 합니다</string>
@@ -89,6 +92,8 @@
     <string name="user_agreement">사용자 계약</string>
     <string name="privacy_policy">개인정보 처리방침</string>
     <string name="terms_of_service">서비스 약관</string>
+    <string name="open_source_libraries">오픈소스 라이브러리</string>
+
     <!-- 배경화면 카테고리 -->
     <string name="category_all">전체</string>
     <string name="category_abstract">추상</string>
@@ -112,4 +117,175 @@
     <string name="error_filtering_wallpapers">배경화면 필터링에 실패했습니다</string>
     <string name="error_already_premium">이미 프리미엄 사용자입니다</string>
     <string name="error_billing_not_connected">결제 서비스가 연결되지 않았습니다. 나중에 다시 시도해주세요</string>
+    <string name="error_network_check">로딩 실패, 네트워크 연결을 확인하세요</string>
+
+    <!-- 공통 버튼 및 프롬프트 -->
+    <string name="retry">다시 시도</string>
+    <string name="loading">로딩 중...</string>
+    <string name="confirm">확인</string>
+    <string name="login_required">로그인 필요</string>
+    <string name="login_required_message">이 기능을 사용하려면 로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?</string>
+    <string name="go_to_login">로그인으로 이동</string>
+    <string name="close">닫기</string>
+    <string name="maybe_later">나중에</string>
+
+    <!-- 홈 화면 관련 -->
+    <string name="home">홈</string>
+    <string name="search_icon">검색 아이콘</string>
+    <string name="search_high_quality_wallpapers">고품질 배경화면, 동적 효과 검색...</string>
+    <string name="loading_wallpapers">배경화면 로딩 중...</string>
+    <string name="loading_failed">로딩 실패</string>
+    <string name="unknown_error">알 수 없는 오류</string>
+    <string name="refresh">새로고침</string>
+    <string name="partial_data_loading_failed">일부 데이터 로딩 실패, 새로고침하여 다시 시도하세요</string>
+    <string name="explore_categories">카테고리 탐색</string>
+    <string name="hot_static">인기 정적</string>
+    <string name="cool_dynamic">멋진 동적</string>
+    <string name="latest_uploads">최신 업로드</string>
+    <string name="nature_scenery">자연 풍경</string>
+    <string name="architecture">건축</string>
+    <string name="animals">동물</string>
+    <string name="space">우주</string>
+    <string name="minimal">미니멀</string>
+    <string name="no_wallpapers_found">배경화면을 찾을 수 없습니다</string>
+    <string name="try_different_keywords">다른 키워드를 시도해보세요</string>
+    <string name="found_results">%d개의 결과 발견</string>
+    <string name="hot_searches">인기 검색어</string>
+    <string name="search_tips">검색 팁</string>
+    <string name="use_specific_descriptions">구체적인 설명 사용하기</string>
+    <string name="specific_description_examples">예: \'산 풍경\', \'흑백 추상\', \'도시 야경\'</string>
+    <string name="try_different_languages">다른 언어 시도하기</string>
+    <string name="english_keywords_tip">때로는 영어 키워드가 더 많은 결과를 제공할 수 있습니다</string>
+    <string name="combine_keywords">키워드 조합하기</string>
+    <string name="keyword_combination_examples">예: \'미니멀 흑백\', \'자연 녹색\'</string>
+    <string name="clear_search">검색 지우기</string>
+    <string name="search_history">검색 기록</string>
+
+    <!-- 프리미엄 관련 -->
+    <string name="premium_title">프리미엄 기능 잠금 해제</string>
+    <string name="premium_user_title">프리미엄 사용자입니다</string>
+    <string name="premium_description">프리미엄으로 업그레이드하여 모든 배경화면과 기능 잠금 해제</string>
+    <string name="premium_user_description">지원해 주셔서 감사합니다. 모든 프리미엄 기능을 사용할 수 있습니다</string>
+    <string name="premium_feature_1">무제한 고품질 배경화면 다운로드</string>
+    <string name="premium_feature_2">모든 광고 제거</string>
+    <string name="premium_feature_3">독점 프리미엄 배경화면</string>
+    <string name="premium_feature_4">고급 편집 기능</string>
+    <string name="premium_feature_5">자동 배경화면 변경</string>
+    <string name="select_subscription">구독 플랜 선택</string>
+    <string name="monthly_plan">월간 플랜</string>
+    <string name="quarterly_plan">분기 플랜</string>
+    <string name="yearly_plan">연간 플랜</string>
+    <string name="monthly_price">₩12,000</string>
+    <string name="quarterly_price">₩32,000</string>
+    <string name="yearly_price">₩108,000</string>
+    <string name="quarterly_discount">17% 절약</string>
+    <string name="yearly_discount">27% 절약</string>
+    <string name="upgrade_now">지금 업그레이드</string>
+    <string name="connecting_payment">결제 서비스에 연결 중...</string>
+    <string name="all_premium_features_unlocked">모든 프리미엄 기능이 잠금 해제되었습니다</string>
+
+    <!-- 배경화면 상세 페이지 -->
+    <string name="start_download_wallpaper">배경화면 다운로드 시작</string>
+    <string name="download_failed_permission_denied">배경화면을 다운로드할 수 없음: 저장소 권한이 거부됨</string>
+    <string name="storage_permission_required">저장소 권한 필요</string>
+    <string name="storage_permission_rationale">갤러리에 배경화면을 저장하려면 저장소 권한이 필요합니다. 배경화면을 다운로드하려면 이 권한을 허용해 주세요.</string>
+    <string name="grant_permission">권한 부여</string>
+    <string name="download_failed_permission_required">배경화면을 다운로드할 수 없음: 저장소 권한 필요</string>
+    <string name="favorite_login_required">즐겨찾기에 배경화면을 추가하려면 로그인이 필요합니다</string>
+    <string name="download_login_required">배경화면을 다운로드하려면 로그인이 필요합니다</string>
+    <string name="set_wallpaper_login_required">배경화면을 설정하려면 로그인이 필요합니다</string>
+    <string name="edit_login_required">배경화면을 편집하려면 로그인이 필요합니다</string>
+
+    <!-- 배경화면 상세 구성 요소 -->
+    <string name="author">작성자: %1$s</string>
+    <string name="source">출처: %1$s</string>
+    <string name="resolution">해상도: %1$d x %2$d</string>
+    <string name="wallpaper_type">유형: %1$s</string>
+    <string name="static_wallpaper">정적 배경화면</string>
+    <string name="live_wallpaper">라이브 배경화면</string>
+    <string name="tags">태그:</string>
+    <string name="set_as_wallpaper">배경화면으로 설정</string>
+    <string name="download">다운로드</string>
+    <string name="share">공유</string>
+    <string name="edit">편집</string>
+    <string name="set_home_screen">홈 화면으로 설정</string>
+    <string name="set_lock_screen">잠금 화면으로 설정</string>
+    <string name="set_both_screens">둘 다 설정</string>
+    <string name="collapse_info">정보 접기</string>
+    <string name="expand_info">정보 펼치기</string>
+    <string name="set_as">다음으로 설정</string>
+    <string name="home_screen_wallpaper">홈 화면 배경화면</string>
+    <string name="lock_screen_wallpaper">잠금 화면 배경화면</string>
+    <string name="home_and_lock_screen">홈 및 잠금 화면</string>
+    <string name="upgrade_to_unlock">업그레이드하여 이 배경화면 잠금 해제</string>
+
+    <!-- 자동 배경화면 변경 관련 -->
+    <string name="change_settings">설정 변경</string>
+    <string name="wifi_only_change">WiFi에서만 변경</string>
+    <string name="avoid_mobile_data">모바일 데이터 사용 방지</string>
+    <string name="wallpaper_source">배경화면 소스</string>
+    <string name="wallpaper_target">배경화면 대상</string>
+    <string name="apply_settings">설정 적용</string>
+    <string name="change_frequency">변경 빈도</string>
+    <string name="premium">프리미엄</string>
+    <string name="daily_featured">오늘의 추천</string>
+    <string name="featured_wallpaper">추천 배경화면</string>
+    <string name="unknown_author">알 수 없는 작성자</string>
+    <string name="daily">매일</string>
+    <string name="every_twelve_hours">12시간마다</string>
+    <string name="every_six_hours">6시간마다</string>
+    <string name="hourly">매시간</string>
+    <string name="each_unlock">잠금 해제할 때마다</string>
+    <string name="downloaded_wallpapers">다운로드한 배경화면</string>
+    <string name="specific_category">특정 카테고리</string>
+    <string name="trending_wallpapers">인기 배경화면</string>
+    <string name="home_screen_only">홈 화면만</string>
+    <string name="lock_screen_only">잠금 화면만</string>
+
+    <!-- 다운로드 및 즐겨찾기 관련 -->
+    <string name="no_downloaded_wallpapers">다운로드한 배경화면 없음</string>
+    <string name="browse_and_download_tip">배경화면을 탐색하고 다운로드 버튼을 클릭하면 다운로드한 배경화면이 여기에 표시됩니다</string>
+    <string name="no_favorite_wallpapers">즐겨찾기 배경화면 없음</string>
+    <string name="browse_and_favorite_tip">배경화면을 탐색하고 즐겨찾기 버튼을 클릭하면 즐겨찾기 배경화면이 여기에 표시됩니다</string>
+    <string name="login_required_to_view_downloads">다운로드 목록을 보려면 로그인이 필요합니다</string>
+    <string name="login_required_to_view_favorites">즐겨찾기 목록을 보려면 로그인이 필요합니다</string>
+
+    <!-- 배경화면 편집 관련 -->
+    <string name="edit_wallpaper">배경화면 편집</string>
+    <string name="save">저장</string>
+    <string name="brightness">밝기</string>
+    <string name="contrast">대비</string>
+    <string name="saturation">채도</string>
+    <string name="reset">초기화</string>
+    <string name="reset_edits">편집 초기화</string>
+    <string name="filter">필터</string>
+
+    <!-- 피드백 관련 -->
+    <string name="direct_feedback">직접 피드백</string>
+    <string name="your_feedback_or_suggestion">귀하의 피드백 또는 제안</string>
+    <string name="enter_feedback_placeholder">앱에 대한 피드백이나 제안을 입력해주세요...</string>
+    <string name="contact_info_optional">연락처 정보 (선택사항)</string>
+    <string name="email_or_other_contact">이메일 또는 기타 연락 방법</string>
+    <string name="submit_feedback">피드백 제출</string>
+    <string name="rate_in_app_store">앱 스토어에서 평가하기</string>
+    <string name="like_our_app_rate_us">앱이 마음에 드시나요? 5점 평가를 부탁드립니다!</string>
+    <string name="send_email_feedback">이메일로 피드백 보내기</string>
+    <string name="have_questions_email_us">질문이나 제안이 있으신가요? 지원 팀에 이메일을 보내주세요</string>
+
+    <!-- 프리미엄 멤버십 관련 -->
+    <string name="upgrade_to_premium">프리미엄으로 업그레이드</string>
+    <string name="restore_purchases">구매 복원</string>
+    <string name="payment_success_notice">결제 성공 후 즉시 프리미엄 기능을 이용하실 수 있습니다. 구독은 언제든지 취소할 수 있습니다.</string>
+
+    <!-- 테스트 도구 관련 -->
+    <string name="check_login_status_failed">로그인 상태 확인 실패: %1$s</string>
+    <string name="check_premium_status_failed">사용자 상태 확인 실패: %1$s</string>
+    <string name="set_premium_success">프리미엄 사용자로 성공적으로 설정되었습니다</string>
+    <string name="set_premium_failed">프리미엄 사용자 설정 실패: %1$s</string>
+    <string name="disable_premium_success">프리미엄 사용자 상태 비활성화 성공</string>
+    <string name="disable_premium_failed">프리미엄 사용자 상태 비활성화 실패: %1$s</string>
+    <string name="simulate_login_success">로그인 시뮬레이션 성공</string>
+    <string name="simulate_login_failed">로그인 시뮬레이션 실패: %1$s</string>
+    <string name="simulate_logout_success">로그아웃 시뮬레이션 성공</string>
+    <string name="simulate_logout_failed">로그아웃 시뮬레이션 실패: %1$s</string>
 </resources>

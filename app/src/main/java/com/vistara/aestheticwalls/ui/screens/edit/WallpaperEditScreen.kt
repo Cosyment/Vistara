@@ -69,9 +69,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -119,14 +121,14 @@ fun WallpaperEditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("编辑壁纸") },
+                title = { Text(stringResource(R.string.edit_wallpaper)) },
                 navigationIcon = {
                     IconButton(onClick = {
                         if (!isSaving) onBackPressed()
                     }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -142,7 +144,7 @@ fun WallpaperEditScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Done,
-                            contentDescription = "保存"
+                            contentDescription = stringResource(R.string.save)
                         )
                     }
                 },
@@ -176,19 +178,19 @@ fun WallpaperEditScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "加载失败",
+                            text = stringResource(R.string.loading_failed),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = (wallpaperState as UiState.Error).message ?: "未知错误",
+                            text = (wallpaperState as UiState.Error).message ?: stringResource(R.string.unknown_error),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = onBackPressed) {
-                            Text("返回")
+                            Text(stringResource(R.string.back))
                         }
                     }
                 }
@@ -310,7 +312,7 @@ fun WallpaperEditScreen(
                             when (selectedTool) {
                                 EditTool.BRIGHTNESS -> {
                                     SliderControl(
-                                        label = "亮度",
+                                        label = stringResource(R.string.brightness),
                                         value = editState.brightness,
                                         onValueChange = { viewModel.updateBrightness(it) },
                                         valueRange = 0.5f..1.5f
@@ -319,7 +321,7 @@ fun WallpaperEditScreen(
 
                                 EditTool.CONTRAST -> {
                                     SliderControl(
-                                        label = "对比度",
+                                        label = stringResource(R.string.contrast),
                                         value = editState.contrast,
                                         onValueChange = { viewModel.updateContrast(it) },
                                         valueRange = 0.5f..1.5f
@@ -328,7 +330,7 @@ fun WallpaperEditScreen(
 
                                 EditTool.SATURATION -> {
                                     SliderControl(
-                                        label = "饱和度",
+                                        label = stringResource(R.string.saturation),
                                         value = editState.saturation,
                                         onValueChange = { viewModel.updateSaturation(it) },
                                         valueRange = 0f..2f
@@ -375,10 +377,10 @@ fun WallpaperEditScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
-                                    contentDescription = "重置",
+                                    contentDescription = stringResource(R.string.reset),
                                     modifier = Modifier.padding(end = 8.dp)
                                 )
-                                Text("重置编辑")
+                                Text(stringResource(R.string.reset_edits))
                             }
                         }
                     }
@@ -480,7 +482,7 @@ fun FilterOptions(
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "滤镜",
+            text = stringResource(R.string.filter),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 8.dp)
         )

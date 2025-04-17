@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import com.vistara.aestheticwalls.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -43,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -85,19 +87,19 @@ fun AutoChangeScreen(
                 viewModel.clearNeedLogin()
                 onNavigateToLogin()
             },
-            message = "自动更换壁纸功能需要登录后才能使用"
+            message = stringResource(R.string.auto_wallpaper_login_required)
         )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("自动更换壁纸") },
+                title = { Text(stringResource(R.string.auto_change_wallpaper)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -127,12 +129,12 @@ fun AutoChangeScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "自动更换壁纸",
+                            text = stringResource(R.string.auto_change_wallpaper),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "定期自动更换手机壁纸",
+                            text = stringResource(R.string.auto_change_wallpaper_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -149,7 +151,7 @@ fun AutoChangeScreen(
             // 只有在启用自动更换时才显示设置选项
             if (autoChangeEnabled) {
                 Text(
-                    text = "更换设置",
+                    text = stringResource(R.string.change_settings),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -167,8 +169,8 @@ fun AutoChangeScreen(
                 // 仅在WiFi下更换
                 SettingsToggleItem(
                     icon = Icons.Default.Settings,
-                    title = "仅在WiFi下更换",
-                    subtitle = "避免使用移动数据流量",
+                    title = stringResource(R.string.wifi_only_change),
+                    subtitle = stringResource(R.string.avoid_mobile_data),
                     checked = autoChangeWifiOnly,
                     onCheckedChange = { viewModel.updateAutoChangeWifiOnly(it) }
                 )
@@ -181,7 +183,7 @@ fun AutoChangeScreen(
 
                 // 壁纸来源
                 Text(
-                    text = "壁纸来源",
+                    text = stringResource(R.string.wallpaper_source),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -197,7 +199,7 @@ fun AutoChangeScreen(
 
                 // 壁纸目标屏幕
                 Text(
-                    text = "壁纸目标",
+                    text = stringResource(R.string.wallpaper_target),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -216,7 +218,7 @@ fun AutoChangeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isChangingWallpaper
                 ) {
-                    Text("应用设置")
+                    Text(stringResource(R.string.apply_settings))
                 }
             }
         }
@@ -253,7 +255,7 @@ private fun FrequencySelector(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "更换频率",
+                    text = stringResource(R.string.change_frequency),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -282,7 +284,7 @@ private fun FrequencySelector(
                                 if (frequency.isPremium) {
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "高级",
+                                        text = stringResource(R.string.premium),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -342,7 +344,7 @@ private fun SourceSelector(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "壁纸来源",
+                    text = stringResource(R.string.wallpaper_source),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -371,7 +373,7 @@ private fun SourceSelector(
                                 if (source.isPremium) {
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "高级",
+                                        text = stringResource(R.string.premium),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -457,25 +459,27 @@ private fun SettingsToggleItem(
 /**
  * 获取频率文本
  */
+@Composable
 private fun getFrequencyText(frequency: AutoChangeFrequency): String {
     return when (frequency) {
-        AutoChangeFrequency.DAILY -> "每天"
-        AutoChangeFrequency.TWELVE_HOURS -> "每12小时"
-        AutoChangeFrequency.SIX_HOURS -> "每6小时"
-        AutoChangeFrequency.HOURLY -> "每小时"
-        AutoChangeFrequency.EACH_UNLOCK -> "每次解锁"
+        AutoChangeFrequency.DAILY -> stringResource(R.string.daily)
+        AutoChangeFrequency.TWELVE_HOURS -> stringResource(R.string.every_twelve_hours)
+        AutoChangeFrequency.SIX_HOURS -> stringResource(R.string.every_six_hours)
+        AutoChangeFrequency.HOURLY -> stringResource(R.string.hourly)
+        AutoChangeFrequency.EACH_UNLOCK -> stringResource(R.string.each_unlock)
     }
 }
 
 /**
  * 获取来源文本
  */
+@Composable
 private fun getSourceText(source: AutoChangeSource): String {
     return when (source) {
-        AutoChangeSource.FAVORITES -> "我的收藏"
-        AutoChangeSource.DOWNLOADED -> "已下载壁纸"
-        AutoChangeSource.CATEGORY -> "指定分类"
-        AutoChangeSource.TRENDING -> "热门壁纸"
+        AutoChangeSource.FAVORITES -> stringResource(R.string.my_favorites)
+        AutoChangeSource.DOWNLOADED -> stringResource(R.string.downloaded_wallpapers)
+        AutoChangeSource.CATEGORY -> stringResource(R.string.specific_category)
+        AutoChangeSource.TRENDING -> stringResource(R.string.trending_wallpapers)
     }
 }
 
@@ -508,7 +512,7 @@ private fun TargetSelector(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "壁纸目标",
+                    text = stringResource(R.string.wallpaper_target),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -550,11 +554,12 @@ private fun TargetSelector(
 /**
  * 获取目标文本
  */
+@Composable
 private fun getTargetText(target: WallpaperTarget): String {
     return when (target) {
-        WallpaperTarget.HOME -> "仅主屏幕"
-        WallpaperTarget.LOCK -> "仅锁屏"
-        WallpaperTarget.BOTH -> "主屏幕和锁屏"
+        WallpaperTarget.HOME -> stringResource(R.string.home_screen_only)
+        WallpaperTarget.LOCK -> stringResource(R.string.lock_screen_only)
+        WallpaperTarget.BOTH -> stringResource(R.string.home_and_lock_screen)
     }
 }
 

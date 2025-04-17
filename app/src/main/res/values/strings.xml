@@ -1,185 +1,291 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
-    <string name="search_hint">搜索壁纸...</string>
+    <string name="search_hint">Search wallpapers...</string>
 
-    <!-- 通知相关字符串 -->
-    <string name="notification_channel_wallpaper">壁纸更换通知</string>
-    <string name="notification_channel_wallpaper_desc">显示壁纸自动更换状态的通知</string>
-    <string name="notification_channel_download">下载通知</string>
-    <string name="notification_channel_download_desc">显示壁纸下载进度和完成状态的通知</string>
+    <!-- Notification related strings -->
+    <string name="notification_channel_wallpaper">Wallpaper Change Notification</string>
+    <string name="notification_channel_wallpaper_desc">Notifications about wallpaper auto-change status</string>
+    <string name="notification_channel_download">Download Notification</string>
+    <string name="notification_channel_download_desc">Notifications about wallpaper download progress and completion</string>
 
-    <string name="notification_wallpaper_changed_title">壁纸已更换</string>
-    <string name="notification_wallpaper_changed_text">您的壁纸已成功更换</string>
+    <string name="notification_wallpaper_changed_title">Wallpaper Changed</string>
+    <string name="notification_wallpaper_changed_text">Your wallpaper has been successfully changed</string>
 
-    <string name="notification_download_progress_title">正在下载壁纸</string>
-    <string name="notification_download_progress_text">壁纸正在下载中</string>
+    <string name="notification_download_progress_title">Downloading Wallpaper</string>
+    <string name="notification_download_progress_text">Wallpaper is downloading</string>
 
-    <string name="notification_download_complete_title">壁纸下载完成</string>
-    <string name="notification_download_complete_text">壁纸已成功下载到您的设备</string>
+    <string name="notification_download_complete_title">Wallpaper Download Complete</string>
+    <string name="notification_download_complete_text">Wallpaper has been successfully downloaded to your device</string>
 
-    <!-- 视频壁纸相关字符串 -->
-    <string name="video_wallpaper_description">使用视频作为动态壁纸</string>
-    <string name="video_wallpaper_set_success">视频壁纸设置成功</string>
-    <string name="video_wallpaper_set_failed">视频壁纸设置失败</string>
-    <string name="video_wallpaper_download_failed">视频下载失败</string>
-    <string name="video_wallpaper_select_guide">请选择「Vistara视频壁纸」并点击「设置壁纸」</string>
+    <!-- Video wallpaper related strings -->
+    <string name="video_wallpaper_description">Use video as live wallpaper</string>
+    <string name="video_wallpaper_set_success">Video wallpaper set successfully</string>
+    <string name="video_wallpaper_set_failed">Failed to set video wallpaper</string>
+    <string name="video_wallpaper_download_failed">Video download failed</string>
+    <string name="video_wallpaper_select_guide">Please select \"Vistara Video Wallpaper\" and click \"Set Wallpaper\"</string>
 
-    <!-- 设置页面 -->
-    <string name="settings">设置</string>
-    <string name="back">返回</string>
-    <string name="theme_settings">主题设置</string>
-    <string name="dark_theme">深色主题</string>
-    <string name="dark_theme_desc">启用应用深色主题</string>
-    <string name="dynamic_colors">动态颜色</string>
-    <string name="dynamic_colors_desc">使用系统动态颜色（仅Android 12+）</string>
-    <string name="notification_settings">通知设置</string>
-    <string name="download_notification">下载通知</string>
-    <string name="download_notification_desc">显示壁纸下载完成通知</string>
-    <string name="wallpaper_change_notification">壁纸更换通知</string>
-    <string name="wallpaper_change_notification_desc">显示自动壁纸更换通知</string>
-    <string name="download_settings">下载设置</string>
-    <string name="original_quality">原始质量</string>
-    <string name="original_quality_desc">下载原始质量的壁纸（较大文件）</string>
-    <string name="clear_cache">清除缓存</string>
-    <string name="current_cache_size">当前缓存大小: %1$s</string>
-    <string name="about_app">关于应用</string>
-    <string name="app_version">应用版本</string>
-    <string name="account_settings">账户设置</string>
-    <string name="sign_out">退出登录</string>
-    <string name="sign_out_desc">退出当前账户</string>
-    <string name="clear_cache_title">清除缓存</string>
-    <string name="clear_cache_message">确定要清除应用缓存吗？这将删除所有缓存的图片和数据。</string>
-    <string name="clear">清除</string>
-    <string name="language_settings">语言设置</string>
-    <string name="language">语言</string>
-    <string name="language_desc">更改应用语言</string>
-    <string name="system_default">系统默认</string>
-    <string name="english">英文</string>
-    <string name="chinese">中文</string>
-    <string name="japanese">日文</string>
-    <string name="korean">韩文</string>
-    <string name="indonesian">印尼文</string>
+    <!-- Settings screen -->
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="theme_settings">Theme Settings</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="dark_theme_desc">Enable dark theme for the app</string>
+    <string name="dynamic_colors">Dynamic Colors</string>
+    <string name="dynamic_colors_desc">Use system dynamic colors (Android 12+ only)</string>
+    <string name="notification_settings">Notification Settings</string>
+    <string name="download_notification">Download Notification</string>
+    <string name="download_notification_desc">Show wallpaper download completion notification</string>
+    <string name="wallpaper_change_notification">Wallpaper Change Notification</string>
+    <string name="wallpaper_change_notification_desc">Show auto wallpaper change notification</string>
+    <string name="download_settings">Download Settings</string>
+    <string name="original_quality">Original Quality</string>
+    <string name="original_quality_desc">Download wallpapers in original quality (larger files)</string>
+    <string name="clear_cache">Clear Cache</string>
+    <string name="current_cache_size">Current cache size: %1$s</string>
+    <string name="about_app">About App</string>
+    <string name="app_version">App Version</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="sign_out_desc">Sign out from current account</string>
+    <string name="clear_cache_title">Clear Cache</string>
+    <string name="clear_cache_message">Are you sure you want to clear the app cache? This will delete all cached images and data.</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="language_settings">Language Settings</string>
+    <string name="language">Language</string>
+    <string name="language_desc">Change app language</string>
+    <string name="language_change_restart">Language changed, restart app to apply</string>
+    <string name="language_changed">Language changed</string>
+    <string name="system_default">System Default</string>
+    <string name="english">English</string>
+    <string name="chinese">Chinese</string>
+    <string name="japanese">Japanese</string>
+    <string name="korean">Korean</string>
+    <string name="indonesian">Indonesian</string>
 
-    <!-- 个人中心页面 -->
-    <string name="my_favorites">我的收藏</string>
-    <string name="my_favorites_desc">查看所有收藏的壁纸</string>
-    <string name="my_downloads">我的下载</string>
-    <string name="my_downloads_desc">查看所有下载的壁纸</string>
-    <string name="auto_change_wallpaper">自动更换壁纸</string>
-    <string name="auto_change_wallpaper_desc">设置自动更换壁纸的频率和来源</string>
-    <string name="settings_desc">调整应用偏好和通知</string>
-    <string name="rate_feedback">评分与反馈</string>
-    <string name="rate_feedback_desc">帮助我们改进应用</string>
-    <string name="about_credits">关于与致谢</string>
-    <string name="about_credits_desc">查看应用信息和版权</string>
-    <string name="test_tools">测试工具</string>
-    <string name="test_tools_desc">测试API接口和其他功能</string>
-    <string name="not_logged_in">未登录</string>
-    <string name="login">点击登录</string>
-    <string name="premium_user">高级会员</string>
-    <string name="premium_banner">✨ 解锁全部特权，畅享高清视界 ✨</string>
-    <string name="favorites_login_required">收藏列表需要登录后才能使用</string>
-    <string name="downloads_login_required">下载列表需要登录后才能使用</string>
-    <string name="auto_wallpaper_login_required">自动更换壁纸需要登录后才能使用</string>
+    <!-- Mine screen -->
+    <string name="my_favorites">My Favorites</string>
+    <string name="my_favorites_desc">View all your favorite wallpapers</string>
+    <string name="my_downloads">My Downloads</string>
+    <string name="my_downloads_desc">View all your downloaded wallpapers</string>
+    <string name="auto_change_wallpaper">Auto Change Wallpaper</string>
+    <string name="auto_change_wallpaper_desc">Set frequency and source for auto wallpaper changes</string>
+    <string name="settings_desc">Adjust app preferences and notifications</string>
+    <string name="rate_feedback">Rate &amp; Feedback</string>
+    <string name="rate_feedback_desc">Help us improve the app</string>
+    <string name="about_credits">About &amp; Credits</string>
+    <string name="about_credits_desc">View app information and copyright</string>
+    <string name="test_tools">Test Tools</string>
+    <string name="test_tools_desc">Test API interfaces and other features</string>
+    <string name="not_logged_in">Not Logged In</string>
+    <string name="login">Login</string>
+    <string name="premium_user">Premium User</string>
+    <string name="premium_banner">✨ Unlock all privileges, enjoy HD experience ✨</string>
+    <string name="favorites_login_required">You need to log in to use favorites list</string>
+    <string name="downloads_login_required">You need to log in to use downloads list</string>
+    <string name="auto_wallpaper_login_required">You need to log in to use auto wallpaper change</string>
 
-    <!-- 关于页面 -->
-    <string name="app_description">Vistara壁纸是一款精美的壁纸应用，提供高质量的静态和动态壁纸，让您的设备焕然一新。</string>
-    <string name="user_agreement">用户协议</string>
-    <string name="privacy_policy">隐私政策</string>
-    <string name="terms_of_service">服务条款</string>
+    <!-- About screen -->
+    <string name="app_description">Vistara Wallpaper is a beautiful wallpaper app that provides high-quality static and live wallpapers to refresh your device.</string>
+    <string name="user_agreement">User Agreement</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="open_source_libraries">Open Source Libraries</string>
 
-    <!-- 壁纸分类 -->
-    <string name="category_all">全部</string>
-    <string name="category_abstract">抽象</string>
-    <string name="category_tech">科技感</string>
-    <string name="category_nature">自然</string>
-    <string name="category_cyberpunk">赛博朋克</string>
-    <string name="category_particle">粒子</string>
-    <string name="category_fluid">流体</string>
-    <string name="category_landscape">风景</string>
-    <string name="category_portrait">人像</string>
-    <string name="category_city">城市</string>
-    <string name="category_illustration">插画</string>
-    <string name="category_minimal">简约</string>
-    <string name="category_animal">动物</string>
-    <string name="category_food">食物</string>
-    <string name="category_static">静态壁纸</string>
-    <string name="category_live">动态壁纸</string>
+    <!-- Wallpaper categories -->
+    <string name="category_all">All</string>
+    <string name="category_abstract">Abstract</string>
+    <string name="category_tech">Tech</string>
+    <string name="category_nature">Nature</string>
+    <string name="category_cyberpunk">Cyberpunk</string>
+    <string name="category_particle">Particle</string>
+    <string name="category_fluid">Fluid</string>
+    <string name="category_landscape">Landscape</string>
+    <string name="category_portrait">Portrait</string>
+    <string name="category_city">City</string>
+    <string name="category_illustration">Illustration</string>
+    <string name="category_minimal">Minimal</string>
+    <string name="category_animal">Animal</string>
+    <string name="category_food">Food</string>
+    <string name="category_static">Static Wallpapers</string>
+    <string name="category_live">Live Wallpapers</string>
 
-    <!-- 错误消息 -->
-    <string name="error_loading_wallpapers">加载壁纸失败</string>
-    <string name="error_filtering_wallpapers">筛选壁纸失败</string>
-    <string name="error_already_premium">您已经是高级用户</string>
-    <string name="error_billing_not_connected">支付服务未连接，请稍后再试</string>
-    <string name="error_network_check">加载失败，请检查网络连接</string>
+    <!-- Error messages -->
+    <string name="error_loading_wallpapers">Failed to load wallpapers</string>
+    <string name="error_filtering_wallpapers">Failed to filter wallpapers</string>
+    <string name="error_already_premium">You are already a premium user</string>
+    <string name="error_billing_not_connected">Payment service not connected, please try again later</string>
+    <string name="error_network_check">Failed to load, please check your network connection</string>
 
-    <!-- 通用按钮和提示 -->
-    <string name="retry">重试</string>
-    <string name="loading">加载中...</string>
-    <string name="cancel">取消</string>
-    <string name="confirm">确认</string>
-    <string name="login_required">需要登录</string>
-    <string name="login_required_message">该功能需要登录后才能使用，是否前往登录页面？</string>
-    <string name="go_to_login">去登录</string>
-    <string name="close">关闭</string>
-    <string name="maybe_later">稍后再说</string>
+    <!-- Common buttons and prompts -->
+    <string name="retry">Retry</string>
+    <string name="loading">Loading...</string>
+    <string name="confirm">Confirm</string>
+    <string name="login_required">Login Required</string>
+    <string name="login_required_message">This feature requires login to use. Would you like to go to the login page?</string>
+    <string name="go_to_login">Go to Login</string>
+    <string name="close">Close</string>
+    <string name="maybe_later">Maybe Later</string>
 
-    <!-- 高级会员相关 -->
-    <string name="premium_title">解锁高级功能</string>
-    <string name="premium_user_title">您已是高级会员</string>
-    <string name="premium_description">升级到高级版，解锁所有壁纸和功能</string>
-    <string name="premium_user_description">感谢您的支持，您可以使用所有高级功能</string>
-    <string name="premium_feature_1">无限下载高清壁纸</string>
-    <string name="premium_feature_2">去除所有广告</string>
-    <string name="premium_feature_3">专属高级壁纸</string>
-    <string name="premium_feature_4">高级编辑功能</string>
-    <string name="premium_feature_5">自动更换壁纸</string>
-    <string name="select_subscription">选择订阅计划</string>
-    <string name="monthly_plan">月会员</string>
-    <string name="quarterly_plan">季度会员</string>
-    <string name="yearly_plan">年会员</string>
-    <string name="monthly_price">¥18.99</string>
-    <string name="quarterly_price">¥49.99</string>
-    <string name="yearly_price">¥168.99</string>
-    <string name="quarterly_discount">省17%</string>
-    <string name="yearly_discount">省27%</string>
-    <string name="upgrade_now">立即升级</string>
-    <string name="connecting_payment">正在连接支付服务...</string>
-    <string name="all_premium_features_unlocked">已解锁全部高级功能</string>
+    <!-- Home screen related -->
+    <string name="home">Home</string>
+    <string name="search_icon">Search icon</string>
+    <string name="search_high_quality_wallpapers">Search high-quality wallpapers, dynamic effects...</string>
+    <string name="loading_wallpapers">Loading wallpapers...</string>
+    <string name="loading_failed">Loading failed</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="refresh">Refresh</string>
+    <string name="partial_data_loading_failed">Some data failed to load, refresh to try again</string>
+    <string name="explore_categories">Explore Categories</string>
+    <string name="hot_static">Hot Static</string>
+    <string name="cool_dynamic">Cool Dynamic</string>
+    <string name="latest_uploads">Latest Uploads</string>
+    <string name="nature_scenery">Nature Scenery</string>
+    <string name="architecture">Architecture</string>
+    <string name="animals">Animals</string>
+    <string name="space">Space</string>
+    <string name="minimal">Minimal</string>
+    <string name="no_wallpapers_found">No wallpapers found</string>
+    <string name="try_different_keywords">Try different keywords</string>
+    <string name="found_results">Found %d results</string>
+    <string name="hot_searches">Hot Searches</string>
+    <string name="search_tips">Search Tips</string>
+    <string name="use_specific_descriptions">Use specific descriptions</string>
+    <string name="specific_description_examples">Examples: \'mountain landscape\', \'black and white abstract\', \'city night view\'</string>
+    <string name="try_different_languages">Try different languages</string>
+    <string name="english_keywords_tip">Sometimes English keywords might yield more results</string>
+    <string name="combine_keywords">Combine keywords</string>
+    <string name="keyword_combination_examples">Examples: \'minimal black and white\', \'nature green\'</string>
+    <string name="clear_search">Clear Search</string>
+    <string name="search_history">Search History</string>
+    <string name="mine">Mine</string>
 
-    <!-- 壁纸详情页面 -->
-    <string name="start_download_wallpaper">开始下载壁纸</string>
-    <string name="download_failed_permission_denied">无法下载壁纸：存储权限被拒绝</string>
-    <string name="storage_permission_required">需要存储权限</string>
-    <string name="storage_permission_rationale">为了将壁纸保存到相册，需要获取存储权限。请允许此权限以便下载壁纸。</string>
-    <string name="grant_permission">授予权限</string>
-    <string name="download_failed_permission_required">无法下载壁纸：需要存储权限</string>
-    <string name="favorite_login_required">收藏壁纸需要登录后才能使用</string>
-    <string name="download_login_required">下载壁纸需要登录后才能使用</string>
-    <string name="set_wallpaper_login_required">设置壁纸需要登录后才能使用</string>
-    <string name="edit_login_required">编辑壁纸需要登录后才能使用</string>
+    <!-- Premium related -->
+    <string name="premium_title">Unlock Premium Features</string>
+    <string name="premium_user_title">You are a Premium User</string>
+    <string name="premium_description">Upgrade to premium, unlock all wallpapers and features</string>
+    <string name="premium_user_description">Thank you for your support, you can use all premium features</string>
+    <string name="premium_feature_1">Unlimited high-quality wallpaper downloads</string>
+    <string name="premium_feature_2">Remove all ads</string>
+    <string name="premium_feature_3">Exclusive premium wallpapers</string>
+    <string name="premium_feature_4">Advanced editing features</string>
+    <string name="premium_feature_5">Auto wallpaper change</string>
+    <string name="select_subscription">Select Subscription Plan</string>
+    <string name="monthly_plan">Monthly Plan</string>
+    <string name="quarterly_plan">Quarterly Plan</string>
+    <string name="yearly_plan">Yearly Plan</string>
+    <string name="monthly_price">$18.99</string>
+    <string name="quarterly_price">$49.99</string>
+    <string name="yearly_price">$168.99</string>
+    <string name="quarterly_discount">Save 17%</string>
+    <string name="yearly_discount">Save 27%</string>
+    <string name="upgrade_now">Upgrade Now</string>
+    <string name="connecting_payment">Connecting to payment service...</string>
+    <string name="all_premium_features_unlocked">All premium features unlocked</string>
 
-    <!-- 壁纸详情组件 -->
-    <string name="author">作者: %1$s</string>
-    <string name="source">来源: %1$s</string>
-    <string name="resolution">分辨率: %1$d x %2$d</string>
-    <string name="wallpaper_type">类型: %1$s</string>
-    <string name="static_wallpaper">静态壁纸</string>
-    <string name="live_wallpaper">动态壁纸</string>
-    <string name="tags">标签:</string>
-    <string name="set_as_wallpaper">设置为壁纸</string>
-    <string name="download">下载</string>
-    <string name="share">分享</string>
-    <string name="edit">编辑</string>
-    <string name="set_home_screen">设置为主屏幕</string>
-    <string name="set_lock_screen">设置为锁屏</string>
-    <string name="set_both_screens">同时设置</string>
-    <string name="collapse_info">收起信息</string>
-    <string name="expand_info">展开信息</string>
-    <string name="set_as">设置为</string>
-    <string name="home_screen_wallpaper">主屏幕壁纸</string>
-    <string name="lock_screen_wallpaper">锁屏壁纸</string>
-    <string name="home_and_lock_screen">主屏幕和锁屏</string>
-    <string name="upgrade_to_unlock">升级解锁此壁纸</string>
+    <!-- Wallpaper detail page -->
+    <string name="start_download_wallpaper">Start downloading wallpaper</string>
+    <string name="download_failed_permission_denied">Cannot download wallpaper: storage permission denied</string>
+    <string name="storage_permission_required">Storage permission required</string>
+    <string name="storage_permission_rationale">To save wallpapers to gallery, we need storage permission. Please allow this to download wallpapers.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="download_failed_permission_required">Cannot download wallpaper: storage permission required</string>
+    <string name="favorite_login_required">Adding wallpaper to favorites requires login</string>
+    <string name="download_login_required">Downloading wallpaper requires login</string>
+    <string name="set_wallpaper_login_required">Setting wallpaper requires login</string>
+    <string name="edit_login_required">Editing wallpaper requires login</string>
+
+    <!-- Wallpaper detail components -->
+    <string name="author">Author: %1$s</string>
+    <string name="source">Source: %1$s</string>
+    <string name="resolution">Resolution: %1$d x %2$d</string>
+    <string name="wallpaper_type">Type: %1$s</string>
+    <string name="static_wallpaper">Static Wallpaper</string>
+    <string name="live_wallpaper">Live Wallpaper</string>
+    <string name="tags">Tags:</string>
+    <string name="set_as_wallpaper">Set as Wallpaper</string>
+    <string name="download">Download</string>
+    <string name="share">Share</string>
+    <string name="edit">Edit</string>
+    <string name="set_home_screen">Set to Home Screen</string>
+    <string name="set_lock_screen">Set to Lock Screen</string>
+    <string name="set_both_screens">Set Both</string>
+    <string name="collapse_info">Collapse Info</string>
+    <string name="expand_info">Expand Info</string>
+    <string name="set_as">Set as</string>
+    <string name="home_screen_wallpaper">Home Screen Wallpaper</string>
+    <string name="lock_screen_wallpaper">Lock Screen Wallpaper</string>
+    <string name="home_and_lock_screen">Home and Lock Screen</string>
+    <string name="upgrade_to_unlock">Upgrade to unlock this wallpaper</string>
+
+    <!-- Auto change wallpaper related -->
+    <string name="change_settings">Change Settings</string>
+    <string name="wifi_only_change">Change only on WiFi</string>
+    <string name="avoid_mobile_data">Avoid using mobile data</string>
+    <string name="wallpaper_source">Wallpaper Source</string>
+    <string name="wallpaper_target">Wallpaper Target</string>
+    <string name="apply_settings">Apply Settings</string>
+    <string name="change_frequency">Change Frequency</string>
+    <string name="premium">Premium</string>
+    <string name="daily_featured">Daily Featured</string>
+    <string name="featured_wallpaper">Featured Wallpaper</string>
+    <string name="unknown_author">Unknown Author</string>
+    <string name="daily">Daily</string>
+    <string name="every_twelve_hours">Every 12 Hours</string>
+    <string name="every_six_hours">Every 6 Hours</string>
+    <string name="hourly">Hourly</string>
+    <string name="each_unlock">Each Unlock</string>
+    <string name="downloaded_wallpapers">Downloaded Wallpapers</string>
+    <string name="specific_category">Specific Category</string>
+    <string name="trending_wallpapers">Trending Wallpapers</string>
+    <string name="home_screen_only">Home Screen Only</string>
+    <string name="lock_screen_only">Lock Screen Only</string>
+
+    <!-- Download and favorite related -->
+    <string name="no_downloaded_wallpapers">No downloaded wallpapers</string>
+    <string name="browse_and_download_tip">Browse wallpapers and click the download button, downloaded wallpapers will appear here</string>
+    <string name="no_favorite_wallpapers">No favorite wallpapers</string>
+    <string name="browse_and_favorite_tip">Browse wallpapers and click the favorite button, favorite wallpapers will appear here</string>
+    <string name="login_required_to_view_downloads">Login required to view downloads list</string>
+    <string name="login_required_to_view_favorites">Login required to view favorites list</string>
+
+    <!-- Edit wallpaper related -->
+    <string name="edit_wallpaper">Edit Wallpaper</string>
+    <string name="save">Save</string>
+    <string name="brightness">Brightness</string>
+    <string name="contrast">Contrast</string>
+    <string name="saturation">Saturation</string>
+    <string name="reset">Reset</string>
+    <string name="reset_edits">Reset Edits</string>
+    <string name="filter">Filter</string>
+
+    <!-- Feedback related -->
+    <string name="direct_feedback">Direct Feedback</string>
+    <string name="your_feedback_or_suggestion">Your Feedback or Suggestion</string>
+    <string name="enter_feedback_placeholder">Please enter your feedback or suggestion about the app...</string>
+    <string name="contact_info_optional">Contact Info (Optional)</string>
+    <string name="email_or_other_contact">Email or other contact method</string>
+    <string name="submit_feedback">Submit Feedback</string>
+    <string name="rate_in_app_store">Rate in App Store</string>
+    <string name="like_our_app_rate_us">Like our app? Please give us a 5-star rating!</string>
+    <string name="send_email_feedback">Send Email Feedback</string>
+    <string name="have_questions_email_us">Have questions or suggestions? Email our support team</string>
+
+    <!-- Premium membership related -->
+    <string name="upgrade_to_premium">Upgrade to Premium</string>
+    <string name="restore_purchases">Restore Purchases</string>
+    <string name="payment_success_notice">After successful payment, you will immediately get premium features. Subscription can be canceled at any time.</string>
+
+    <!-- Test tools related -->
+    <string name="check_login_status_failed">Check login status failed: %1$s</string>
+    <string name="check_premium_status_failed">Check user status failed: %1$s</string>
+    <string name="set_premium_success">Successfully set as premium user</string>
+    <string name="set_premium_failed">Failed to set premium user: %1$s</string>
+    <string name="disable_premium_success">Successfully disabled premium user status</string>
+    <string name="disable_premium_failed">Failed to disable premium user status: %1$s</string>
+    <string name="simulate_login_success">Simulated login successful</string>
+    <string name="simulate_login_failed">Simulated login failed: %1$s</string>
+    <string name="simulate_logout_success">Simulated logout successful</string>
+    <string name="simulate_logout_failed">Simulated logout failed: %1$s</string>
 </resources>

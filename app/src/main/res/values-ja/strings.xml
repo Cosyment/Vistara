@@ -55,6 +55,8 @@
     <string name="language_settings">言語設定</string>
     <string name="language">言語</string>
     <string name="language_desc">アプリの言語を変更</string>
+    <string name="language_change_restart">言語が変更されました。変更を適用するにはアプリを再起動してください</string>
+    <string name="language_changed">言語が変更されました</string>
     <string name="system_default">システムデフォルト</string>
     <string name="english">英語</string>
     <string name="chinese">中国語</string>
@@ -80,6 +82,7 @@
     <string name="login">ログイン</string>
     <string name="premium_user">プレミアムユーザー</string>
     <string name="premium_banner">✨ すべての特典をアンロックし、HD体験をお楽しみください ✨</string>
+    <string name="mine">マイページ</string>
     <string name="favorites_login_required">お気に入りリストを使用するにはログインが必要です</string>
     <string name="downloads_login_required">ダウンロードリストを使用するにはログインが必要です</string>
     <string name="auto_wallpaper_login_required">壁紙自動変更を使用するにはログインが必要です</string>
@@ -89,6 +92,8 @@
     <string name="user_agreement">ユーザー契約</string>
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="terms_of_service">利用規約</string>
+    <string name="open_source_libraries">オープンソースライブラリ</string>
+
     <!-- 壁紙カテゴリー -->
     <string name="category_all">すべて</string>
     <string name="category_abstract">抽象的</string>
@@ -112,4 +117,175 @@
     <string name="error_filtering_wallpapers">壁紙のフィルタリングに失敗しました</string>
     <string name="error_already_premium">あなたはすでにプレミアムユーザーです</string>
     <string name="error_billing_not_connected">決済サービスに接続されていません。後でもう一度お試しください</string>
+    <string name="error_network_check">読み込みに失敗しました。ネットワーク接続を確認してください</string>
+
+    <!-- 共通ボタンとプロンプト -->
+    <string name="retry">再試行</string>
+    <string name="loading">読み込み中...</string>
+    <string name="confirm">確認</string>
+    <string name="login_required">ログインが必要です</string>
+    <string name="login_required_message">この機能を使用するにはログインが必要です。ログインページに移動しますか？</string>
+    <string name="go_to_login">ログインへ</string>
+    <string name="close">閉じる</string>
+    <string name="maybe_later">後で</string>
+
+    <!-- ホーム画面関連 -->
+    <string name="home">ホーム</string>
+    <string name="search_icon">検索アイコン</string>
+    <string name="search_high_quality_wallpapers">高品質の壁紙、動的エフェクトを検索...</string>
+    <string name="loading_wallpapers">壁紙を読み込み中...</string>
+    <string name="loading_failed">読み込みに失敗しました</string>
+    <string name="unknown_error">不明なエラー</string>
+    <string name="refresh">更新</string>
+    <string name="partial_data_loading_failed">一部のデータの読み込みに失敗しました。更新して再試行してください</string>
+    <string name="explore_categories">カテゴリーを探索</string>
+    <string name="hot_static">人気の静止画</string>
+    <string name="cool_dynamic">クールな動画</string>
+    <string name="latest_uploads">最新のアップロード</string>
+    <string name="nature_scenery">自然の風景</string>
+    <string name="architecture">建築</string>
+    <string name="animals">動物</string>
+    <string name="space">宇宙</string>
+    <string name="minimal">ミニマル</string>
+    <string name="no_wallpapers_found">壁紙が見つかりませんでした</string>
+    <string name="try_different_keywords">別のキーワードを試してください</string>
+    <string name="found_results">%d 件の結果が見つかりました</string>
+    <string name="hot_searches">人気の検索</string>
+    <string name="search_tips">検索のヒント</string>
+    <string name="use_specific_descriptions">具体的な説明を使用する</string>
+    <string name="specific_description_examples">例：\'山の風景\'、\'白黒の抽象\'、\'夜の都市景観\'</string>
+    <string name="try_different_languages">異なる言語を試す</string>
+    <string name="english_keywords_tip">英語のキーワードを使うと、より多くの結果が得られることがあります</string>
+    <string name="combine_keywords">キーワードを組み合わせる</string>
+    <string name="keyword_combination_examples">例：\'ミニマル 白黒\'、\'自然 緑\'</string>
+    <string name="clear_search">検索をクリア</string>
+    <string name="search_history">検索履歴</string>
+
+    <!-- プレミアム関連 -->
+    <string name="premium_title">プレミアム機能をアンロック</string>
+    <string name="premium_user_title">あなたはプレミアムユーザーです</string>
+    <string name="premium_description">プレミアムにアップグレードして、すべての壁紙と機能をアンロック</string>
+    <string name="premium_user_description">ご支援ありがとうございます。すべてのプレミアム機能をご利用いただけます</string>
+    <string name="premium_feature_1">無制限の高品質壁紙ダウンロード</string>
+    <string name="premium_feature_2">すべての広告を削除</string>
+    <string name="premium_feature_3">プレミアム限定の壁紙</string>
+    <string name="premium_feature_4">高度な編集機能</string>
+    <string name="premium_feature_5">自動壁紙変更</string>
+    <string name="select_subscription">サブスクリプションプランを選択</string>
+    <string name="monthly_plan">月額プラン</string>
+    <string name="quarterly_plan">四半期プラン</string>
+    <string name="yearly_plan">年間プラン</string>
+    <string name="monthly_price">¥1,200</string>
+    <string name="quarterly_price">¥3,200</string>
+    <string name="yearly_price">¥10,800</string>
+    <string name="quarterly_discount">17%お得</string>
+    <string name="yearly_discount">27%お得</string>
+    <string name="upgrade_now">今すぐアップグレード</string>
+    <string name="connecting_payment">決済サービスに接続中...</string>
+    <string name="all_premium_features_unlocked">すべてのプレミアム機能がアンロックされました</string>
+
+    <!-- 壁紙詳細ページ -->
+    <string name="start_download_wallpaper">壁紙のダウンロードを開始</string>
+    <string name="download_failed_permission_denied">壁紙をダウンロードできません：ストレージ権限が拒否されました</string>
+    <string name="storage_permission_required">ストレージ権限が必要です</string>
+    <string name="storage_permission_rationale">壁紙をギャラリーに保存するには、ストレージ権限が必要です。壁紙をダウンロードするには、この権限を許可してください。</string>
+    <string name="grant_permission">権限を付与</string>
+    <string name="download_failed_permission_required">壁紙をダウンロードできません：ストレージ権限が必要です</string>
+    <string name="favorite_login_required">壁紙をお気に入りに追加するにはログインが必要です</string>
+    <string name="download_login_required">壁紙をダウンロードするにはログインが必要です</string>
+    <string name="set_wallpaper_login_required">壁紙を設定するにはログインが必要です</string>
+    <string name="edit_login_required">壁紙を編集するにはログインが必要です</string>
+
+    <!-- 壁紙詳細コンポーネント -->
+    <string name="author">作者: %1$s</string>
+    <string name="source">ソース: %1$s</string>
+    <string name="resolution">解像度: %1$d x %2$d</string>
+    <string name="wallpaper_type">タイプ: %1$s</string>
+    <string name="static_wallpaper">静止壁紙</string>
+    <string name="live_wallpaper">ライブ壁紙</string>
+    <string name="tags">タグ:</string>
+    <string name="set_as_wallpaper">壁紙に設定</string>
+    <string name="download">ダウンロード</string>
+    <string name="share">共有</string>
+    <string name="edit">編集</string>
+    <string name="set_home_screen">ホーム画面に設定</string>
+    <string name="set_lock_screen">ロック画面に設定</string>
+    <string name="set_both_screens">両方に設定</string>
+    <string name="collapse_info">情報を折りたたむ</string>
+    <string name="expand_info">情報を展開</string>
+    <string name="set_as">設定先</string>
+    <string name="home_screen_wallpaper">ホーム画面の壁紙</string>
+    <string name="lock_screen_wallpaper">ロック画面の壁紙</string>
+    <string name="home_and_lock_screen">ホーム画面とロック画面</string>
+    <string name="upgrade_to_unlock">アップグレードしてこの壁紙をアンロック</string>
+
+    <!-- 自動壁紙変更関連 -->
+    <string name="change_settings">設定を変更</string>
+    <string name="wifi_only_change">WiFi接続時のみ変更</string>
+    <string name="avoid_mobile_data">モバイルデータの使用を避ける</string>
+    <string name="wallpaper_source">壁紙ソース</string>
+    <string name="wallpaper_target">壁紙ターゲット</string>
+    <string name="apply_settings">設定を適用</string>
+    <string name="change_frequency">変更頻度</string>
+    <string name="premium">プレミアム</string>
+    <string name="daily_featured">今日のおすすめ</string>
+    <string name="featured_wallpaper">おすすめ壁紙</string>
+    <string name="unknown_author">不明な作者</string>
+    <string name="daily">毎日</string>
+    <string name="every_twelve_hours">12時間ごと</string>
+    <string name="every_six_hours">6時間ごと</string>
+    <string name="hourly">1時間ごと</string>
+    <string name="each_unlock">ロック解除ごと</string>
+    <string name="downloaded_wallpapers">ダウンロードした壁紙</string>
+    <string name="specific_category">特定のカテゴリー</string>
+    <string name="trending_wallpapers">トレンドの壁紙</string>
+    <string name="home_screen_only">ホーム画面のみ</string>
+    <string name="lock_screen_only">ロック画面のみ</string>
+
+    <!-- ダウンロードとお気に入り関連 -->
+    <string name="no_downloaded_wallpapers">ダウンロードした壁紙はありません</string>
+    <string name="browse_and_download_tip">壁紙を閲覧してダウンロードボタンをクリックすると、ダウンロードした壁紙がここに表示されます</string>
+    <string name="no_favorite_wallpapers">お気に入りの壁紙はありません</string>
+    <string name="browse_and_favorite_tip">壁紙を閲覧してお気に入りボタンをクリックすると、お気に入りの壁紙がここに表示されます</string>
+    <string name="login_required_to_view_downloads">ダウンロードリストを表示するにはログインが必要です</string>
+    <string name="login_required_to_view_favorites">お気に入りリストを表示するにはログインが必要です</string>
+
+    <!-- 壁紙編集関連 -->
+    <string name="edit_wallpaper">壁紙を編集</string>
+    <string name="save">保存</string>
+    <string name="brightness">明るさ</string>
+    <string name="contrast">コントラスト</string>
+    <string name="saturation">彩度</string>
+    <string name="reset">リセット</string>
+    <string name="reset_edits">編集をリセット</string>
+    <string name="filter">フィルター</string>
+
+    <!-- フィードバック関連 -->
+    <string name="direct_feedback">直接フィードバック</string>
+    <string name="your_feedback_or_suggestion">あなたのフィードバックや提案</string>
+    <string name="enter_feedback_placeholder">アプリに関するフィードバックや提案を入力してください...</string>
+    <string name="contact_info_optional">連絡先情報（任意）</string>
+    <string name="email_or_other_contact">メールアドレスまたはその他の連絡方法</string>
+    <string name="submit_feedback">フィードバックを送信</string>
+    <string name="rate_in_app_store">アプリストアで評価する</string>
+    <string name="like_our_app_rate_us">アプリが気に入りましたか？5つ星の評価をお願いします！</string>
+    <string name="send_email_feedback">メールでフィードバックを送信</string>
+    <string name="have_questions_email_us">質問や提案がありますか？サポートチームにメールを送ってください</string>
+
+    <!-- プレミアムメンバーシップ関連 -->
+    <string name="upgrade_to_premium">プレミアムにアップグレード</string>
+    <string name="restore_purchases">購入を復元</string>
+    <string name="payment_success_notice">支払いが成功すると、すぐにプレミアム機能が利用可能になります。サブスクリプションはいつでもキャンセルできます。</string>
+
+    <!-- テストツール関連 -->
+    <string name="check_login_status_failed">ログイン状態の確認に失敗しました: %1$s</string>
+    <string name="check_premium_status_failed">ユーザー状態の確認に失敗しました: %1$s</string>
+    <string name="set_premium_success">プレミアムユーザーとして正常に設定されました</string>
+    <string name="set_premium_failed">プレミアムユーザーの設定に失敗しました: %1$s</string>
+    <string name="disable_premium_success">プレミアムユーザー状態の無効化に成功しました</string>
+    <string name="disable_premium_failed">プレミアムユーザー状態の無効化に失敗しました: %1$s</string>
+    <string name="simulate_login_success">ログインシミュレーションが成功しました</string>
+    <string name="simulate_login_failed">ログインシミュレーションに失敗しました: %1$s</string>
+    <string name="simulate_logout_success">ログアウトシミュレーションが成功しました</string>
+    <string name="simulate_logout_failed">ログアウトシミュレーションに失敗しました: %1$s</string>
 </resources>

@@ -29,7 +29,7 @@ class MineViewModel @Inject constructor(
     }
 
     // 用户名
-    private val _username = MutableStateFlow("Vistara 用户")
+    private val _username = MutableStateFlow("Vistara User")
     val username: StateFlow<String> = _username.asStateFlow()
 
     // 高级用户状态

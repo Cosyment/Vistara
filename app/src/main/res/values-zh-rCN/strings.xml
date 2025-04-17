@@ -51,10 +51,11 @@
     <string name="clear_cache_title">清除缓存</string>
     <string name="clear_cache_message">确定要清除应用缓存吗？这将删除所有缓存的图片和数据。</string>
     <string name="clear">清除</string>
-    <string name="cancel">取消</string>
     <string name="language_settings">语言设置</string>
     <string name="language">语言</string>
     <string name="language_desc">更改应用语言</string>
+    <string name="language_change_restart">语言已更改，重启应用后生效</string>
+    <string name="language_changed">语言已更改</string>
     <string name="system_default">系统默认</string>
     <string name="english">英文</string>
     <string name="chinese">中文</string>
@@ -80,6 +81,7 @@
     <string name="login">点击登录</string>
     <string name="premium_user">高级会员</string>
     <string name="premium_banner">✨ 解锁全部特权，畅享高清视界 ✨</string>
+    <string name="mine">我的</string>
     <string name="favorites_login_required">收藏列表需要登录后才能使用</string>
     <string name="downloads_login_required">下载列表需要登录后才能使用</string>
     <string name="auto_wallpaper_login_required">自动更换壁纸需要登录后才能使用</string>
@@ -89,6 +91,8 @@
     <string name="user_agreement">用户协议</string>
     <string name="privacy_policy">隐私政策</string>
     <string name="terms_of_service">服务条款</string>
+    <string name="open_source_libraries">开源库</string>
+
     <!-- 壁纸分类 -->
     <string name="category_all">全部</string>
     <string name="category_abstract">抽象</string>
@@ -112,4 +116,176 @@
     <string name="error_filtering_wallpapers">筛选壁纸失败</string>
     <string name="error_already_premium">您已经是高级用户</string>
     <string name="error_billing_not_connected">支付服务未连接，请稍后再试</string>
+    <string name="error_network_check">加载失败，请检查网络连接</string>
+
+    <!-- 通用按钮和提示 -->
+    <string name="retry">重试</string>
+    <string name="loading">加载中...</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确认</string>
+    <string name="login_required">需要登录</string>
+    <string name="login_required_message">该功能需要登录后才能使用，是否前往登录页面？</string>
+    <string name="go_to_login">去登录</string>
+    <string name="close">关闭</string>
+    <string name="maybe_later">稍后再说</string>
+
+    <!-- 高级会员相关 -->
+    <string name="premium_title">解锁高级功能</string>
+    <string name="premium_user_title">您已是高级会员</string>
+    <string name="premium_description">升级到高级版，解锁所有壁纸和功能</string>
+    <string name="premium_user_description">感谢您的支持，您可以使用所有高级功能</string>
+    <string name="premium_feature_1">无限下载高清壁纸</string>
+    <string name="premium_feature_2">去除所有广告</string>
+    <string name="premium_feature_3">专属高级壁纸</string>
+    <string name="premium_feature_4">高级编辑功能</string>
+    <string name="premium_feature_5">自动更换壁纸</string>
+    <string name="select_subscription">选择订阅计划</string>
+    <string name="monthly_plan">月会员</string>
+    <string name="quarterly_plan">季度会员</string>
+    <string name="yearly_plan">年会员</string>
+    <string name="monthly_price">¥18.99</string>
+    <string name="quarterly_price">¥49.99</string>
+    <string name="yearly_price">¥168.99</string>
+    <string name="quarterly_discount">省17%</string>
+    <string name="yearly_discount">省27%</string>
+    <string name="upgrade_now">立即升级</string>
+    <string name="connecting_payment">正在连接支付服务...</string>
+    <string name="all_premium_features_unlocked">已解锁全部高级功能</string>
+
+    <!-- 壁纸详情页面 -->
+    <string name="start_download_wallpaper">开始下载壁纸</string>
+    <string name="download_failed_permission_denied">无法下载壁纸：存储权限被拒绝</string>
+    <string name="storage_permission_required">需要存储权限</string>
+    <string name="storage_permission_rationale">为了将壁纸保存到相册，需要获取存储权限。请允许此权限以便下载壁纸。</string>
+    <string name="grant_permission">授予权限</string>
+    <string name="download_failed_permission_required">无法下载壁纸：需要存储权限</string>
+    <string name="favorite_login_required">收藏壁纸需要登录后才能使用</string>
+    <string name="download_login_required">下载壁纸需要登录后才能使用</string>
+    <string name="set_wallpaper_login_required">设置壁纸需要登录后才能使用</string>
+    <string name="edit_login_required">编辑壁纸需要登录后才能使用</string>
+
+    <!-- 壁纸详情组件 -->
+    <string name="author">作者: %1$s</string>
+    <string name="source">来源: %1$s</string>
+    <string name="resolution">分辨率: %1$d x %2$d</string>
+    <string name="wallpaper_type">类型: %1$s</string>
+    <string name="static_wallpaper">静态壁纸</string>
+    <string name="live_wallpaper">动态壁纸</string>
+    <string name="tags">标签:</string>
+    <string name="set_as_wallpaper">设置为壁纸</string>
+    <string name="download">下载</string>
+    <string name="share">分享</string>
+    <string name="edit">编辑</string>
+    <string name="set_home_screen">设置为主屏幕</string>
+    <string name="set_lock_screen">设置为锁屏</string>
+    <string name="set_both_screens">同时设置</string>
+    <string name="collapse_info">收起信息</string>
+    <string name="expand_info">展开信息</string>
+    <string name="set_as">设置为</string>
+    <string name="home_screen_wallpaper">主屏幕壁纸</string>
+    <string name="lock_screen_wallpaper">锁屏壁纸</string>
+    <string name="home_and_lock_screen">主屏幕和锁屏</string>
+    <string name="upgrade_to_unlock">升级解锁此壁纸</string>
+
+    <!-- 首页相关 -->
+    <string name="home">首页</string>
+    <string name="search_icon">搜索图标</string>
+    <string name="search_high_quality_wallpapers">搜索高清壁纸、动态效果...</string>
+    <string name="loading_wallpapers">正在加载壁纸...</string>
+    <string name="loading_failed">加载失败</string>
+    <string name="unknown_error">未知错误</string>
+    <string name="refresh">刷新</string>
+    <string name="partial_data_loading_failed">部分数据加载失败，请刷新重试</string>
+    <string name="explore_categories">探索分类</string>
+    <string name="hot_static">热门静态</string>
+    <string name="cool_dynamic">炫酷动态</string>
+    <string name="latest_uploads">最新上传</string>
+    <string name="nature_scenery">自然风景</string>
+    <string name="architecture">建筑</string>
+    <string name="animals">动物</string>
+    <string name="space">太空</string>
+    <string name="minimal">简约</string>
+    <string name="no_wallpapers_found">没有找到壁纸</string>
+    <string name="try_different_keywords">尝试使用其他关键词搜索</string>
+    <string name="found_results">找到 %d 个结果</string>
+    <string name="hot_searches">热门搜索</string>
+    <string name="search_tips">搜索提示</string>
+    <string name="use_specific_descriptions">使用具体描述</string>
+    <string name="clear_search">清除搜索</string>
+    <string name="search_history">搜索历史</string>
+    <string name="specific_description_examples">例如：\'山水风景\'、\'黑白抽象\'、\'城市夜景\'</string>
+    <string name="try_different_languages">尝试不同语言</string>
+    <string name="english_keywords_tip">有时英文关键词可能会有更多结果</string>
+    <string name="combine_keywords">组合关键词</string>
+    <string name="keyword_combination_examples">例如：\'极简 黑白\'、\'自然 绿色\'</string>
+
+    <!-- 自动更换壁纸相关 -->
+    <string name="change_settings">更改设置</string>
+    <string name="wifi_only_change">仅在WiFi下更换</string>
+    <string name="avoid_mobile_data">避免使用移动数据流量</string>
+    <string name="wallpaper_source">壁纸来源</string>
+    <string name="wallpaper_target">壁纸目标</string>
+    <string name="apply_settings">应用设置</string>
+    <string name="change_frequency">更换频率</string>
+    <string name="premium">高级</string>
+    <string name="daily_featured">每日精选</string>
+    <string name="featured_wallpaper">精选壁纸</string>
+    <string name="unknown_author">未知作者</string>
+    <string name="daily">每天</string>
+    <string name="every_twelve_hours">每12小时</string>
+    <string name="every_six_hours">每6小时</string>
+    <string name="hourly">每小时</string>
+    <string name="each_unlock">每次解锁</string>
+    <string name="downloaded_wallpapers">已下载壁纸</string>
+    <string name="specific_category">指定分类</string>
+    <string name="trending_wallpapers">热门壁纸</string>
+    <string name="home_screen_only">仅主屏幕</string>
+    <string name="lock_screen_only">仅锁屏</string>
+
+    <!-- 下载和收藏相关 -->
+    <string name="no_downloaded_wallpapers">暂无下载壁纸</string>
+    <string name="browse_and_download_tip">浏览壁纸并点击下载按钮，下载的壁纸将显示在这里</string>
+    <string name="no_favorite_wallpapers">暂无收藏壁纸</string>
+    <string name="browse_and_favorite_tip">浏览壁纸并点击收藏按钮，收藏的壁纸将显示在这里</string>
+    <string name="login_required_to_view_downloads">需要登录才能查看下载列表</string>
+    <string name="login_required_to_view_favorites">需要登录才能查看收藏列表</string>
+
+    <!-- 编辑壁纸相关 -->
+    <string name="edit_wallpaper">编辑壁纸</string>
+    <string name="save">保存</string>
+    <string name="brightness">亮度</string>
+    <string name="contrast">对比度</string>
+    <string name="saturation">饱和度</string>
+    <string name="reset">重置</string>
+    <string name="reset_edits">重置编辑</string>
+    <string name="filter">滤镜</string>
+
+    <!-- 反馈相关 -->
+    <string name="direct_feedback">直接反馈</string>
+    <string name="your_feedback_or_suggestion">您的反馈或建议</string>
+    <string name="enter_feedback_placeholder">请输入您对应用的反馈或建议...</string>
+    <string name="contact_info_optional">联系方式（选填）</string>
+    <string name="email_or_other_contact">邮箱或其他联系方式</string>
+    <string name="submit_feedback">提交反馈</string>
+    <string name="rate_in_app_store">在应用商店评分</string>
+    <string name="like_our_app_rate_us">喜欢我们的应用吗？请给我们5星好评！</string>
+    <string name="send_email_feedback">发送邮件反馈</string>
+    <string name="have_questions_email_us">有问题或建议？发送邮件给我们的支持团队</string>
+
+    <!-- 高级会员相关 -->
+    <string name="upgrade_to_premium">升级到高级版</string>
+    <string name="restore_purchases">恢复购买</string>
+    <string name="payment_success_notice">支付成功后，您将立即获得高级功能。订阅可随时取消。</string>
+
+    <!-- 测试工具相关 -->
+    <string name="check_login_status_failed">检查登录状态失败: %1$s</string>
+    <string name="check_premium_status_failed">检查用户状态失败: %1$s</string>
+    <string name="set_premium_success">已成功设置为高级用户</string>
+    <string name="set_premium_failed">设置高级用户失败: %1$s</string>
+    <string name="disable_premium_success">已成功取消高级用户状态</string>
+    <string name="disable_premium_failed">取消高级用户状态失败: %1$s</string>
+    <string name="simulate_login_success">模拟登录成功</string>
+    <string name="simulate_login_failed">模拟登录失败: %1$s</string>
+    <string name="simulate_logout_success">模拟退出登录成功</string>
+    <string name="simulate_logout_failed">模拟退出登录失败: %1$s</string>
 </resources>

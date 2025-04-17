@@ -46,7 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -88,10 +90,10 @@ fun PremiumScreen(
     }
 
     Scaffold(topBar = {
-        TopAppBar(title = { Text("升级到高级版") }, navigationIcon = {
+        TopAppBar(title = { Text(stringResource(R.string.upgrade_to_premium)) }, navigationIcon = {
             IconButton(onClick = onBackPressed) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回"
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
                 )
             }
         })
@@ -105,7 +107,7 @@ fun PremiumScreen(
         ) {
             // 标题
             Text(
-                text = "解锁全部高级功能",
+                text = stringResource(R.string.premium_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -116,7 +118,7 @@ fun PremiumScreen(
 
             // 副标题
             Text(
-                text = "享受无限壁纸、自动更换和更多功能",
+                text = stringResource(R.string.premium_description),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -132,7 +134,7 @@ fun PremiumScreen(
 
             // 套餐选择
             Text(
-                text = "选择套餐",
+                text = stringResource(R.string.select_subscription),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -144,7 +146,7 @@ fun PremiumScreen(
                 plan = UpgradePlan.MONTHLY,
                 isSelected = selectedPlan == UpgradePlan.MONTHLY,
                 price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY]
-                    ?: "加载中...",
+                    ?: stringResource(R.string.loading),
                 onClick = { viewModel.selectPlan(UpgradePlan.MONTHLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -154,7 +156,7 @@ fun PremiumScreen(
                 plan = UpgradePlan.YEARLY,
                 isSelected = selectedPlan == UpgradePlan.YEARLY,
                 price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY]
-                    ?: "加载中...",
+                    ?: stringResource(R.string.loading),
                 onClick = { viewModel.selectPlan(UpgradePlan.YEARLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -164,7 +166,7 @@ fun PremiumScreen(
                 plan = UpgradePlan.LIFETIME,
                 isSelected = selectedPlan == UpgradePlan.LIFETIME,
                 price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME]
-                    ?: "加载中...",
+                    ?: stringResource(R.string.loading),
                 onClick = { viewModel.selectPlan(UpgradePlan.LIFETIME) })
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -184,9 +186,9 @@ fun PremiumScreen(
                 } else {
                     Text(
                         text = when {
-                            isPremiumUser -> "您已是高级用户"
-                            billingConnectionState != com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED -> "正在连接支付服务..."
-                            else -> "立即升级"
+                            isPremiumUser -> stringResource(R.string.error_already_premium)
+                            billingConnectionState != com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED -> stringResource(R.string.connecting_payment)
+                            else -> stringResource(R.string.upgrade_now)
                         },
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
@@ -204,11 +206,11 @@ fun PremiumScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
-                    contentDescription = "恢复购买",
+                    contentDescription = stringResource(R.string.restore_purchases),
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(
-                    text = "恢复购买", style = MaterialTheme.typography.bodyLarge
+                    text = stringResource(R.string.restore_purchases), style = MaterialTheme.typography.bodyLarge
                 )
             }
 
@@ -216,7 +218,7 @@ fun PremiumScreen(
 
             // 说明文字
             Text(
-                text = "支付成功后，您将立即获得高级功能。订阅可随时取消。",
+                text = stringResource(R.string.payment_success_notice),
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
@@ -232,11 +234,11 @@ fun PremiumScreen(
 @Composable
 private fun PremiumFeaturesList() {
     Column(modifier = Modifier.fillMaxWidth()) {
-        PremiumFeatureItem(text = "无限下载动态壁纸")
-        PremiumFeatureItem(text = "移除所有广告")
-        PremiumFeatureItem(text = "自动更换壁纸（每小时/每次解锁）")
-        PremiumFeatureItem(text = "独家高级壁纸")
-        PremiumFeatureItem(text = "优先获取新功能")
+        PremiumFeatureItem(text = stringResource(R.string.premium_feature_1))
+        PremiumFeatureItem(text = stringResource(R.string.premium_feature_2))
+        PremiumFeatureItem(text = stringResource(R.string.premium_feature_5))
+        PremiumFeatureItem(text = stringResource(R.string.premium_feature_3))
+        PremiumFeatureItem(text = stringResource(R.string.premium_feature_4))
     }
 }
 

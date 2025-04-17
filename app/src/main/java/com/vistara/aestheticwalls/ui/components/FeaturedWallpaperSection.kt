@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.R
 
 /**
  * 精选壁纸展示组件
@@ -39,7 +41,7 @@ fun FeaturedWallpaperSection(
     wallpaper: Wallpaper,
     onWallpaperClick: (Wallpaper) -> Unit,
     modifier: Modifier = Modifier,
-    title: String = "每日精选"
+    title: String = stringResource(R.string.daily_featured)
 ) {
     Column(modifier = modifier) {
         Text(
@@ -83,7 +85,7 @@ fun FeaturedWallpaperSection(
                 ) {
                     Column {
                         Text(
-                            text = wallpaper.title ?: "精选壁纸",
+                            text = wallpaper.title ?: stringResource(R.string.featured_wallpaper),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 shadow = Shadow(
                                     color = Color.Black.copy(alpha = 0.7f),
@@ -95,7 +97,7 @@ fun FeaturedWallpaperSection(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "by ${wallpaper.author ?: "未知作者"}",
+                            text = "by ${wallpaper.author ?: stringResource(R.string.unknown_author)}",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 shadow = Shadow(
                                     color = Color.Black.copy(alpha = 0.7f),
@@ -116,7 +118,7 @@ fun FeaturedWallpaperSection(
                         modifier = Modifier.align(Alignment.TopStart)
                     ) {
                         Text(
-                            text = "高级",
+                            text = stringResource(R.string.premium),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onTertiary,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -132,7 +134,7 @@ fun FeaturedWallpaperSection(
                         modifier = Modifier.align(Alignment.TopEnd)
                     ) {
                         Text(
-                            text = "动态",
+                            text = stringResource(R.string.live_wallpaper),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondary,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

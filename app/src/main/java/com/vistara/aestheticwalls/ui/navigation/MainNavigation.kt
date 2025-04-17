@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -262,35 +263,35 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
                 when (destination) {
                     NavDestination.Home -> {
                         if (selected) {
-                            Icon(Icons.Filled.Home, contentDescription = destination.title)
+                            Icon(Icons.Filled.Home, contentDescription = destination.getTitle())
                         } else {
                             Icon(
-                                Icons.Outlined.Home, contentDescription = destination.title
+                                Icons.Outlined.Home, contentDescription = destination.getTitle()
                             )
                         }
                     }
 
                     NavDestination.StaticWallpapers -> {
                         Icon(
-                            ImageVector.vectorResource(id = R.drawable.ic_image), contentDescription = destination.title
+                            ImageVector.vectorResource(id = R.drawable.ic_image), contentDescription = destination.getTitle()
                         )
                     }
 
                     NavDestination.LiveWallpapers -> {
                         Icon(
-                            ImageVector.vectorResource(id = R.drawable.ic_movie), contentDescription = destination.title
+                            ImageVector.vectorResource(id = R.drawable.ic_movie), contentDescription = destination.getTitle()
                         )
                     }
 
                     NavDestination.Mine -> {
                         if (selected) {
-                            Icon(Icons.Filled.Person, contentDescription = destination.title)
+                            Icon(Icons.Filled.Person, contentDescription = destination.getTitle())
                         } else {
-                            Icon(Icons.Outlined.Person, contentDescription = destination.title)
+                            Icon(Icons.Outlined.Person, contentDescription = destination.getTitle())
                         }
                     }
                 }
-            }, label = { Text(destination.title) }, selected = selected, onClick = {
+            }, label = { Text(destination.getTitle()) }, selected = selected, onClick = {
                 navController.navigate(destination.route) {
                     // 避免创建多个实例
                     popUpTo(navController.graph.findStartDestination().id) {
@@ -310,8 +311,23 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
  * 导航目的地枚举
  */
 enum class NavDestination(val route: String, val title: String) {
-    Home("home", "首页"),
-    StaticWallpapers("static", "静态"),
-    LiveWallpapers("live", "动态"),
-    Mine("mine", "我的")
+    Home("home", "首页") {
+        @Composable
+        override fun getTitle(): String = stringResource(R.string.home)
+    },
+    StaticWallpapers("static", "静态") {
+        @Composable
+        override fun getTitle(): String = stringResource(R.string.category_static)
+    },
+    LiveWallpapers("live", "动态") {
+        @Composable
+        override fun getTitle(): String = stringResource(R.string.category_live)
+    },
+    Mine("mine", "我的") {
+        @Composable
+        override fun getTitle(): String = stringResource(R.string.mine)
+    };
+
+    @Composable
+    abstract fun getTitle(): String
 }

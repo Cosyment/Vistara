@@ -165,7 +165,7 @@ fun PremiumWallpaperPrompt(
                             ), contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "👑",
+                            text = "👑", // 皇冠表情符号
                             style = MaterialTheme.typography.headlineLarge,
                             modifier = Modifier.scale(1.2f)
                         )

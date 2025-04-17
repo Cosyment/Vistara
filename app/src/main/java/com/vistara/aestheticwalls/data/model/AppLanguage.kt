@@ -9,5 +9,5 @@ enum class AppLanguage(val code: String) {
     CHINESE("zh"),   // 中文
     JAPANESE("ja"),  // 日文
     KOREAN("ko"),    // 韩文
-    INDONESIAN("in") // 印尼文
+    INDONESIAN("id") // 印尼文
 }

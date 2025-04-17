@@ -23,8 +23,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.vistara.aestheticwalls.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
@@ -45,17 +47,16 @@ fun FavoritesScreen(
     viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val favoritesState by viewModel.favoritesState.collectAsState()
-    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("我的收藏") },
+                title = { Text(stringResource(R.string.my_favorites)) },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -76,12 +77,12 @@ fun FavoritesScreen(
 
                 is UiState.Error -> {
                     val errorMessage = (favoritesState as UiState.Error).message
-                    if (errorMessage == "需要登录才能查看收藏列表") {
+                    if (errorMessage == stringResource(R.string.login_required_to_view_favorites)) {
                         // 显示登录提示对话框
                         LoginPromptDialog(
                             onDismiss = { onBackPressed() },
                             onConfirm = { onNavigateToLogin() },
-                            message = "收藏列表需要登录后才能使用"
+                            message = stringResource(R.string.favorites_login_required)
                         )
                     } else {
                         ErrorState(
@@ -129,7 +130,7 @@ private fun EmptyFavoritesContent() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "暂无收藏壁纸",
+            text = stringResource(R.string.no_favorite_wallpapers),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -137,7 +138,7 @@ private fun EmptyFavoritesContent() {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "浏览壁纸并点击收藏按钮，收藏的壁纸将显示在这里",
+            text = stringResource(R.string.browse_and_favorite_tip),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

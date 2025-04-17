@@ -90,7 +90,12 @@ class MainActivity : ComponentActivity() {
         // 从意图中获取导航路径
         val navigation = intent.getStringExtra("navigation")
         if (!navigation.isNullOrEmpty()) {
-            initialNavigation = navigation
+            // 如果是设置页面，则导航到设置页面
+            if (navigation == "settings") {
+                initialNavigation = "settings"
+            } else {
+                initialNavigation = navigation
+            }
         }
     }
 
