@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.ui.screens.autochange
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import com.vistara.aestheticwalls.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import com.vistara.aestheticwalls.ui.icons.AppIcons
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
@@ -48,12 +48,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import android.widget.Toast
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vistara.aestheticwalls.BuildConfig
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
-import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
+import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -83,14 +85,12 @@ fun AutoChangeScreen(
     if (needLogin) {
         LoginPromptDialog(
             onDismiss = {
-                viewModel.clearNeedLogin()
-                onBackPressed()
-            },
-            onConfirm = {
-                viewModel.clearNeedLogin()
-                onNavigateToLogin()
-            },
-            message = stringResource(R.string.auto_wallpaper_login_required)
+            viewModel.clearNeedLogin()
+            onBackPressed()
+        }, onConfirm = {
+            viewModel.clearNeedLogin()
+            onNavigateToLogin()
+        }, message = stringResource(R.string.auto_wallpaper_login_required)
         )
     }
 
@@ -98,7 +98,8 @@ fun AutoChangeScreen(
     LaunchedEffect(settingsApplied) {
         if (settingsApplied) {
             // 显示成功提示
-            Toast.makeText(context, R.string.settings_applied_successfully, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.settings_applied_successfully, Toast.LENGTH_SHORT)
+                .show()
             // 返回上级页面
             onBackPressed()
         }
@@ -115,10 +116,8 @@ fun AutoChangeScreen(
                             contentDescription = stringResource(R.string.back)
                         )
                     }
-                }
-            )
-        }
-    ) { paddingValues ->
+                })
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -154,8 +153,7 @@ fun AutoChangeScreen(
                     }
                     Switch(
                         checked = autoChangeEnabled,
-                        onCheckedChange = { viewModel.updateAutoChangeEnabled(it) }
-                    )
+                        onCheckedChange = { viewModel.updateAutoChangeEnabled(it) })
                 }
             }
 
@@ -185,8 +183,7 @@ fun AutoChangeScreen(
                     title = stringResource(R.string.wifi_only_change),
                     subtitle = stringResource(R.string.avoid_mobile_data),
                     checked = autoChangeWifiOnly,
-                    onCheckedChange = { viewModel.updateAutoChangeWifiOnly(it) }
-                )
+                    onCheckedChange = { viewModel.updateAutoChangeWifiOnly(it) })
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 16.dp),
@@ -220,8 +217,7 @@ fun AutoChangeScreen(
 
                 TargetSelector(
                     currentTarget = autoChangeTarget,
-                    onTargetSelected = { viewModel.updateAutoChangeTarget(it) }
-                )
+                    onTargetSelected = { viewModel.updateAutoChangeTarget(it) })
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -232,6 +228,22 @@ fun AutoChangeScreen(
                     enabled = !isChangingWallpaper
                 ) {
                     Text(stringResource(R.string.apply_settings))
+                }
+
+                // 测试解锁广播按钮（仅当频率设置为每次解锁时显示）
+                if (BuildConfig.IS_DEV_MODE && autoChangeFrequency == AutoChangeFrequency.EACH_UNLOCK && isPremiumUser) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { viewModel.testUnlockBroadcast(context) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Text(stringResource(R.string.test_unlock_broadcast))
+                    }
                 }
             }
         }
@@ -250,8 +262,7 @@ private fun FrequencySelector(
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
-        onClick = { expanded = true },
-        modifier = Modifier.fillMaxWidth()
+        onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -281,45 +292,40 @@ private fun FrequencySelector(
             }
 
             DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
+                expanded = expanded, onDismissRequest = { expanded = false }) {
                 AutoChangeFrequency.values().forEach { frequency ->
                     val isEnabled = !frequency.isPremium || isPremiumUser
                     DropdownMenuItem(
                         text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = getFrequencyText(frequency),
+                                color = if (isEnabled) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            if (frequency.isPremium) {
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = getFrequencyText(frequency),
-                                    color = if (isEnabled) MaterialTheme.colorScheme.onSurface
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                                if (frequency.isPremium) {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = stringResource(R.string.premium),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            if (isEnabled) {
-                                onFrequencySelected(frequency)
-                                expanded = false
-                            }
-                        },
-                        trailingIcon = {
-                            if (frequency == currentFrequency) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                                    text = stringResource(R.string.premium),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                        },
-                        enabled = isEnabled
+                        }
+                    }, onClick = {
+                        if (isEnabled) {
+                            onFrequencySelected(frequency)
+                            expanded = false
+                        }
+                    }, trailingIcon = {
+                        if (frequency == currentFrequency) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }, enabled = isEnabled
                     )
                 }
             }
@@ -339,8 +345,7 @@ private fun SourceSelector(
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
-        onClick = { expanded = true },
-        modifier = Modifier.fillMaxWidth()
+        onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -370,45 +375,40 @@ private fun SourceSelector(
             }
 
             DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
+                expanded = expanded, onDismissRequest = { expanded = false }) {
                 AutoChangeSource.values().forEach { source ->
                     val isEnabled = !source.isPremium || isPremiumUser
                     DropdownMenuItem(
                         text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = getSourceText(source),
+                                color = if (isEnabled) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            if (source.isPremium) {
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = getSourceText(source),
-                                    color = if (isEnabled) MaterialTheme.colorScheme.onSurface
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                                if (source.isPremium) {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = stringResource(R.string.premium),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            if (isEnabled) {
-                                onSourceSelected(source)
-                                expanded = false
-                            }
-                        },
-                        trailingIcon = {
-                            if (source == currentSource) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                                    text = stringResource(R.string.premium),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                        },
-                        enabled = isEnabled
+                        }
+                    }, onClick = {
+                        if (isEnabled) {
+                            onSourceSelected(source)
+                            expanded = false
+                        }
+                    }, trailingIcon = {
+                        if (source == currentSource) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }, enabled = isEnabled
                     )
                 }
             }
@@ -429,9 +429,7 @@ private fun SettingsToggleItem(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.fillMaxWidth(),
-        onClick = { onCheckedChange(!checked) }
-    ) {
+        modifier = modifier.fillMaxWidth(), onClick = { onCheckedChange(!checked) }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -462,8 +460,7 @@ private fun SettingsToggleItem(
             }
 
             Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
+                checked = checked, onCheckedChange = onCheckedChange
             )
         }
     }
@@ -501,14 +498,12 @@ private fun getSourceText(source: AutoChangeSource): String {
  */
 @Composable
 private fun TargetSelector(
-    currentTarget: WallpaperTarget,
-    onTargetSelected: (WallpaperTarget) -> Unit
+    currentTarget: WallpaperTarget, onTargetSelected: (WallpaperTarget) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
-        onClick = { expanded = true },
-        modifier = Modifier.fillMaxWidth()
+        onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
@@ -538,26 +533,20 @@ private fun TargetSelector(
             }
 
             DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
+                expanded = expanded, onDismissRequest = { expanded = false }) {
                 WallpaperTarget.values().forEach { target ->
-                    DropdownMenuItem(
-                        text = { Text(getTargetText(target)) },
-                        onClick = {
-                            onTargetSelected(target)
-                            expanded = false
-                        },
-                        trailingIcon = {
-                            if (target == currentTarget) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                    DropdownMenuItem(text = { Text(getTargetText(target)) }, onClick = {
+                        onTargetSelected(target)
+                        expanded = false
+                    }, trailingIcon = {
+                        if (target == currentTarget) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
-                    )
+                    })
                 }
             }
         }

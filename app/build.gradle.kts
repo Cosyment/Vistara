@@ -52,7 +52,7 @@ android {
         }
         debug {
             isDebuggable = true
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             versionNameSuffix = ".test"
             signingConfig = signingConfigs.getByName("release")
             buildConfigField("String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\"")

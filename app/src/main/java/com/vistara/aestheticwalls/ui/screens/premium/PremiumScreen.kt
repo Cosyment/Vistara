@@ -145,31 +145,31 @@ fun PremiumScreen(
 
             // 月度套餐
             PlanCard(
-                plan = UpgradePlan.MONTHLY,
-                isSelected = selectedPlan == UpgradePlan.MONTHLY,
+                plan = PremiumPlan.MONTHLY,
+                isSelected = selectedPlan == PremiumPlan.MONTHLY,
                 price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY]
                     ?: stringResource(R.string.loading),
-                onClick = { viewModel.selectPlan(UpgradePlan.MONTHLY) })
+                onClick = { viewModel.selectPlan(PremiumPlan.MONTHLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // 年度套餐
             PlanCard(
-                plan = UpgradePlan.YEARLY,
-                isSelected = selectedPlan == UpgradePlan.YEARLY,
+                plan = PremiumPlan.YEARLY,
+                isSelected = selectedPlan == PremiumPlan.YEARLY,
                 price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY]
                     ?: stringResource(R.string.loading),
-                onClick = { viewModel.selectPlan(UpgradePlan.YEARLY) })
+                onClick = { viewModel.selectPlan(PremiumPlan.YEARLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // 终身套餐
             PlanCard(
-                plan = UpgradePlan.LIFETIME,
-                isSelected = selectedPlan == UpgradePlan.LIFETIME,
+                plan = PremiumPlan.LIFETIME,
+                isSelected = selectedPlan == PremiumPlan.LIFETIME,
                 price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME]
                     ?: stringResource(R.string.loading),
-                onClick = { viewModel.selectPlan(UpgradePlan.LIFETIME) })
+                onClick = { viewModel.selectPlan(PremiumPlan.LIFETIME) })
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -306,7 +306,7 @@ private fun PremiumFeatureItem(text: String) {
  */
 @Composable
 private fun PlanCard(
-    plan: UpgradePlan, isSelected: Boolean, price: String, onClick: () -> Unit
+    plan: PremiumPlan, isSelected: Boolean, price: String, onClick: () -> Unit
 ) {
     val borderModifier = if (isSelected) {
         Modifier.border(

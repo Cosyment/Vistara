@@ -23,14 +23,6 @@ class EventBus @Inject constructor() {
     private val scope = CoroutineScope(Dispatchers.Main)
 
     /**
-     * 发送语言变化事件（挂起函数版本）
-     */
-//    suspend fun emitLanguageChanged() {
-//        Log.d("EventBus", "发送语言变化事件（挂起函数版本）")
-//        _languageChangedEvent.emit(Unit)
-//    }
-
-    /**
      * 发送语言变化事件（非挂起函数版本）
      * 可以在非协程上下文中调用
      */

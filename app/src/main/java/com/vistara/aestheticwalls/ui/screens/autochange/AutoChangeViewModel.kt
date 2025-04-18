@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.ui.screens.autochange
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -412,6 +413,21 @@ class AutoChangeViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error saving auto change settings: ${e.message}")
             }
+        }
+    }
+
+    /**
+     * 测试解锁广播
+     * 手动触发解锁屏幕广播，用于测试每次解锁更换壁纸功能
+     */
+    fun testUnlockBroadcast(context: Context) {
+        try {
+            // 发送解锁屏幕广播
+            val intent = Intent(Intent.ACTION_USER_PRESENT)
+            context.sendBroadcast(intent)
+            Log.d(TAG, "已手动发送解锁屏幕广播用于测试")
+        } catch (e: Exception) {
+            Log.e(TAG, "发送测试广播失败: ${e.message}")
         }
     }
 }

@@ -269,6 +269,7 @@
     <string name="trending_wallpapers">Trending Wallpapers</string>
     <string name="home_screen_only">Home Screen Only</string>
     <string name="lock_screen_only">Lock Screen Only</string>
+    <string name="test_unlock_broadcast" translatable="false">Test Unlock Broadcast</string>
 
     <!-- Download and favorite related -->
     <string name="no_downloaded_wallpapers">No downloaded wallpapers</string>
