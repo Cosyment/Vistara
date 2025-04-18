@@ -98,9 +98,11 @@ class AutoWallpaperWorker @Inject constructor(
                 setRequiresBatteryNotLow(true)
             }.build()
 
-            // 如果频率是每次解锁，使用不同的工作管理器
+            // 如果频率是每次解锁，使用广播接收器
             if (frequency == AutoChangeFrequency.EACH_UNLOCK) {
-                // 使用其他方式处理，如广播接收器
+                // 使用广播接收器处理
+                // 不需要额外的操作，因为广播接收器已经在AndroidManifest.xml中注册
+                Log.d(TAG, "Using broadcast receiver for EACH_UNLOCK frequency")
                 return
             }
 
