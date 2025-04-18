@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.di
 
 import android.content.Context
 import com.vistara.aestheticwalls.utils.NetworkMonitor
+import com.vistara.aestheticwalls.utils.NetworkUtil
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,5 +25,14 @@ object UtilsModule {
     @Singleton
     fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor {
         return NetworkMonitor(context)
+    }
+
+    /**
+     * 提供网络工具类
+     */
+    @Provides
+    @Singleton
+    fun provideNetworkUtil(@ApplicationContext context: Context): NetworkUtil {
+        return NetworkUtil(context)
     }
 }

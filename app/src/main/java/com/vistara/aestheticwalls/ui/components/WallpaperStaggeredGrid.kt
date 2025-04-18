@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
@@ -57,10 +58,9 @@ fun WallpaperStaggeredGrid(
     columns: Int = 2,
     contentPadding: PaddingValues = PaddingValues(8.dp),
     videoPlaybackManager: VideoPlaybackManager? = null,
+    gridState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     modifier: Modifier = Modifier
 ) {
-    // 创建LazyStaggeredGridState来监听滚动状态
-    val gridState = rememberLazyStaggeredGridState()
 
     // 跟踪可见的壁纸项
     val visibleWallpaperIds = remember { mutableStateListOf<String>() }
@@ -71,6 +71,10 @@ fun WallpaperStaggeredGrid(
             val layoutInfo = gridState.layoutInfo
             val totalItemsNumber = layoutInfo.totalItemsCount
             val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val firstVisibleItemIndex = gridState.firstVisibleItemIndex
+
+            // 记录滚动位置
+            Log.d("WallpaperStaggeredGrid", "Scroll position: first=$firstVisibleItemIndex, last=$lastVisibleItemIndex, total=$totalItemsNumber")
 
             // 如果最后可见项的索引接近总项数，则认为滚动到了底部
             lastVisibleItemIndex > 0 && lastVisibleItemIndex >= totalItemsNumber - 5
@@ -81,6 +85,11 @@ fun WallpaperStaggeredGrid(
     LaunchedEffect(shouldLoadMore.value, isLoadingMore, canLoadMore) {
         if (shouldLoadMore.value && !isLoadingMore && canLoadMore) {
             Log.d("WallpaperStaggeredGrid", "Reached bottom, loading more...")
+            // 记录当前滚动位置
+            val firstVisibleItemIndex = gridState.firstVisibleItemIndex
+            val firstVisibleItemScrollOffset = gridState.firstVisibleItemScrollOffset
+            Log.d("WallpaperStaggeredGrid", "Current scroll position: index=$firstVisibleItemIndex, offset=$firstVisibleItemScrollOffset")
+
             onLoadMore()
         }
     }
@@ -127,7 +136,10 @@ fun WallpaperStaggeredGrid(
         modifier = modifier.fillMaxWidth()
     ) {
         // 壁纸项
-        items(wallpapers) { wallpaper ->
+        items(
+            items = wallpapers,
+            key = { wallpaper -> wallpaper.id } // 使用壁纸ID作为稳定的键
+        ) { wallpaper ->
             // 根据壁纸的宽高比计算高度
             val aspectRatio = calculateAspectRatio(wallpaper)
             val itemHeight = remember(aspectRatio) {
@@ -172,7 +184,10 @@ fun WallpaperStaggeredGrid(
                 )
             }
 
-            items(loadingWallpapers) { _ ->
+            items(
+                items = loadingWallpapers,
+                key = { it.id } // 使用生成的ID作为稳定的键
+            ) { _ ->
                 // 空白项，仅用于占位
                 Box(modifier = Modifier.height(0.dp)) {}
             }
@@ -203,7 +218,10 @@ fun WallpaperStaggeredGrid(
                 )
             }
 
-            items(endSpacerWallpapers) { _ ->
+            items(
+                items = endSpacerWallpapers,
+                key = { it.id } // 使用生成的ID作为稳定的键
+            ) { _ ->
                 // 空白项，仅用于占位
                 Box(modifier = Modifier.height(0.dp)) {}
             }

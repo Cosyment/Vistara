@@ -116,7 +116,7 @@ fun HomeScreen(
 
         // 显示加载状态
         if (isLoading) {
-            LoadingState(message = stringResource(R.string.loading_wallpapers))
+            LoadingState()
             return@Scaffold
         }
 
@@ -370,9 +370,6 @@ private fun CategorySection(
 ) {
     // 使用枚举类型的分类列表
     val categories = remember { WallpaperCategory.getCommonCategories() }
-
-    // 获取当前上下文
-    val context = LocalContext.current
 
     // 获取当前选中的分类和分类壁纸
     val selectedCategory by viewModel.selectedCategory.collectAsState()

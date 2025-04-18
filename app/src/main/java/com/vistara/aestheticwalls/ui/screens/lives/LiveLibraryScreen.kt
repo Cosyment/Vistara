@@ -24,7 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,37 +66,12 @@ fun LiveLibraryScreen(
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
     val canLoadMore by viewModel.canLoadMore.collectAsState()
-    val isPremiumUser by viewModel.isPremiumUser.collectAsState()
-    val upgradeResult by viewModel.upgradeResult.collectAsState()
-    val billingConnectionState by viewModel.billingConnectionState.collectAsState()
 
     // 获取当前Activity
     val activity = LocalActivity.current
 
     // 创建SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-
-    // 处理升级结果
-    LaunchedEffect(upgradeResult) {
-        upgradeResult?.let { result ->
-            when (result) {
-                is LiveLibraryViewModel.UpgradeResult.Success -> {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(result.message)
-                    }
-                }
-
-                is LiveLibraryViewModel.UpgradeResult.Error -> {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(result.message)
-                    }
-                }
-            }
-            // 清除升级结果，避免重复显示
-            viewModel.clearUpgradeResult()
-        }
-    }
 
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, topBar = {
         TopAppBar(
@@ -157,6 +134,9 @@ fun LiveLibraryScreen(
                         Column(modifier = Modifier.fillMaxSize()) {
                             // 显示动态壁纸网格 (统一大小布局)
                             Box(modifier = Modifier.weight(1f)) {
+                                // 创建LazyGridState并保持它的状态
+                                val gridState = rememberLazyGridState()
+
                                 // 创建视频播放管理器
                                 val videoPlaybackManager = rememberVideoPlaybackManager()
                                 // 启用顺序播放模式，确保同一时间只有一个视频在播放
@@ -178,6 +158,7 @@ fun LiveLibraryScreen(
                                     videoPlaybackManager = videoPlaybackManager,
                                     // 使用固定列数，确保统一大小
                                     columns = 2,
+                                    gridState = gridState,
                                     modifier = Modifier.fillMaxSize(),
                                 )
                             }

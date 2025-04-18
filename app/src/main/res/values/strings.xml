@@ -348,6 +348,8 @@
     <string name="test_pexels_api">Test Pexels API</string>
     <string name="test_unsplash_api">Test Unsplash API</string>
     <string name="api_test">API Test</string>
+    <string name="test_results_in_logcat" translatable="false">Test results will be displayed in Logcat</string>
+    <string name="filter_tag" translatable="false">Filter tag: ApiTest</string>
     <string name="launch_pexels_api_test">Launch Pexels API Test</string>
     <string name="user_status_test">User Status Test</string>
     <string name="premium_user_status">Premium User Status</string>
@@ -391,6 +393,7 @@
     <string name="upgrade_cancelled">Upgrade cancelled</string>
     <string name="wallpaper_not_exist">Wallpaper does not exist</string>
     <string name="load_wallpaper_failed">Failed to load wallpaper</string>
+    <string name="api_rate_limit_exceeded" translatable="false">API rate limit exceeded, please try again later</string>
     <string name="share_wallpaper">Share wallpaper</string>
     <string name="beautiful_wallpaper">Beautiful wallpaper</string>
     <string name="share_wallpaper_text">I found a beautiful wallpaper\nTitle: %1$s\nAuthor: %2$s\nSource: %3$s\nResolution: %4$d x %5$d\nDownload Vistara Wallpaper app for more beautiful wallpapers!</string>

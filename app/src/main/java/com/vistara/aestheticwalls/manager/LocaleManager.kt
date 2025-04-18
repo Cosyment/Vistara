@@ -264,7 +264,7 @@ class LocaleManager @Inject constructor(
             @Suppress("DEPRECATION") configuration.locale
         }
 
-        Log.e(TAG, " ${systemLocale}  ${Locale.getDefault()}")
+        Log.e(TAG, " $systemLocale  ${Locale.getDefault()}")
         Log.d(TAG, "从 Resources.getSystem() 获取的系统语言: $systemLocale")
 
         // 如果所有方式都失败，则使用 Java 的 Locale.getDefault()

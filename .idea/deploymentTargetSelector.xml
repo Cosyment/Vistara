@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-04-18T06:16:38.670039500Z">
+        <DropdownSelection timestamp="2025-04-18T10:28:00.807313700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=100f8059" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=D:\Android\.android\avd\Vistara.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,7 +15,7 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=DMOB79DMF6W4VWRO" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=2ad2bdce" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">

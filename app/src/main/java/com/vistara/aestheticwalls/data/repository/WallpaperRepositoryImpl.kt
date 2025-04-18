@@ -62,7 +62,9 @@ class WallpaperRepositoryImpl @Inject constructor(
      * 获取推荐壁纸
      * 使用壁纸API适配器获取数据
      */
-    override suspend fun getFeaturedWallpapers(page: Int, pageSize: Int): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
+    override suspend fun getFeaturedWallpapers(
+        page: Int, pageSize: Int
+    ): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
         try {
             // 检查网络连接
             if (!networkMonitor.isNetworkAvailable()) {
@@ -82,19 +84,28 @@ class WallpaperRepositoryImpl @Inject constructor(
             return@withContext wallpaperApiAdapter.getFeaturedWallpapers(page, pageSize)
         } catch (e: Exception) {
             ApiResult.Error(
-                message = e.message ?: stringProvider.getString(R.string.failed_to_get_recommended_wallpapers),
+                message = e.message
+                    ?: stringProvider.getString(R.string.failed_to_get_recommended_wallpapers),
                 source = wallpaperApiAdapter.getApiSource()
             )
         }
     }
 
     override suspend fun getWallpapers(
-        type: String,
-        page: Int,
-        pageSize: Int
+        type: String, page: Int, pageSize: Int
     ): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
         try {
-            val wallpapers = when (type.lowercase()) {
+            // 检查类型是否包含分类信息
+            val (actualType, categoryFilter) = if (type.contains(":")) {
+                val parts = type.split(":")
+                Pair(parts[0], parts[1])
+            } else {
+                Pair(type, null)
+            }
+
+            Log.d(TAG, "getWallpapers: actualType=$actualType, categoryFilter=$categoryFilter")
+
+            val wallpapers = when (actualType.lowercase()) {
                 "static" -> {
                     // 获取静态壁纸，使用 Unsplash 和 Pexels 的组合
                     val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
@@ -121,88 +132,22 @@ class WallpaperRepositoryImpl @Inject constructor(
                 "live" -> {
                     // 使用 Pexels 的视频 API 获取动态壁纸
                     val pexelsAdapter = pexelsApiAdapter as PexelsApiAdapter
-                    val pexelsResponse = pexelsAdapter.getPopularVideos(page, pageSize)
+
+                    // 如果有分类参数，则使用搜索视频API
+                    val pexelsResponse = if (categoryFilter != null) {
+                        Log.d(TAG, "根据分类搜索视频: $categoryFilter")
+                        val filters = mapOf<String, String>() // 可以添加其他过滤条件
+                        pexelsAdapter.searchVideos(categoryFilter, page, pageSize, filters)
+                    } else {
+                        Log.d(TAG, "获取热门视频")
+                        pexelsAdapter.getPopularVideos(page, pageSize)
+                    }
 
                     val pexelsVideos = when (pexelsResponse) {
                         is ApiResult.Success -> pexelsResponse.data
                         else -> emptyList()
                     }
-
-                    // 如果没有获取到视频数据，返回模拟数据
-                    if (pexelsVideos.isEmpty()) {
-                        Log.w(TAG, "未能从 Pexels API 获取视频数据，使用模拟数据")
-
-                        // 生成更多样的模拟数据，并且添加与分类匹配的标签
-                        List(pageSize) { index ->
-                            // 生成随机宽高比
-                            val isLandscape = index % 3 != 1 // 大部分是横向
-                            val width = if (isLandscape) 1920 else 1080
-                            val height = if (isLandscape) 1080 else 1920
-
-                            // 生成随机标签
-                            val tags = mutableListOf("动态")
-
-                            // 根据宽高比添加分类标签
-                            if (isLandscape) {
-                                tags.add("风景")
-                                tags.add("自然")
-                            } else {
-                                tags.add("人像")
-                            }
-
-                            // 根据索引添加随机标签
-                            when (index % 5) {
-                                0 -> tags.add("抽象")
-                                1 -> tags.add("科技感")
-                                2 -> tags.add("赛博朋克")
-                                3 -> tags.add("粒子")
-                                4 -> tags.add("流体")
-                            }
-
-                            // 生成更友好的标题
-                            val title = when (index % 8) {
-                                0 -> "流动的光影"
-                                1 -> "炫酷动态壁纸"
-                                2 -> "流动的背景"
-                                3 -> "灵动的粒子"
-                                4 -> "流体艺术"
-                                5 -> "科技感动态"
-                                6 -> "赛博朋克风格"
-                                else -> "灵动壁纸"
-                            }
-
-                            // 使用更真实的缩略图 URL
-                            val imageId = (index + page * pageSize) % 1000 + 100
-                            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
-
-                            // 使用不同的视频URL来确保每个壁纸都有不同的视频
-                            val videoUrl = when (index % 5) {
-                                0 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                                1 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-                                2 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-                                3 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
-                                else -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-                            }
-
-                            Wallpaper(
-                                id = "live_${page}_$index",
-                                title = title,
-                                url = videoUrl,
-                                thumbnailUrl = thumbnailUrl,
-                                previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}",
-                                author = "动画师 ${index + 1}",
-                                source = "Vistara",
-                                isPremium = index % 3 == 0, // 每三个视频中有一个是高级内容
-                                isLive = true,
-                                tags = tags,
-                                width = width,
-                                height = height,
-                                resolution = Resolution(width, height)
-                            )
-                        }
-                    } else {
-                        pexelsVideos
-                    }
+                    pexelsVideos
                 }
 
                 else -> emptyList()
@@ -210,7 +155,10 @@ class WallpaperRepositoryImpl @Inject constructor(
 
             ApiResult.Success(wallpapers)
         } catch (e: Exception) {
-            ApiResult.Error(message = e.message ?: stringProvider.getString(R.string.failed_to_get_wallpapers), source = ApiSource.UNSPLASH)
+            ApiResult.Error(
+                message = e.message ?: stringProvider.getString(R.string.failed_to_get_wallpapers),
+                source = ApiSource.UNSPLASH
+            )
         }
     }
 
@@ -221,9 +169,7 @@ class WallpaperRepositoryImpl @Inject constructor(
         // 使用Unsplash的热门图片
         val response = safeApiCall(ApiSource.UNSPLASH) {
             unsplashApiService.getPhotos(
-                page = page,
-                perPage = pageSize,
-                orderBy = "popular"
+                page = page, perPage = pageSize, orderBy = "popular"
             )
         }
 
@@ -236,58 +182,181 @@ class WallpaperRepositoryImpl @Inject constructor(
     /**
      * 按分类获取壁纸
      */
-    override suspend fun getWallpapersByCategory(categoryId: String, page: Int, pageSize: Int): ApiResult<List<Wallpaper>> =
-        withContext(Dispatchers.IO) {
-            try {
-                // 检查网络连接
-                if (!networkMonitor.isNetworkAvailable()) {
-                    // 如果无网络连接，尝试从本地获取数据
-                    val localWallpapers = wallpaperDao.getFavoritesList()
-                    if (localWallpapers.isNotEmpty()) {
-                        return@withContext ApiResult.Success(localWallpapers)
-                    }
-                    // 如果本地没有数据，返回错误
-                    return@withContext ApiResult.Error(
-                        message = stringProvider.getString(R.string.no_network_category_wallpapers),
-                        source = ApiSource.UNSPLASH
-                    )
+    override suspend fun getWallpapersByCategory(
+        categoryId: String, page: Int, pageSize: Int
+    ): ApiResult<List<Wallpaper>> = withContext(Dispatchers.IO) {
+        try {
+            // 检查网络连接
+            if (!networkMonitor.isNetworkAvailable()) {
+                Log.w(TAG, "网络不可用，尝试从本地获取数据")
+                // 如果无网络连接，尝试从本地获取数据
+                val localWallpapers = wallpaperDao.getFavoritesList()
+                if (localWallpapers.isNotEmpty()) {
+                    Log.d(TAG, "从本地数据库找到 ${localWallpapers.size} 个壁纸")
+                    return@withContext ApiResult.Success(localWallpapers)
                 }
+                // 如果本地没有数据，返回错误
+                Log.w(TAG, "本地数据库没有壁纸数据")
+                return@withContext ApiResult.Error(
+                    message = stringProvider.getString(R.string.no_network_category_wallpapers),
+                    source = ApiSource.UNSPLASH
+                )
+            }
 
-                // 根据分类ID确定搜索关键词和API源
-                val (apiSource, query) = getCategoryInfo(categoryId)
+            // 根据分类ID确定搜索关键词和API源
+            val (apiSource, query) = getCategoryInfo(categoryId)
+            Log.d(
+                TAG,
+                "按分类获取壁纸: 使用 $apiSource 查询 '$query', 页码: $page, 每页数量: $pageSize"
+            )
 
-                // 根据不同的API源获取壁纸
-                val wallpapers = when (apiSource) {
+            // 首先尝试从本地缓存获取数据
+            val cachedWallpapers = if (page == 1) {
+                // 只在第一页时尝试使用缓存
+                val cachedData = wallpaperDao.getWallpapersByTags("%${query}%", pageSize)
+                if (cachedData.isNotEmpty()) {
+                    Log.d(TAG, "从本地缓存找到与'$query'相关的壁纸: ${cachedData.size}个")
+                    cachedData
+                } else null
+            } else null
+
+            // 如果有缓存数据且数量足够，直接返回
+            if (cachedWallpapers != null && cachedWallpapers.size >= pageSize / 2) {
+                Log.d(TAG, "使用本地缓存的壁纸数据，跳过API请求")
+                return@withContext ApiResult.Success(cachedWallpapers)
+            }
+
+            // 根据不同的API源获取壁纸
+            val wallpapers = try {
+                when (apiSource) {
                     ApiSource.UNSPLASH -> {
-                        val response = safeApiCall(ApiSource.UNSPLASH) {
-                            unsplashApiService.searchPhotos(query = query, page = page, perPage = pageSize)
-                        }
+                        // 检查Unsplash API是否已经被速率限制
+                        if (apiUsageTracker.isApiRateLimited(ApiSource.UNSPLASH)) {
+                            Log.w(TAG, "Unsplash API已经被速率限制，尝试使用其他API源")
+                            // 如果Unsplash被限制，尝试使用Pexels
+                            val pexelsResponse = safeApiCall(ApiSource.PEXELS) {
+                                pexelsApiService.searchPhotos(
+                                    query = query, page = page, perPage = pageSize
+                                )
+                            }
+                            when (pexelsResponse) {
+                                is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(
+                                    pexelsResponse.data.photos
+                                )
 
-                        when (response) {
-                            is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
-                            else -> emptyList()
+                                else -> {
+                                    // 如果Pexels也失败，返回本地收藏的壁纸
+                                    Log.w(TAG, "Pexels API也失败，返回本地收藏的壁纸")
+                                    emptyList()
+                                }
+                            }
+                        } else {
+                            val response = safeApiCall(ApiSource.UNSPLASH) {
+                                unsplashApiService.searchPhotos(
+                                    query = query, page = page, perPage = pageSize
+                                )
+                            }
+
+                            when (response) {
+                                is ApiResult.Success -> unsplashMapper.toWallpapers(response.data.results)
+                                else -> {
+                                    Log.w(
+                                        TAG,
+                                        "Unsplash搜索失败: ${(response as? ApiResult.Error)?.message}"
+                                    )
+                                    // 如果Unsplash失败，尝试使用Pexels
+                                    val pexelsResponse = safeApiCall(ApiSource.PEXELS) {
+                                        pexelsApiService.searchPhotos(
+                                            query = query, page = page, perPage = pageSize
+                                        )
+                                    }
+                                    when (pexelsResponse) {
+                                        is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(
+                                            pexelsResponse.data.photos
+                                        )
+
+                                        else -> emptyList()
+                                    }
+                                }
+                            }
                         }
                     }
 
                     ApiSource.PEXELS -> {
-                        val response = safeApiCall(ApiSource.PEXELS) {
-                            pexelsApiService.searchPhotos(query = query, page = page, perPage = pageSize)
-                        }
+                        // 检查Pexels API是否已经被速率限制
+                        if (apiUsageTracker.isApiRateLimited(ApiSource.PEXELS)) {
+                            Log.w(TAG, "Pexels API已经被速率限制，尝试使用其他API源")
+                            // 如果Pexels被限制，尝试使用Unsplash
+                            val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
+                                unsplashApiService.searchPhotos(
+                                    query = query, page = page, perPage = pageSize
+                                )
+                            }
+                            when (unsplashResponse) {
+                                is ApiResult.Success -> unsplashMapper.toWallpapers(unsplashResponse.data.results)
+                                else -> {
+                                    // 如果Unsplash也失败，返回本地收藏的壁纸
+                                    Log.w(TAG, "Unsplash API也失败，返回本地收藏的壁纸")
+                                    wallpaperDao.getFavoritesList()
+                                }
+                            }
+                        } else {
+                            val response = safeApiCall(ApiSource.PEXELS) {
+                                pexelsApiService.searchPhotos(
+                                    query = query, page = page, perPage = pageSize
+                                )
+                            }
 
-                        when (response) {
-                            is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(response.data.photos)
-                            else -> emptyList()
+                            when (response) {
+                                is ApiResult.Success -> pexelsMapper.toWallpapersFromPhotos(response.data.photos)
+                                else -> {
+                                    Log.w(
+                                        TAG,
+                                        "Pexels搜索失败: ${(response as? ApiResult.Error)?.message}"
+                                    )
+                                    // 如果Pexels失败，尝试使用Unsplash
+                                    val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
+                                        unsplashApiService.searchPhotos(
+                                            query = query, page = page, perPage = pageSize
+                                        )
+                                    }
+                                    when (unsplashResponse) {
+                                        is ApiResult.Success -> unsplashMapper.toWallpapers(
+                                            unsplashResponse.data.results
+                                        )
+
+                                        else -> emptyList()
+                                    }
+                                }
+                            }
                         }
                     }
 
                     ApiSource.PIXABAY -> {
                         val response = safeApiCall(ApiSource.PIXABAY) {
-                            pixabayApiService.searchImages(query = query, page = page, perPage = pageSize)
+                            pixabayApiService.searchImages(
+                                query = query, page = page, perPage = pageSize
+                            )
                         }
 
                         when (response) {
                             is ApiResult.Success -> pixabayMapper.toWallpapers(response.data.hits)
-                            else -> emptyList()
+                            else -> {
+                                // 如果Pixabay失败，尝试使用Unsplash
+                                Log.w(TAG, "Pixabay搜索失败，尝试使用Unsplash")
+                                val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
+                                    unsplashApiService.searchPhotos(
+                                        query = query, page = page, perPage = pageSize
+                                    )
+                                }
+                                when (unsplashResponse) {
+                                    is ApiResult.Success -> unsplashMapper.toWallpapers(
+                                        unsplashResponse.data.results
+                                    )
+
+                                    else -> emptyList()
+                                }
+                            }
                         }
                     }
 
@@ -298,79 +367,37 @@ class WallpaperRepositoryImpl @Inject constructor(
 
                         when (response) {
                             is ApiResult.Success -> wallhavenMapper.toWallpapers(response.data.data)
-                            else -> emptyList()
+                            else -> {
+                                // 如果Wallhaven失败，尝试使用Unsplash
+                                Log.w(TAG, "Wallhaven搜索失败，尝试使用Unsplash")
+                                val unsplashResponse = safeApiCall(ApiSource.UNSPLASH) {
+                                    unsplashApiService.searchPhotos(
+                                        query = query, page = page, perPage = pageSize
+                                    )
+                                }
+                                when (unsplashResponse) {
+                                    is ApiResult.Success -> unsplashMapper.toWallpapers(
+                                        unsplashResponse.data.results
+                                    )
+
+                                    else -> emptyList()
+                                }
+                            }
                         }
                     }
                 }
-
-                // 如果获取到的壁纸为空，生成模拟数据
-                if (wallpapers.isEmpty()) {
-                    // 生成模拟数据
-                    val mockWallpapers = generateMockWallpapers(categoryId, page, pageSize)
-                    return@withContext ApiResult.Success(mockWallpapers)
-                }
-
-                ApiResult.Success(wallpapers)
             } catch (e: Exception) {
-                Log.e(TAG, "按分类获取壁纸失败", e)
-                ApiResult.Error(
-                    message = e.message ?: stringProvider.getString(R.string.failed_to_get_category_wallpapers),
-                    source = ApiSource.UNSPLASH
-                )
+                Log.e(TAG, "获取分类壁纸异常: ${e.message}")
+                // 如果发生异常，返回缓存或本地收藏的壁纸
+                cachedWallpapers ?: wallpaperDao.getFavoritesList()
             }
-        }
-
-    /**
-     * 生成模拟壁纸数据
-     */
-    private fun generateMockWallpapers(categoryId: String, page: Int, pageSize: Int): List<Wallpaper> {
-        val (_, query) = getCategoryInfo(categoryId)
-
-        return List(pageSize) { index ->
-            // 生成随机宽高比
-            val isLandscape = index % 3 != 1 // 大部分是横向
-            val width = if (isLandscape) 1920 else 1080
-            val height = if (isLandscape) 1080 else 1920
-
-            // 生成随机标签
-            val tags = mutableListOf(query)
-
-            // 根据宽高比添加分类标签
-            if (isLandscape) {
-                tags.add("风景")
-            } else {
-                tags.add("人像")
-            }
-
-            // 生成更友好的标题
-            val title = when (query) {
-                "自然风景" -> "自然风光 ${index + 1}"
-                "建筑" -> "建筑之美 ${index + 1}"
-                "动物" -> "动物世界 ${index + 1}"
-                "抽象" -> "抽象艺术 ${index + 1}"
-                "太空" -> "浮游太空 ${index + 1}"
-                "简约" -> "简约设计 ${index + 1}"
-                else -> "$query ${index + 1}"
-            }
-
-            // 使用更真实的缩略图 URL
-            val imageId = (index + page * pageSize) % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
-
-            Wallpaper(
-                id = "${categoryId}_${page}_$index",
-                title = title,
-                url = "https://picsum.photos/id/$imageId/$width/$height",
-                thumbnailUrl = thumbnailUrl,
-                previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}",
-                author = "Vistara",
-                source = "Vistara",
-                isPremium = index % 5 == 0, // 每五个壁纸中有一个是高级内容
-                isLive = false,
-                tags = tags,
-                width = width,
-                height = height,
-                resolution = Resolution(width, height)
+            ApiResult.Success(wallpapers)
+        } catch (e: Exception) {
+            Log.e(TAG, "按分类获取壁纸失败", e)
+            ApiResult.Error(
+                message = e.message
+                    ?: stringProvider.getString(R.string.failed_to_get_category_wallpapers),
+                source = ApiSource.UNSPLASH
             )
         }
     }
@@ -381,6 +408,7 @@ class WallpaperRepositoryImpl @Inject constructor(
     private fun getCategoryInfo(categoryId: String): Pair<ApiSource, String> {
         val parts = categoryId.split("_")
         return if (parts.size >= 2) {
+            // 获取API源
             val source = when (parts[0]) {
                 "unsplash" -> ApiSource.UNSPLASH
                 "pexels" -> ApiSource.PEXELS
@@ -388,9 +416,24 @@ class WallpaperRepositoryImpl @Inject constructor(
                 "wallhaven" -> ApiSource.WALLHAVEN
                 else -> ApiSource.UNSPLASH
             }
-            val query = parts[1].replace("-", " ")
-            Pair(source, query)
+
+            // 处理查询关键词
+            val query = parts.subList(1, parts.size).joinToString(" ").replace("-", " ")
+
+            // 对于特定分类使用更好的关键词
+            val finalQuery = when (query.lowercase()) {
+                "abstract" -> "abstract art"
+                "minimal" -> "minimalist"
+                "technology" -> "technology gadgets"
+                "illustration" -> "digital illustration"
+                "particle" -> "particle effect"
+                else -> query
+            }
+
+            Log.d(TAG, "分类查询: 使用 $source 查询 '$finalQuery'")
+            Pair(source, finalQuery)
         } else {
+            // 默认使用Unsplash和自然分类
             Pair(ApiSource.UNSPLASH, "nature")
         }
     }
@@ -399,7 +442,9 @@ class WallpaperRepositoryImpl @Inject constructor(
      * 搜索壁纸
      * 使用壁纸API适配器搜索壁纸
      */
-    override suspend fun searchWallpapers(query: String, page: Int, pageSize: Int): List<Wallpaper> {
+    override suspend fun searchWallpapers(
+        query: String, page: Int, pageSize: Int
+    ): List<Wallpaper> {
         // 检查网络连接
         if (!networkMonitor.isNetworkAvailable()) {
             // 如果无网络连接，尝试从本地获取数据
@@ -466,9 +511,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     return cachedWallpaper
                 }
 
-                // 如果缓存中也没有，创建一个模拟的壁纸对象
-                Log.d(TAG, "创建模拟的Pexels视频壁纸: $id")
-                return createMockVideoWallpaper(id, videoId.toIntOrNull() ?: 1000)
+                return null
             }
         }
 
@@ -490,10 +533,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                     Log.d(TAG, "从缓存中找到壁纸: $id")
                     return cachedWallpaper
                 }
-
-                // 如果缓存中也没有，创建一个模拟的壁纸对象
-                Log.d(TAG, "创建模拟的Pexels照片壁纸: $id")
-                return createMockPhotoWallpaper(id, photoId, "Pexels")
+                return null
             }
         }
 
@@ -542,9 +582,9 @@ class WallpaperRepositoryImpl @Inject constructor(
                                 Log.d(TAG, "从缓存中找到Unsplash壁纸: $id")
                                 return cachedWallpaper
                             }
-                            // 如果缓存中也没有，创建一个模拟的壁纸对象
-                            Log.d(TAG, "创建模拟的Unsplash壁纸: $id")
-                            return createMockPhotoWallpaper(id, originalId, "Unsplash")
+                            // 如果缓存中也没有，返回null
+                            Log.d(TAG, "无法获取Unsplash壁纸: $id")
+                            return null
                         }
                     }
                 } catch (e: Exception) {
@@ -555,7 +595,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                         return cachedWallpaper
                     }
                     // 创建模拟壁纸
-                    return createMockPhotoWallpaper(id, originalId, "Unsplash")
+                    return null
                 }
             }
 
@@ -577,7 +617,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                                     return cachedWallpaper
                                 }
                                 // 创建模拟壁纸
-                                return createMockPhotoWallpaper(id, originalId, "Pixabay")
+                                return null
                             }
                         }
 
@@ -589,7 +629,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                                 return cachedWallpaper
                             }
                             // 创建模拟壁纸
-                            return createMockPhotoWallpaper(id, originalId, "Pixabay")
+                            return null
                         }
                     }
                 } catch (e: Exception) {
@@ -600,7 +640,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                         return cachedWallpaper
                     }
                     // 创建模拟壁纸
-                    return createMockPhotoWallpaper(id, originalId, "Pixabay")
+                    return null
                 }
             }
 
@@ -620,7 +660,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                                 return cachedWallpaper
                             }
                             // 创建模拟壁纸
-                            return createMockPhotoWallpaper(id, originalId, "Wallhaven")
+                            return null
                         }
                     }
                 } catch (e: Exception) {
@@ -631,7 +671,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                         return cachedWallpaper
                     }
                     // 创建模拟壁纸
-                    return createMockPhotoWallpaper(id, originalId, "Wallhaven")
+                    return null
                 }
             }
 
@@ -644,7 +684,7 @@ class WallpaperRepositoryImpl @Inject constructor(
                 }
                 // 如果缓存中也没有，创建一个通用的模拟壁纸对象
                 Log.d(TAG, "创建通用模拟壁纸: $id")
-                return createMockPhotoWallpaper(id, originalId, "Unknown")
+                return null
             }
         }
     }
@@ -736,153 +776,6 @@ class WallpaperRepositoryImpl @Inject constructor(
     }
 
     /**
-     * 创建模拟的Pexels视频壁纸
-     * 用于处理网络错误时的回退方案
-     */
-    private fun createMockVideoWallpaper(id: String, videoId: Int): Wallpaper? {
-        try {
-            // 生成随机宽高比
-            val isLandscape = videoId % 3 != 1 // 大部分是横向
-            val width = if (isLandscape) 1280 else 720
-            val height = if (isLandscape) 720 else 1280
-
-            // 生成随机标签
-            val tags = mutableListOf("动态", "Pexels")
-
-            // 根据宽高比添加分类标签
-            if (isLandscape) {
-                tags.add("风景")
-                tags.add("自然")
-            } else {
-                tags.add("人像")
-            }
-
-            // 根据视频ID添加随机标签
-            when (videoId % 5) {
-                0 -> tags.add("抽象")
-                1 -> tags.add("科技感")
-                2 -> tags.add("赛博朋克")
-                3 -> tags.add("粒子")
-                4 -> tags.add("流体")
-            }
-
-            // 生成更友好的标题
-            val title = when (videoId % 8) {
-                0 -> "流动的光影"
-                1 -> "炫酷动态壁纸"
-                2 -> "流动的背景"
-                3 -> "灵动的粒子"
-                4 -> "流体艺术"
-                5 -> "科技感动态"
-                6 -> "赛博朋克风格"
-                else -> "灵动壁纸"
-            }
-
-            // 使用更真实的缩略图 URL
-            val imageId = videoId % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}"
-
-            // 使用不同的视频URL来确保每个壁纸都有不同的视频
-            val videoUrl = when (videoId % 5) {
-                0 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                1 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-                2 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-                3 -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
-                else -> "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-            }
-
-            return Wallpaper(
-                id = id,
-                title = title,
-                url = videoUrl,
-                thumbnailUrl = thumbnailUrl,
-                previewUrl = "https://picsum.photos/id/$imageId/$width/$height",
-                author = "Pexels 作者 $videoId",
-                source = "Pexels",
-                isPremium = videoId % 3 == 0, // 每三个视频中有一个是高级内容
-                isLive = true,
-                tags = tags,
-                width = width,
-                height = height,
-                resolution = Resolution(width, height)
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "创建模拟的Pexels视频壁纸失败: ${e.message}")
-            return null
-        }
-    }
-
-    /**
-     * 创建模拟的静态壁纸
-     * 用于处理网络错误时的回退方案
-     */
-    private fun createMockPhotoWallpaper(id: String, photoId: String, source: String): Wallpaper? {
-        try {
-            // 生成随机宽高比
-            val numericId = photoId.hashCode() // 将字符串ID转换为数字
-            val isLandscape = numericId % 3 != 1 // 大部分是横向
-            val width = if (isLandscape) 1920 else 1080
-            val height = if (isLandscape) 1080 else 1920
-
-            // 生成随机标签
-            val tags = mutableListOf<String>()
-
-            // 根据来源添加标签
-            tags.add(source)
-
-            // 根据宽高比添加分类标签
-            if (isLandscape) {
-                tags.add("风景")
-                tags.add("自然")
-            } else {
-                tags.add("人像")
-            }
-
-            // 根据照片ID添加随机标签
-            when (numericId % 5) {
-                0 -> tags.add("抽象")
-                1 -> tags.add("自然")
-                2 -> tags.add("城市")
-                3 -> tags.add("动物")
-                4 -> tags.add("建筑")
-            }
-
-            // 生成随机标题
-            val title = when (numericId % 4) {
-                0 -> "$source 壁纸 $photoId"
-                1 -> "$source 精选 $photoId"
-                2 -> "$source 高清壁纸 $photoId"
-                else -> "$source 壁纸 $photoId"
-            }
-
-            // 使用更真实的缩略图 URL
-            val imageId = Math.abs(numericId) % 1000 + 100
-            val thumbnailUrl = "https://picsum.photos/id/$imageId/${width / 4}/${height / 4}"
-            val previewUrl = "https://picsum.photos/id/$imageId/${width / 2}/${height / 2}"
-            val fullUrl = "https://picsum.photos/id/$imageId/$width/$height"
-
-            return Wallpaper(
-                id = id,
-                title = title,
-                url = fullUrl,
-                thumbnailUrl = thumbnailUrl,
-                previewUrl = previewUrl,
-                author = "$source 作者 $photoId",
-                source = source,
-                isPremium = numericId % 3 == 0, // 每三个壁纸中有一个是高级内容
-                isLive = false, // 这是静态壁纸
-                tags = tags,
-                width = width,
-                height = height,
-                resolution = Resolution(width, height)
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "创建模拟的静态壁纸失败: ${e.message}")
-            return null
-        }
-    }
-
-    /**
      * 获取随机壁纸
      * 使用壁纸API适配器获取随机壁纸
      */
@@ -932,19 +825,42 @@ class WallpaperRepositoryImpl @Inject constructor(
     override suspend fun getCategories(): List<Category> {
         // 返回预定义的分类列表
         return listOf(
-            Category("unsplash_nature", "自然风景", "大自然的壮丽景色", "https://images.unsplash.com/photo-1433086966358-54859d0ed716"),
-            Category("unsplash_architecture", "建筑设计", "令人惊叹的建筑作品", "https://images.unsplash.com/photo-1487958449943-2429e8be8625"),
-            Category("pexels_animals", "动物世界", "可爱与野性的动物", "https://images.pexels.com/photos/567540/pexels-photo-567540.jpeg"),
             Category(
+                "unsplash_nature",
+                "自然风景",
+                "大自然的壮丽景色",
+                "https://images.unsplash.com/photo-1433086966358-54859d0ed716"
+            ), Category(
+                "unsplash_architecture",
+                "建筑设计",
+                "令人惊叹的建筑作品",
+                "https://images.unsplash.com/photo-1487958449943-2429e8be8625"
+            ), Category(
+                "pexels_animals",
+                "动物世界",
+                "可爱与野性的动物",
+                "https://images.pexels.com/photos/567540/pexels-photo-567540.jpeg"
+            ), Category(
                 "pixabay_space",
                 "太空星空",
                 "浩瀚宇宙的奥秘",
                 "https://pixabay.com/get/g3c5223df6fab2f7a71dc0dc74302a6bcaef06ea54b1eeef55fb66c81c3fac9aa1e673c4e5de69e7ee61c8b83acb47458_1280.jpg"
-            ),
-            Category("wallhaven_digital-art", "数字艺术", "创意设计与数字艺术", "https://w.wallhaven.cc/full/dp/wallhaven-dpevlo.jpg"),
-            Category("unsplash_minimal", "简约风格", "极简主义设计美学", "https://images.unsplash.com/photo-1449247709967-d4461a6a6103"),
-            Category("pexels_abstract", "抽象艺术", "抽象与超现实主义", "https://images.pexels.com/photos/2110951/pexels-photo-2110951.jpeg"),
-            Category(
+            ), Category(
+                "wallhaven_digital-art",
+                "数字艺术",
+                "创意设计与数字艺术",
+                "https://w.wallhaven.cc/full/dp/wallhaven-dpevlo.jpg"
+            ), Category(
+                "unsplash_minimal",
+                "简约风格",
+                "极简主义设计美学",
+                "https://images.unsplash.com/photo-1449247709967-d4461a6a6103"
+            ), Category(
+                "pexels_abstract",
+                "抽象艺术",
+                "抽象与超现实主义",
+                "https://images.pexels.com/photos/2110951/pexels-photo-2110951.jpeg"
+            ), Category(
                 "pixabay_flowers",
                 "花卉植物",
                 "绚丽多彩的花卉世界",
@@ -964,30 +880,33 @@ class WallpaperRepositoryImpl @Inject constructor(
      * 下面是收藏、下载等本地数据相关的功能实现
      */
 
-    override suspend fun favoriteWallpaper(wallpaper: Wallpaper): Boolean = withContext(Dispatchers.IO) {
-        try {
-            // 创建一个新的Wallpaper对象，将isFavorite设置为true
-            val favoriteWallpaper = wallpaper.copy(isFavorite = true)
-            wallpaperDao.insertFavorite(favoriteWallpaper)
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Error favoriting wallpaper: ${e.message}")
-            false
+    override suspend fun favoriteWallpaper(wallpaper: Wallpaper): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                // 创建一个新的Wallpaper对象，将isFavorite设置为true
+                val favoriteWallpaper = wallpaper.copy(isFavorite = true)
+                wallpaperDao.insertFavorite(favoriteWallpaper)
+                true
+            } catch (e: Exception) {
+                Log.e(TAG, "Error favoriting wallpaper: ${e.message}")
+                false
+            }
         }
-    }
 
-    override suspend fun unfavoriteWallpaper(wallpaperId: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            wallpaperDao.deleteFavorite(wallpaperId)
-            true
-        } catch (e: Exception) {
-            false
+    override suspend fun unfavoriteWallpaper(wallpaperId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                wallpaperDao.deleteFavorite(wallpaperId)
+                true
+            } catch (e: Exception) {
+                false
+            }
         }
-    }
 
-    override suspend fun isWallpaperFavorited(wallpaperId: String): Boolean = withContext(Dispatchers.IO) {
-        wallpaperDao.isFavorite(wallpaperId)
-    }
+    override suspend fun isWallpaperFavorited(wallpaperId: String): Boolean =
+        withContext(Dispatchers.IO) {
+            wallpaperDao.isFavorite(wallpaperId)
+        }
 
     override fun getFavoriteWallpapers(): Flow<List<Wallpaper>> {
         return wallpaperDao.getAllFavorites()
@@ -997,48 +916,50 @@ class WallpaperRepositoryImpl @Inject constructor(
         return wallpaperDao.getAllDownloaded()
     }
 
-    override suspend fun trackWallpaperDownload(wallpaperId: String) { withContext(Dispatchers.IO) {
-        // 如果是Unsplash的壁纸，需要调用下载追踪API
-        if (wallpaperId.startsWith("unsplash_")) {
-            val originalId = wallpaperId.substringAfter("unsplash_")
-            try {
-                unsplashApiService.trackDownload(originalId)
-            } catch (e: Exception) {
-                Log.e(TAG, "调用Unsplash下载追踪API失败", e)
-            }
-        }
-
-        // 检查壁纸是否已存在于数据库中
-        val existingWallpaper = wallpaperDao.getWallpaperById(wallpaperId)
-
-        if (existingWallpaper != null) {
-            // 如果壁纸已存在，直接标记为已下载
-            try {
-                wallpaperDao.insertDownload(wallpaperId)
-                Log.d(TAG, "标记已存在壁纸为已下载: $wallpaperId")
-            } catch (e: Exception) {
-                Log.e(TAG, "标记壁纸为已下载失败", e)
-            }
-        } else {
-            // 如果壁纸不存在，需要先获取壁纸详情并插入到数据库
-            try {
-                // 获取壁纸详情
-                val wallpaper = getWallpaperById(wallpaperId)
-
-                if (wallpaper != null) {
-                    // 创建一个新的壁纸对象，将isDownloaded设置为true
-                    val downloadedWallpaper = wallpaper.copy(isDownloaded = true)
-                    // 插入到数据库
-                    wallpaperDao.insertFavorite(downloadedWallpaper)
-                    Log.d(TAG, "插入新壁纸并标记为已下载: $wallpaperId")
-                } else {
-                    Log.e(TAG, "无法获取壁纸详情，无法记录下载: $wallpaperId")
+    override suspend fun trackWallpaperDownload(wallpaperId: String) {
+        withContext(Dispatchers.IO) {
+            // 如果是Unsplash的壁纸，需要调用下载追踪API
+            if (wallpaperId.startsWith("unsplash_")) {
+                val originalId = wallpaperId.substringAfter("unsplash_")
+                try {
+                    unsplashApiService.trackDownload(originalId)
+                } catch (e: Exception) {
+                    Log.e(TAG, "调用Unsplash下载追踪API失败", e)
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "插入新壁纸并标记为已下载失败", e)
+            }
+
+            // 检查壁纸是否已存在于数据库中
+            val existingWallpaper = wallpaperDao.getWallpaperById(wallpaperId)
+
+            if (existingWallpaper != null) {
+                // 如果壁纸已存在，直接标记为已下载
+                try {
+                    wallpaperDao.insertDownload(wallpaperId)
+                    Log.d(TAG, "标记已存在壁纸为已下载: $wallpaperId")
+                } catch (e: Exception) {
+                    Log.e(TAG, "标记壁纸为已下载失败", e)
+                }
+            } else {
+                // 如果壁纸不存在，需要先获取壁纸详情并插入到数据库
+                try {
+                    // 获取壁纸详情
+                    val wallpaper = getWallpaperById(wallpaperId)
+
+                    if (wallpaper != null) {
+                        // 创建一个新的壁纸对象，将isDownloaded设置为true
+                        val downloadedWallpaper = wallpaper.copy(isDownloaded = true)
+                        // 插入到数据库
+                        wallpaperDao.insertFavorite(downloadedWallpaper)
+                        Log.d(TAG, "插入新壁纸并标记为已下载: $wallpaperId")
+                    } else {
+                        Log.e(TAG, "无法获取壁纸详情，无法记录下载: $wallpaperId")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "插入新壁纸并标记为已下载失败", e)
+                }
             }
         }
-    }}
+    }
 
     override suspend fun getLocalFile(wallpaperId: String): File? {
         // 从本地存储中获取已下载的文件

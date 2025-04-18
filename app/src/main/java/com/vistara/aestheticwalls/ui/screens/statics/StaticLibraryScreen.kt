@@ -23,7 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -63,16 +65,7 @@ fun StaticLibraryScreen(
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing, onRefresh = { viewModel.refresh() })
 
-    // 监听壁纸数量变化，当壁纸数量足够多时自动加载更多
-    LaunchedEffect(wallpapersState) {
-        if (wallpapersState is UiState.Success && !isLoadingMore && canLoadMore) {
-            val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
-            // 当壁纸数量达到一定阈值时，自动加载更多
-            if (wallpapers.size % 10 == 0 && wallpapers.size > 0) {
-                viewModel.loadMore()
-            }
-        }
-    }
+    // 不再使用自动加载更多的逻辑，而是依赖WallpaperStaggeredGrid组件中的滚动到底部检测
 
     Scaffold(
         topBar = {
@@ -133,6 +126,9 @@ fun StaticLibraryScreen(
                         Column(modifier = Modifier.fillMaxSize()) {
                             // 显示壁纸网格 (瀑布流布局)
                             Box(modifier = Modifier.weight(1f)) {
+                                // 创建LazyStaggeredGridState并保持它的状态
+                                val gridState = rememberLazyStaggeredGridState()
+
                                 // 使用remember缓存WallpaperStaggeredGrid组件
                                 val rememberedWallpapers = remember(wallpapers) { wallpapers }
                                 val rememberedIsLoadingMore =
@@ -146,6 +142,7 @@ fun StaticLibraryScreen(
                                     isLoadingMore = rememberedIsLoadingMore,
                                     canLoadMore = rememberedCanLoadMore,
                                     showEndMessage = !rememberedCanLoadMore,
+                                    gridState = gridState,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }

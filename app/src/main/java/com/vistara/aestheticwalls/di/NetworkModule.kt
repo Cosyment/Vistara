@@ -4,6 +4,7 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vistara.aestheticwalls.BuildConfig
+import com.vistara.aestheticwalls.data.remote.ApiCallHelper
 import com.vistara.aestheticwalls.data.remote.ApiKeyManager
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
 import com.vistara.aestheticwalls.data.remote.ApiSource
@@ -175,6 +176,18 @@ object NetworkModule {
         apiUsageTracker: ApiUsageTracker
     ): Interceptor {
         return Interceptor { chain ->
+            // 检查是否处于速率限制状态
+            if (apiUsageTracker.isApiRateLimited(ApiSource.UNSPLASH)) {
+                // 如果处于速率限制状态，返回403错误
+                return@Interceptor okhttp3.Response.Builder()
+                    .request(chain.request())
+                    .protocol(okhttp3.Protocol.HTTP_1_1)
+                    .code(403)
+                    .message("Rate Limit Exceeded")
+                    .body(okhttp3.ResponseBody.create(null, ""))
+                    .build()
+            }
+
             // 跟踪API调用
             apiUsageTracker.trackApiCall(ApiSource.UNSPLASH)
 
@@ -186,9 +199,33 @@ object NetworkModule {
 
             // 跟踪API响应
             if (response.isSuccessful) {
+                // 检查响应头中的速率限制信息
+                val rateLimit = response.header("x-ratelimit-limit")?.toIntOrNull() ?: 0
+                val rateRemaining = response.header("x-ratelimit-remaining")?.toIntOrNull() ?: 0
+
+                if (rateRemaining <= 5) { // 当剩余5个请求时就开始警告
+                    // 如果剩余请求数很少，设置速率限制状态
+                    android.util.Log.w("UnsplashInterceptor", "API rate limit almost reached: $rateRemaining/$rateLimit remaining")
+
+                    if (rateRemaining <= 0) {
+                        // 如果剩余请求数为0，设置速率限制状态，时间较长
+                        apiUsageTracker.setApiRateLimited(ApiSource.UNSPLASH, 600000L) // 10分钟
+                    } else {
+                        // 如果剩余请求数很少但不为0，设置短时间的速率限制
+                        apiUsageTracker.setApiRateLimited(ApiSource.UNSPLASH, 60000L) // 1分钟
+                    }
+                }
+
                 apiUsageTracker.trackApiSuccess(ApiSource.UNSPLASH)
             } else {
-                apiUsageTracker.trackApiError(ApiSource.UNSPLASH, "HTTP ${response.code}")
+                // 检查是否是速率限制错误
+                if (response.code == 403 || response.code == 429) {
+                    android.util.Log.e("UnsplashInterceptor", "API rate limit exceeded: ${response.code}")
+                    apiUsageTracker.trackApiError(ApiSource.UNSPLASH, "Rate Limit Exceeded", response.code)
+                    apiUsageTracker.setApiRateLimited(ApiSource.UNSPLASH)
+                } else {
+                    apiUsageTracker.trackApiError(ApiSource.UNSPLASH, "HTTP ${response.code}", response.code)
+                }
             }
 
             response
@@ -244,6 +281,18 @@ object NetworkModule {
         apiUsageTracker: ApiUsageTracker
     ): Interceptor {
         return Interceptor { chain ->
+            // 检查是否处于速率限制状态
+            if (apiUsageTracker.isApiRateLimited(ApiSource.PEXELS)) {
+                // 如果处于速率限制状态，返回403错误
+                return@Interceptor okhttp3.Response.Builder()
+                    .request(chain.request())
+                    .protocol(okhttp3.Protocol.HTTP_1_1)
+                    .code(403)
+                    .message("Rate Limit Exceeded")
+                    .body(okhttp3.ResponseBody.create(null, ""))
+                    .build()
+            }
+
             // 跟踪API调用
             apiUsageTracker.trackApiCall(ApiSource.PEXELS)
 
@@ -255,9 +304,33 @@ object NetworkModule {
 
             // 跟踪API响应
             if (response.isSuccessful) {
+                // 检查响应头中的速率限制信息
+                val rateLimit = response.header("X-Ratelimit-Limit")?.toIntOrNull() ?: 0
+                val rateRemaining = response.header("X-Ratelimit-Remaining")?.toIntOrNull() ?: 0
+
+                if (rateRemaining <= 5) { // 当剩余5个请求时就开始警告
+                    // 如果剩余请求数很少，设置速率限制状态
+                    android.util.Log.w("PexelsInterceptor", "API rate limit almost reached: $rateRemaining/$rateLimit remaining")
+
+                    if (rateRemaining <= 0) {
+                        // 如果剩余请求数为0，设置速率限制状态，时间较长
+                        apiUsageTracker.setApiRateLimited(ApiSource.PEXELS, 600000L) // 10分钟
+                    } else {
+                        // 如果剩余请求数很少但不为0，设置短时间的速率限制
+                        apiUsageTracker.setApiRateLimited(ApiSource.PEXELS, 60000L) // 1分钟
+                    }
+                }
+
                 apiUsageTracker.trackApiSuccess(ApiSource.PEXELS)
             } else {
-                apiUsageTracker.trackApiError(ApiSource.PEXELS, "HTTP ${response.code}")
+                // 检查是否是速率限制错误
+                if (response.code == 403 || response.code == 429) {
+                    android.util.Log.e("PexelsInterceptor", "API rate limit exceeded: ${response.code}")
+                    apiUsageTracker.trackApiError(ApiSource.PEXELS, "Rate Limit Exceeded", response.code)
+                    apiUsageTracker.setApiRateLimited(ApiSource.PEXELS, 600000L) // 10分钟
+                } else {
+                    apiUsageTracker.trackApiError(ApiSource.PEXELS, "HTTP ${response.code}", response.code)
+                }
             }
 
             response
@@ -509,5 +582,23 @@ object NetworkModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    /**
+     * 提供API使用跟踪器
+     */
+    @Provides
+    @Singleton
+    fun provideApiUsageTracker(): ApiUsageTracker {
+        return ApiUsageTracker()
+    }
+
+    /**
+     * 提供API调用帮助器
+     */
+    @Provides
+    @Singleton
+    fun provideApiCallHelper(apiUsageTracker: ApiUsageTracker): ApiCallHelper {
+        return ApiCallHelper(apiUsageTracker)
     }
 }

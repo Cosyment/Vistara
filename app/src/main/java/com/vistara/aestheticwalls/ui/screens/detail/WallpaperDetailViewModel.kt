@@ -234,15 +234,77 @@ class WallpaperDetailViewModel @Inject constructor(
             _wallpaperState.value = UiState.Loading
 
             try {
-                val wallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                // 先从本地数据库查询
+                var wallpaper: Wallpaper? = wallpaperRepository.getWallpaperById(wallpaperId)
+
+                // 如果本地数据库有这个壁纸，直接显示
+                if (wallpaper != null) {
+                    Log.d(TAG, "从本地数据库找到壁纸: $wallpaperId")
+                    _wallpaperState.value = UiState.Success(wallpaper)
+                    checkFavoriteStatus()
+
+                    // 同时在后台尝试从服务器获取最新数据更新本地缓存
+                    try {
+                        val updatedWallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                        if (updatedWallpaper != null && updatedWallpaper != wallpaper) {
+                            _wallpaperState.value = UiState.Success(updatedWallpaper)
+                        }
+                    } catch (e: Exception) {
+                        // 忽略后台更新错误，不影响用户体验
+                        Log.w(TAG, "后台更新壁纸数据失败: ${e.message}")
+                    }
+                    return@launch
+                }
+
+                // 如果本地数据库没有，尝试多次从服务器获取
+                var retryCount = 0
+                val maxRetries = 3
+                var isRateLimitError = false
+
+                while (wallpaper == null && retryCount < maxRetries) {
+                    try {
+                        wallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                        if (wallpaper != null) {
+                            break
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "获取壁纸详情失败，重试第${retryCount + 1}次: ${e.message}")
+                        // 检查是否是速率限制错误
+                        if (e.message?.contains("Rate Limit") == true || e.message?.contains("403") == true) {
+                            isRateLimitError = true
+                            // 如果是速率限制错误，等待时间更长
+                            delay(2000) // 等待2秒
+                        }
+                    }
+                    retryCount++
+                    if (!isRateLimitError) {
+                        delay(500) // 正常重试等待500毫秒
+                    }
+                }
+
                 if (wallpaper != null) {
                     _wallpaperState.value = UiState.Success(wallpaper)
                     checkFavoriteStatus()
                 } else {
-                    _wallpaperState.value = UiState.Error(context.getString(R.string.wallpaper_not_exist))
+                    // 如果多次重试后仍然无法获取壁纸详情，显示错误信息
+                    Log.e(TAG, "多次重试后仍然无法获取壁纸详情: $wallpaperId")
+
+                    // 如果是速率限制错误，显示更友好的错误信息
+                    if (isRateLimitError) {
+                        _wallpaperState.value = UiState.Error(context.getString(R.string.api_rate_limit_exceeded))
+                    } else {
+                        _wallpaperState.value = UiState.Error(context.getString(R.string.wallpaper_not_exist))
+                    }
                 }
             } catch (e: Exception) {
-                _wallpaperState.value = UiState.Error(e.message ?: context.getString(R.string.load_wallpaper_failed))
+                Log.e(TAG, "加载壁纸详情失败: ${e.message}")
+
+                // 检查是否是速率限制错误
+                if (e.message?.contains("Rate Limit") == true || e.message?.contains("403") == true) {
+                    _wallpaperState.value = UiState.Error(context.getString(R.string.api_rate_limit_exceeded))
+                } else {
+                    _wallpaperState.value = UiState.Error(e.message ?: context.getString(R.string.load_wallpaper_failed))
+                }
             }
         }
     }
@@ -539,17 +601,30 @@ class WallpaperDetailViewModel @Inject constructor(
     private suspend fun downloadImage(wallpaper: Wallpaper, downloadOriginalQuality: Boolean) {
         // 实际下载图片
         val bitmap = withContext(Dispatchers.IO) {
-            // 根据设置选择下载原始质量或压缩质量
+            // 根据壁纸来源和设置选择正确的URL
             val imageUrl = if (downloadOriginalQuality) {
                 // 使用原始质量图片URL
-                // 如果有downloadUrl字段，优先使用，否则使用普通的url
-                wallpaper.downloadUrl ?: wallpaper.url
+                if (wallpaper.id.startsWith("pexels_photo_") && wallpaper.url?.contains("/photos/") == true) {
+                    // 对于Pexels图片，使用原始质量的URL
+                    wallpaper.url // 已经是original URL
+                } else {
+                    // 其他来源，使用downloadUrl或url
+                    wallpaper.downloadUrl ?: wallpaper.url
+                }
             } else {
                 // 使用普通质量图片URL
-                wallpaper.url
+                if (wallpaper.id.startsWith("pexels_photo_") && wallpaper.url?.contains("/photos/") == true) {
+                    // 对于Pexels图片，使用压缩质量的URL
+                    // 从原始URL生成压缩版本
+                    wallpaper.url?.replace(".jpeg", ".jpeg?auto=compress&cs=tinysrgb&h=650&w=940")
+                        ?: wallpaper.url
+                } else {
+                    // 其他来源，使用previewUrl或url
+                    wallpaper.previewUrl ?: wallpaper.url
+                }
             }
 
-            Log.d("WallpaperDetailViewModel", "Downloading image from: $imageUrl")
+            Log.d("WallpaperDetailViewModel", "Downloading image from: $imageUrl with original quality: $downloadOriginalQuality")
             val url = URL(imageUrl)
             BitmapFactory.decodeStream(url.openStream())
         }
@@ -626,8 +701,34 @@ class WallpaperDetailViewModel @Inject constructor(
      * 下载动态壁纸（视频）
      */
     private suspend fun downloadVideo(wallpaper: Wallpaper) {
-        val videoUrl = wallpaper.url ?: throw IllegalArgumentException("Video URL is null")
-        Log.d("WallpaperDetailViewModel", "Downloading video from: $videoUrl")
+        // 获取用户设置中的下载原始质量设置
+        val userSettings = userPrefsRepository.getUserSettings()
+        val downloadOriginalQuality = userSettings.downloadOriginalQuality
+
+        // 根据壁纸来源和设置选择正确的URL
+        val videoUrl = if (wallpaper.id.startsWith("pexels_video_")) {
+            // 对于Pexels视频，根据质量设置选择不同的URL
+            if (downloadOriginalQuality) {
+                // 如果选择原始质量，尝试使用uhd或hd质量
+                // 从原始URL提取视频ID
+                val videoId = wallpaper.id.substringAfter("pexels_video_")
+                // 尝试使用高清版本
+                "https://videos.pexels.com/video-files/$videoId/$videoId-uhd_2160_4096_25fps.mp4"
+            } else {
+                // 如果选择普通质量，尝试使用sd质量
+                val videoId = wallpaper.id.substringAfter("pexels_video_")
+                // 尝试使用标清版本
+                "https://videos.pexels.com/video-files/$videoId/$videoId-sd_506_960_25fps.mp4"
+            }
+        } else if (downloadOriginalQuality) {
+            // 其他来源，使用downloadUrl或url
+            wallpaper.downloadUrl ?: wallpaper.url
+        } else {
+            // 其他来源，使用previewUrl或url
+            wallpaper.previewUrl ?: wallpaper.url
+        } ?: throw IllegalArgumentException("Video URL is null")
+
+        Log.d("WallpaperDetailViewModel", "Downloading video from: $videoUrl with original quality: $downloadOriginalQuality")
 
         // 使用OkHttp下载视频文件
         val client = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build()

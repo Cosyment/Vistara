@@ -333,8 +333,6 @@
     <string name="api_test_tool">API测试工具</string>
     <string name="test_tool">测试工具</string>
     <string name="back_button">返回</string>
-    <string name="test_results_in_logcat">测试结果将显示在Logcat中</string>
-    <string name="filter_tag">过滤标签: ApiTest</string>
     <string name="test_pexels_api">测试Pexels API</string>
     <string name="test_unsplash_api">测试Unsplash API</string>
     <string name="api_test">API测试</string>

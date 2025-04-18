@@ -11,6 +11,7 @@ import com.vistara.aestheticwalls.R
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -53,10 +54,9 @@ fun LiveVideoGrid(
     columns: Int = 2,
     contentPadding: PaddingValues = PaddingValues(8.dp),
     videoPlaybackManager: VideoPlaybackManager? = null,
+    gridState: LazyGridState = rememberLazyGridState(),
     modifier: Modifier = Modifier
 ) {
-    // 创建LazyGridState来监听滚动状态
-    val gridState = rememberLazyGridState()
 
     // 跟踪可见的壁纸项
     val visibleWallpaperIds = remember { mutableStateListOf<String>() }
@@ -192,7 +192,10 @@ fun LiveVideoGrid(
         modifier = modifier.fillMaxWidth()
     ) {
         // 壁纸项
-        items(wallpapers) { wallpaper ->
+        items(
+            items = wallpapers,
+            key = { wallpaper -> wallpaper.id } // 使用壁纸ID作为稳定的键
+        ) { wallpaper ->
             // 使用固定高度，确保统一的视觉效果
             val itemHeight = 240.dp
 

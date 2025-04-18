@@ -145,9 +145,8 @@ class PexelsMapper @Inject constructor() {
         }
 
         // 打印日志以便调试
-        android.util.Log.d("PexelsMapper", "Video URL for ID ${source.id}: $videoUrl")
         if (videoFile != null) {
-            android.util.Log.d("PexelsMapper", "Selected video file: ${videoFile.quality}, ${videoFile.width}x${videoFile.height}")
+//            android.util.Log.d("PexelsMapper", "Selected video file: ${videoFile.quality}, ${videoFile.width}x${videoFile.height}")
         }
 
         return Wallpaper(

@@ -19,3 +19,18 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# 保留泛型信息（必要）
+-keepattributes Signature
+
+# 保留注解信息（视情况而定）
+-keepattributes *Annotation*
+
+# Gson TypeToken 相关
+-keep class com.google.gson.reflect.TypeToken { *; }
+
+-keep class com.vistara.aestheticwalls.data.model.**{*;}
+-keep class com.vistara.aestheticwalls.data.model.pexels.**{*;}
+-keep class com.vistara.aestheticwalls.data.model.pixabay.**{*;}
+-keep class com.vistara.aestheticwalls.data.model.unsplash.**{*;}
+-keep class com.vistara.aestheticwalls.data.model.wallhaven.**{*;}

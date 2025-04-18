@@ -33,6 +33,9 @@ interface WallpaperDao {
     @Query("SELECT * FROM wallpapers WHERE isFavorite = 1 AND (title LIKE :query OR description LIKE :query OR author LIKE :query OR tags LIKE :query)")
     suspend fun searchFavorites(query: String): List<Wallpaper>
 
+    @Query("SELECT * FROM wallpapers WHERE tags LIKE :tags LIMIT :limit")
+    suspend fun getWallpapersByTags(tags: String, limit: Int): List<Wallpaper>
+
     // 下载相关操作
     @Query("SELECT * FROM wallpapers WHERE isDownloaded = 1")
     fun getAllDownloaded(): Flow<List<Wallpaper>>
