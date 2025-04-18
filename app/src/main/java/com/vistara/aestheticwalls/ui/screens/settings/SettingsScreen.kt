@@ -1,14 +1,10 @@
 package com.vistara.aestheticwalls.ui.screens.settings
 
 import android.Manifest
-import android.app.Activity
 import android.os.Build
-import android.os.LocaleList
 import android.util.Log
-import kotlinx.coroutines.delay
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,9 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import com.vistara.aestheticwalls.ui.icons.AppIcons
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,7 +31,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,10 +51,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.components.ConfirmDialog
 import com.vistara.aestheticwalls.ui.components.LanguageSelector
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsViewModel.NotificationType
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
-import com.vistara.aestheticwalls.ui.theme.LocalAppResources
-import java.util.Locale
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 设置页面
@@ -74,59 +65,8 @@ import java.util.Locale
 fun SettingsScreen(
     onBackPressed: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    // 监听语言更新状态
-    val languageUpdated by viewModel.languageUpdated.collectAsState()
+
     val context = LocalContext.current
-
-    // 保留原有的 Activity 重建逻辑，作为备用方案
-    val needRecreate by viewModel.needRecreate.collectAsState()
-    LaunchedEffect(needRecreate) {
-        if (needRecreate) {
-            Log.d("SettingsScreen", "Recreating activity due to language change")
-            // 等待足够时间确保语言设置已应用
-            delay(500)
-            try {
-                Log.d("SettingsScreen", "About to recreate activity")
-                (context as? Activity)?.let { activity ->
-                    // 使用 Intent 重启 Activity
-                    val intent = activity.intent
-                    activity.finish()
-                    activity.startActivity(intent)
-                    // 添加过渡动画
-                    activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                }
-            } catch (e: Exception) {
-                Log.e("SettingsScreen", "Error recreating activity: ${e.message}")
-                e.printStackTrace()
-                // 如果上面的方法失败，尝试直接调用 recreate()
-                (context as? Activity)?.recreate()
-            }
-            viewModel.onRecreateHandled()
-        }
-    }
-
-    // 监听语言更新状态，触发 UI 刷新
-    LaunchedEffect(languageUpdated) {
-        if (languageUpdated) {
-            Log.d("SettingsScreen", "Language updated, refreshing UI without recreating activity")
-            // 强制更新当前 Activity 的 Resources 配置
-            try {
-                val config = context.resources.configuration
-                val settings = viewModel.appLanguage.value
-                if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
-                    val locale = java.util.Locale(settings.code)
-                    val localeList = android.os.LocaleList(locale)
-                    config.setLocales(localeList)
-                } else {
-                    config.setLocales(android.os.LocaleList.getDefault())
-                }
-                context.resources.updateConfiguration(config, context.resources.displayMetrics)
-                Log.d("SettingsScreen", "Updated resources configuration with locale: ${java.util.Locale.getDefault()}")
-            } catch (e: Exception) {
-                Log.e("SettingsScreen", "Error updating resources: ${e.message}")
-            }
-        }
-    }
     // 从ViewModel获取状态
     val darkTheme by viewModel.darkTheme.collectAsState()
     val dynamicColors by viewModel.dynamicColors.collectAsState()
@@ -182,69 +122,109 @@ fun SettingsScreen(
         }
     }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
-        TopAppBar(
-            title = {
-                val resources = LocalAppResources.current
-                Text(resources.getString(R.string.settings))
-            },
-            navigationIcon = {
-                IconButton(onClick = onBackPressed) {
-                    val resources = LocalAppResources.current
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = resources.getString(R.string.back)
-                    )
+    // 监听语言更新状态
+    val languageUpdated by viewModel.languageUpdated.collectAsState()
+    // 监听语言更新状态，触发 UI 刷新
+    LaunchedEffect(languageUpdated) {
+        if (languageUpdated) {
+            Log.d("SettingsScreen", "语言更新触发，当前语言: ${viewModel.appLanguage.value}")
+            try {
+                val config = context.resources.configuration
+                val settings = viewModel.appLanguage.value
+                if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
+                    // 设置指定语言
+                    val locale = java.util.Locale(settings.code)
+                    val localeList = android.os.LocaleList(locale)
+                    config.setLocales(localeList)
+                } else {
+                    // 直接使用 LocaleManager 的强制系统语言方法
+                    val localeManager = viewModel.getLocaleManager()
+
+                    // 获取真正的系统语言用于更新资源配置
+                    var systemLocale = localeManager.getSystemLocale()
+                    // 处理英语区域设置，将 en_US 转换为 en
+                    if (systemLocale.language == "en") {
+                        // 创建一个新的只有语言代码的 Locale
+                        systemLocale = java.util.Locale("en")
+                        Log.d("SettingsScreen", "处理英语区域设置，转换为: $systemLocale")
+                    }
+
+                    // 更新资源配置
+                    val systemLocaleList = android.os.LocaleList(systemLocale)
+                    config.setLocales(systemLocaleList)
                 }
+
+                // 强制刷新页面，特别是对系统语言切换
+                Log.d("SettingsScreen", "系统语言切换，强制刷新页面")
+            } catch (e: Exception) {
+                Log.e("SettingsScreen", "Error updating resources: ${e.message}")
             }
-        )
+        }
+    }
+
+    // 使用 refreshTrigger 强制重组整个页面
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
+        TopAppBar(title = {
+            Text(stringResource(R.string.settings))
+        }, navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back)
+                )
+            }
+        })
     }) { paddingValues ->
+        // 使用 refreshTrigger 强制重组整个页面内容
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
         ) {
-            val resources = LocalAppResources.current
-
             // 主题设置
-            SettingsCategory(title = resources.getString(R.string.theme_settings))
+            SettingsCategory(title = stringResource(R.string.theme_settings))
 
             SettingsToggleItem(
                 icon = AppIcons.DarkMode,
-                title = resources.getString(R.string.dark_theme),
-                subtitle = resources.getString(R.string.dark_theme_desc),
+                title = stringResource(R.string.dark_theme),
+                subtitle = stringResource(R.string.dark_theme_desc),
                 checked = darkTheme,
                 onCheckedChange = { viewModel.updateDarkTheme(it) })
 
             SettingsToggleItem(
                 icon = AppIcons.Palette,
-                title = resources.getString(R.string.dynamic_colors),
-                subtitle = resources.getString(R.string.dynamic_colors_desc),
+                title = stringResource(R.string.dynamic_colors),
+                subtitle = stringResource(R.string.dynamic_colors_desc),
                 checked = dynamicColors,
                 onCheckedChange = { viewModel.updateDynamicColors(it) })
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
             )
 
             // 语言设置
-            SettingsCategory(title = resources.getString(R.string.language_settings))
+            SettingsCategory(title = stringResource(R.string.language_settings))
 
             LanguageSelector(
-                currentLanguage = appLanguage, onLanguageSelected = { viewModel.updateAppLanguage(it) })
+                currentLanguage = appLanguage,
+                onLanguageSelected = { viewModel.updateAppLanguage(it) })
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
             )
 
             // 通知设置
-            SettingsCategory(title = resources.getString(R.string.notification_settings))
+            SettingsCategory(title = stringResource(R.string.notification_settings))
 
             SettingsToggleItem(
                 icon = AppIcons.Notifications,
-                title = resources.getString(R.string.download_notification),
-                subtitle = resources.getString(R.string.download_notification_desc),
+                title = stringResource(R.string.download_notification),
+                subtitle = stringResource(R.string.download_notification_desc),
                 checked = showDownloadNotification,
                 onCheckedChange = {
                     currentNotificationType = NotificationType.DOWNLOAD
@@ -253,8 +233,8 @@ fun SettingsScreen(
 
             SettingsToggleItem(
                 icon = AppIcons.Notifications,
-                title = resources.getString(R.string.wallpaper_change_notification),
-                subtitle = resources.getString(R.string.wallpaper_change_notification_desc),
+                title = stringResource(R.string.wallpaper_change_notification),
+                subtitle = stringResource(R.string.wallpaper_change_notification_desc),
                 checked = showWallpaperChangeNotification,
                 onCheckedChange = {
                     currentNotificationType = NotificationType.WALLPAPER_CHANGE
@@ -262,16 +242,18 @@ fun SettingsScreen(
                 })
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
             )
 
             // 下载设置
-            SettingsCategory(title = resources.getString(R.string.download_settings))
+            SettingsCategory(title = stringResource(R.string.download_settings))
 
             SettingsToggleItem(
                 icon = AppIcons.HighQuality,
-                title = resources.getString(R.string.original_quality),
-                subtitle = resources.getString(R.string.original_quality_desc),
+                title = stringResource(R.string.original_quality),
+                subtitle = stringResource(R.string.original_quality_desc),
                 checked = downloadOriginalQuality,
                 onCheckedChange = {
                     viewModel.updateDownloadOriginalQuality(it)
@@ -279,8 +261,8 @@ fun SettingsScreen(
 
             SettingsActionItem(
                 icon = AppIcons.Delete,
-                title = resources.getString(R.string.clear_cache),
-                subtitle = resources.getString(R.string.current_cache_size, cacheSize),
+                title = stringResource(R.string.clear_cache),
+                subtitle = stringResource(R.string.current_cache_size, cacheSize),
                 onClick = {
                     showClearCacheDialog = true
                 },
@@ -295,30 +277,34 @@ fun SettingsScreen(
                 } else null)
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
             )
 
             // 关于应用
-            SettingsCategory(title = resources.getString(R.string.about_app))
+            SettingsCategory(title = stringResource(R.string.about_app))
 
             SettingsActionItem(
                 icon = AppIcons.Version,
-                title = resources.getString(R.string.app_version),
-                subtitle = "$appVersion",
+                title = stringResource(R.string.app_version),
+                subtitle = appVersion,
                 onClick = {})
 
             // 账户设置
             if (isLoggedIn) {
                 HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp), thickness = DividerDefaults.Thickness, color = DividerDefaults.color
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
                 )
 
-                SettingsCategory(title = resources.getString(R.string.account_settings))
+                SettingsCategory(title = stringResource(R.string.account_settings))
 
                 SettingsActionItem(
                     icon = AppIcons.ExitToApp,
-                    title = resources.getString(R.string.sign_out),
-                    subtitle = resources.getString(R.string.sign_out_desc),
+                    title = stringResource(R.string.sign_out),
+                    subtitle = stringResource(R.string.sign_out_desc),
                     onClick = { showLogoutConfirmDialog = true },
                     iconTint = MaterialTheme.colorScheme.error,
                     trailingContent = if (isLoggingOut) {
@@ -342,10 +328,10 @@ fun SettingsScreen(
                         viewModel.clearCache()
                         showClearCacheDialog = false
                     },
-                    title = resources.getString(R.string.clear_cache_title),
-                    message = resources.getString(R.string.clear_cache_message),
-                    confirmText = resources.getString(R.string.clear),
-                    dismissText = resources.getString(R.string.cancel),
+                    title = stringResource(R.string.clear_cache_title),
+                    message = stringResource(R.string.clear_cache_message),
+                    confirmText = stringResource(R.string.clear),
+                    dismissText = stringResource(R.string.cancel),
                     isLoading = isClearingCache
                 )
             }
@@ -358,10 +344,10 @@ fun SettingsScreen(
                         viewModel.signOut()
                         showLogoutConfirmDialog = false
                     },
-                    title = resources.getString(R.string.sign_out_confirm_title),
-                    message = resources.getString(R.string.sign_out_confirm_message),
-                    confirmText = resources.getString(R.string.sign_out),
-                    dismissText = resources.getString(R.string.cancel),
+                    title = stringResource(R.string.sign_out_confirm_title),
+                    message = stringResource(R.string.sign_out_confirm_message),
+                    confirmText = stringResource(R.string.sign_out),
+                    dismissText = stringResource(R.string.cancel),
                     isLoading = isLoggingOut
                 )
             }
@@ -390,29 +376,41 @@ private fun SettingsCategory(
  */
 @Composable
 private fun SettingsToggleItem(
-    icon: ImageVector, title: String, subtitle: String? = null, checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier
+    icon: ImageVector,
+    title: String,
+    subtitle: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(), onClick = { onCheckedChange(!checked) }) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 if (subtitle != null) {
                     Text(
-                        text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -443,7 +441,8 @@ private fun SettingsActionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = icon, contentDescription = null, tint = iconTint
@@ -453,12 +452,16 @@ private fun SettingsActionItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 if (subtitle != null) {
                     Text(
-                        text = subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

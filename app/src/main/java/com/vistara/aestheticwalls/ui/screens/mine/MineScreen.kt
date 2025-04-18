@@ -38,12 +38,19 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.animation.core.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -263,30 +270,194 @@ private fun MineHeader(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), CircleShape)
+                .size(if (isPremiumUser) 84.dp else 80.dp)
         ) {
-            if (isLoggedIn && !userPhotoUrl.isNullOrEmpty()) {
-                // 使用 AsyncImage 加载用户头像
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(userPhotoUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+            // 高级用户外层光晕效果
+            if (isPremiumUser) {
+                // 流光动画效果
+                val infiniteTransition = rememberInfiniteTransition(label = "premium_avatar_animation")
+
+                // 旋转动画 - 更快的旋转速度
+                val rotation by infiniteTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(8000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    label = "rotation_animation"
                 )
-            } else {
-                // 默认头像图标
-                Icon(
-                    imageVector = AppIcons.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(40.dp)
+
+                // 闪光动画 - 更明显的透明度变化
+                val shimmerAlpha by infiniteTransition.animateFloat(
+                    initialValue = 0.4f,
+                    targetValue = 1.0f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1200, easing = LinearOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "shimmer_animation"
                 )
+
+                // 流光位置动画 - 限制在头像区域内
+                val shimmerOffset by infiniteTransition.animateFloat(
+                    initialValue = -80f,
+                    targetValue = 80f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1500, easing = LinearEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "shimmer_offset_animation"
+                )
+//                FxkOtt
+                // 外层光晕
+                Box(
+                    modifier = Modifier
+                        .size(84.dp)
+                        .graphicsLayer {
+                            this.rotationZ = rotation
+                        }
+                        .background(
+                            brush = Brush.sweepGradient(
+                                listOf(
+                                    Color(0xFFFFD700).copy(alpha = shimmerAlpha), // 金色
+                                    Color(0xFFFFA500).copy(alpha = 0.3f), // 橙色
+                                    Color(0xFFFFD700).copy(alpha = shimmerAlpha), // 金色
+                                    Color(0xFFFFC107).copy(alpha = 0.3f), // 浅金色
+                                    Color(0xFFFFD700).copy(alpha = shimmerAlpha)  // 金色
+                                )
+                            ),
+                            shape = CircleShape
+                        )
+                )
+
+                // 流光效果 - 限制在头像区域内
+                Box(
+                    modifier = Modifier
+                        .size(84.dp)
+                        .clip(CircleShape)  // 先裁剪成圆形
+                        .graphicsLayer {
+                            translationX = shimmerOffset
+                        }
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.0f),
+                                    Color.White.copy(alpha = 0.4f),
+                                    Color.White.copy(alpha = 0.0f)
+                                ),
+                                startX = -40f,
+                                endX = 40f
+                            )
+                        )
+                )
+            }
+
+            // 头像主体
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(
+                        width = if (isPremiumUser) 1.5.dp else 2.dp,
+                        brush = if (isPremiumUser) {
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFFFFD700), // 金色
+                                    Color(0xFFFFA500), // 橙色
+                                    Color(0xFFFF8C00)  // 深橙色
+                                )
+                            )
+                        } else {
+                            SolidColor(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
+                        },
+                        shape = CircleShape
+                    )
+            ) {
+                if (isLoggedIn && !userPhotoUrl.isNullOrEmpty()) {
+                    // 使用 AsyncImage 加载用户头像
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(userPhotoUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // 默认头像图标
+                    Icon(
+                        imageVector = AppIcons.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+            }
+
+            // 高级用户小皇冠标识
+            if (isPremiumUser) {
+                // 微妙的缩放动画
+                val infiniteTransition = rememberInfiniteTransition(label = "crown_animation")
+                val scale by infiniteTransition.animateFloat(
+                    initialValue = 1.0f,
+                    targetValue = 1.1f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "crown_scale_animation"
+                )
+
+                // 微妙的旋转动画
+                val crownRotation by infiniteTransition.animateFloat(
+                    initialValue = -5f,
+                    targetValue = 5f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1500, easing = FastOutSlowInEasing),
+                        repeatMode = RepeatMode.Reverse
+                    ),
+                    label = "crown_rotation_animation"
+                )
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(28.dp)
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                        }
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFFFFD700), // 金色
+                                    Color(0xFFFFA500)  // 橙色
+                                )
+                            ),
+                            shape = CircleShape
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = Color.White,
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Crown,
+                        contentDescription = stringResource(R.string.premium_user),
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .align(Alignment.Center)
+                            .graphicsLayer {
+                                rotationZ = crownRotation
+                            }
+                    )
+                }
             }
         }
 
@@ -300,12 +471,56 @@ private fun MineHeader(
 
             // 会员状态
             if (isPremiumUser) {
-                Text(
-                    text = stringResource(R.string.premium_user),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.Transparent
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color(0xFFFFD700), // 金色
+                                        Color(0xFFFFA500), // 橙色
+                                        Color(0xFFFF8C00)  // 深橙色
+                                    )
+                                )
+                            )
+                            .border(
+                                width = 1.dp,
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.7f),
+                                        Color.White.copy(alpha = 0.2f)
+                                    )
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.Crown,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                            Text(
+                                text = stringResource(R.string.premium_user),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
             }
         } else {
             // 未登录状态

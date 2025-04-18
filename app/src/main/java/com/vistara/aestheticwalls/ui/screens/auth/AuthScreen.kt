@@ -216,22 +216,24 @@ fun AuthScreen(
                 AnimatedVisibility(
                     visible = isLogoVisible,
                     enter = fadeIn(tween(500)) + slideInVertically(tween(500)) { it / 2 }) {
-                    Box(modifier = Modifier
-                        .size(120.dp)
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                        }
-                        .shadow(8.dp, CircleShape)
-                        .clip(CircleShape)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .graphicsLayer {
+                                scaleX = scale
+                                scaleY = scale
+                            }
+                            .shadow(8.dp, CircleShape)
+                            .clip(CircleShape)
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Transparent
+                                    )
                                 )
-                            )
-                        ), contentAlignment = Alignment.Center) {
+                            ),
+                        contentAlignment = Alignment.Center) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_launcher_round),
                             contentDescription = "App Logo",

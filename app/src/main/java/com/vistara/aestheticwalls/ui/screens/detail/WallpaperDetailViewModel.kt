@@ -483,7 +483,7 @@ class WallpaperDetailViewModel @Inject constructor(
         _isDownloading.value = true
         _downloadProgress.value = 0f
 
-        viewModelScope.launch {
+        viewModelScope.launch @androidx.annotation.RequiresPermission(android.Manifest.permission.POST_NOTIFICATIONS) {
             try {
                 // 获取用户设置中的下载原始质量设置
                 val userSettings = userPrefsRepository.getUserSettings()

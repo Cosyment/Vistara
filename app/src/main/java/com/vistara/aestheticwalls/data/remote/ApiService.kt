@@ -19,5 +19,5 @@ data class GoogleLoginRequest(
 data class LoginResponse(
     val token: String,
     val isPremium: Boolean? = false,
-    val message: String? = null
+    val msg: String? = null
 ) 

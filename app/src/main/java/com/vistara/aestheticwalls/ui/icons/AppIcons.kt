@@ -1037,4 +1037,71 @@ object AppIcons {
                 }
             }.build()
         }
+
+    /**
+     * 皇冠图标 - 高级用户标识
+     */
+    val Crown: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "crown",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 皇冠底部
+                    moveTo(5.0f, 16.0f)
+                    verticalLineTo(19.0f)
+                    horizontalLineTo(19.0f)
+                    verticalLineTo(16.0f)
+                    horizontalLineTo(5.0f)
+                    close()
+
+                    // 皇冠主体
+                    moveTo(12.0f, 3.0f)
+                    lineTo(2.0f, 9.0f)
+                    lineTo(5.0f, 16.0f)
+                    lineTo(19.0f, 16.0f)
+                    lineTo(22.0f, 9.0f)
+                    lineTo(12.0f, 3.0f)
+                    close()
+
+                    // 左侧宝石
+                    moveTo(6.0f, 13.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 4.0f, 12.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 6.0f, 11.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 8.0f, 12.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 6.0f, 13.0f)
+                    close()
+
+                    // 中间宝石
+                    moveTo(12.0f, 13.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 10.0f, 12.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 12.0f, 11.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 14.0f, 12.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 12.0f, 13.0f)
+                    close()
+
+                    // 右侧宝石
+                    moveTo(18.0f, 13.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 16.0f, 12.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 18.0f, 11.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 20.0f, 12.0f)
+                    arcTo(1.0f, 1.0f, 0.0f, false, true, 18.0f, 13.0f)
+                    close()
+                }
+            }.build()
+        }
 }

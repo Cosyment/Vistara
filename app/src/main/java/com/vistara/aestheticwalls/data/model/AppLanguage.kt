@@ -4,7 +4,7 @@ package com.vistara.aestheticwalls.data.model
  * 应用语言设置
  */
 enum class AppLanguage(val code: String) {
-    SYSTEM(""),      // 系统默认
+    SYSTEM("system"),      // 系统默认
     ENGLISH("en"),   // 英文
     CHINESE("zh"),   // 中文
     JAPANESE("ja"),  // 日文

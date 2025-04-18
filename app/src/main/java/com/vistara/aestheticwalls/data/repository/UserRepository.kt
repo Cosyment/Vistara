@@ -9,4 +9,6 @@ interface UserRepository {
     suspend fun clearUserData()
     suspend fun checkUserLoggedIn(): Boolean
     suspend fun updateLoginStatus(isLoggedIn: Boolean)
+    suspend fun saveServerToken(token: String)
+    suspend fun getServerToken(): String?
 }

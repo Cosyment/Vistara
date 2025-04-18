@@ -339,8 +339,12 @@
     <string name="api_test_tool">API Test Tool</string>
     <string name="test_tool">Test Tool</string>
     <string name="back_button">Back</string>
-    <string name="test_results_in_logcat">Test results will be displayed in Logcat</string>
-    <string name="filter_tag">Filter tag: ApiTest</string>
+    <string name="test_results_will_show_in_logcat" translatable="false">Test results will be displayed in Logcat</string>
+    <string name="filter_tag_api_test" translatable="false">Filter tag: ApiTest</string>
+    <string name="test_results" translatable="false">Test Results</string>
+    <string name="testing_pexels_api" translatable="false">Testing Pexels API...</string>
+    <string name="testing_unsplash_api" translatable="false">Testing Unsplash API...</string>
+    <string name="current_status_logged_out" translatable="false">Current status: Not logged in</string>
     <string name="test_pexels_api">Test Pexels API</string>
     <string name="test_unsplash_api">Test Unsplash API</string>
     <string name="api_test">API Test</string>

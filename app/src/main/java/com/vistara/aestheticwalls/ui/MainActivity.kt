@@ -139,10 +139,10 @@ class MainActivity : ComponentActivity() {
         val navigation = intent.getStringExtra("navigation")
         if (!navigation.isNullOrEmpty()) {
             // 如果是设置页面，则导航到设置页面
-            if (navigation == "settings") {
-                initialNavigation = "settings"
+            initialNavigation = if (navigation == "settings") {
+                "settings"
             } else {
-                initialNavigation = navigation
+                navigation
             }
         }
     }

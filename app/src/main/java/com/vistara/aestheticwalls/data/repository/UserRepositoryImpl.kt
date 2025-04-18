@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -24,6 +25,7 @@ class UserRepositoryImpl @Inject constructor(
         private val IS_PREMIUM_USER = booleanPreferencesKey("is_premium_user")
         private val PREMIUM_EXPIRY_DATE = longPreferencesKey("premium_expiry_date")
         private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        private val SERVER_TOKEN = stringPreferencesKey("server_token")
     }
 
     override val isPremiumUser: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -72,6 +74,7 @@ class UserRepositoryImpl @Inject constructor(
             preferences.remove(IS_PREMIUM_USER)
             preferences.remove(PREMIUM_EXPIRY_DATE)
             preferences.remove(IS_LOGGED_IN)
+            preferences.remove(SERVER_TOKEN)
         }
     }
 
@@ -88,5 +91,26 @@ class UserRepositoryImpl @Inject constructor(
         dataStore.edit { preferences ->
             preferences[IS_LOGGED_IN] = isLoggedIn
         }
+    }
+
+    /**
+     * 保存服务器返回的token
+     */
+    override suspend fun saveServerToken(token: String) {
+        android.util.Log.d("UserRepositoryImpl", "保存服务器token: $token")
+        dataStore.edit { preferences ->
+            preferences[SERVER_TOKEN] = token
+        }
+    }
+
+    /**
+     * 获取服务器token
+     */
+    override suspend fun getServerToken(): String? {
+        val token = dataStore.data.map<Preferences, String?> { preferences ->
+            preferences[SERVER_TOKEN]
+        }.first()
+        android.util.Log.d("UserRepositoryImpl", "获取服务器token: $token")
+        return token
     }
 }

@@ -81,7 +81,7 @@ class AuthRepositoryImpl @Inject constructor(
                     userEmail = account.email ?: "",
                     userPhotoUrl = account.photoUrl?.toString() ?: ""
                 )
-                
+
                 try {
                     // 构建请求体
                     val requestBody = GoogleLoginRequest(
@@ -90,13 +90,15 @@ class AuthRepositoryImpl @Inject constructor(
                         avatar = account.photoUrl?.toString() ?: "",
                         token = account.idToken ?: ""
                     )
-                    
+
                     // 发起后端登录请求
                     val response = apiService.googleLogin(requestBody)
                     if (response.isSuccessful && response.body() != null) {
                         val loginResponse = response.body()!!
+//                        {"msg":"操作成功","code":200,"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3YWl0aW5naGNAZ21haWwuY29tIiwibG9naW5fdXNlcl9rZXkiOiIxYjBhOTNhMy0wYWNmLTQ4YjEtOTRiZS0xMTQ0OTViMjRiNTIifQ.C0VF0X4W4ICVFJTp7RDVVb8O8KekAHgyf_tE4cUZq7-gSbob9msaHnVVsJqbRlI69JOw0I17GW-Sgxz4vcHpXA"}
                         // 保存后端返回的token等信息
-//                        userRepository.saveServerToken(loginResponse.token)
+                        Log.d(TAG, "登录成功，准备保存token: ${loginResponse.token}")
+                        userRepository.saveServerToken(loginResponse.token)
                         userRepository.updateLoginStatus(true)
                         userRepository.updatePremiumStatus(loginResponse.isPremium ?: false)
                         true

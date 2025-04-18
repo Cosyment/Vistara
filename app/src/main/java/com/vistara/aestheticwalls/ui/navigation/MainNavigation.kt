@@ -49,7 +49,8 @@ import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.webview.WebViewScreen
-import com.vistara.aestheticwalls.ui.test.TestActivity
+import com.vistara.aestheticwalls.ui.screens.test.ApiTestScreen
+import com.vistara.aestheticwalls.ui.screens.test.TestScreen
 
 /**
  * 主导航组件
@@ -134,8 +135,8 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onUpgradeClick = { navController.navigate("premium") },
                     onLoginClick = { navController.navigate("auth") },
                     onTestToolsClick = {
-                        // 启动测试工具
-                        context.startActivity(Intent(context, TestActivity::class.java))
+                        // 导航到测试工具页面
+                        navController.navigate("test")
                     })
             }
 
@@ -257,6 +258,21 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                         // 返回详情页面
                         navController.navigateUp()
                     })
+            }
+
+            // 测试工具页面
+            composable("test") {
+                TestScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onNavigateToApiTest = { navController.navigate("test/api") }
+                )
+            }
+
+            // API测试页面
+            composable("test/api") {
+                ApiTestScreen(
+                    onBackPressed = { navController.navigateUp() }
+                )
             }
         }
 
