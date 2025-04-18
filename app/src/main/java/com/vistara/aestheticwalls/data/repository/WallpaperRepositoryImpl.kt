@@ -997,24 +997,48 @@ class WallpaperRepositoryImpl @Inject constructor(
         return wallpaperDao.getAllDownloaded()
     }
 
-    override suspend fun trackWallpaperDownload(wallpaperId: String) {
+    override suspend fun trackWallpaperDownload(wallpaperId: String) { withContext(Dispatchers.IO) {
         // 如果是Unsplash的壁纸，需要调用下载追踪API
         if (wallpaperId.startsWith("unsplash_")) {
             val originalId = wallpaperId.substringAfter("unsplash_")
             try {
                 unsplashApiService.trackDownload(originalId)
             } catch (e: Exception) {
-                // 忽略错误，但应该记录日志
+                Log.e(TAG, "调用Unsplash下载追踪API失败", e)
             }
         }
 
-        // 记录到本地下载历史
-        try {
-            wallpaperDao.insertDownload(wallpaperId)
-        } catch (e: Exception) {
-            // 忽略错误，但应该记录日志
+        // 检查壁纸是否已存在于数据库中
+        val existingWallpaper = wallpaperDao.getWallpaperById(wallpaperId)
+
+        if (existingWallpaper != null) {
+            // 如果壁纸已存在，直接标记为已下载
+            try {
+                wallpaperDao.insertDownload(wallpaperId)
+                Log.d(TAG, "标记已存在壁纸为已下载: $wallpaperId")
+            } catch (e: Exception) {
+                Log.e(TAG, "标记壁纸为已下载失败", e)
+            }
+        } else {
+            // 如果壁纸不存在，需要先获取壁纸详情并插入到数据库
+            try {
+                // 获取壁纸详情
+                val wallpaper = getWallpaperById(wallpaperId)
+
+                if (wallpaper != null) {
+                    // 创建一个新的壁纸对象，将isDownloaded设置为true
+                    val downloadedWallpaper = wallpaper.copy(isDownloaded = true)
+                    // 插入到数据库
+                    wallpaperDao.insertFavorite(downloadedWallpaper)
+                    Log.d(TAG, "插入新壁纸并标记为已下载: $wallpaperId")
+                } else {
+                    Log.e(TAG, "无法获取壁纸详情，无法记录下载: $wallpaperId")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "插入新壁纸并标记为已下载失败", e)
+            }
         }
-    }
+    }}
 
     override suspend fun getLocalFile(wallpaperId: String): File? {
         // 从本地存储中获取已下载的文件
