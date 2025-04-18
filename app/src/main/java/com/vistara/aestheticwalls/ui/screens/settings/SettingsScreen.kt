@@ -124,41 +124,13 @@ fun SettingsScreen(
 
     // 监听语言更新状态
     val languageUpdated by viewModel.languageUpdated.collectAsState()
-    // 监听语言更新状态，触发 UI 刷新
+    // 监听语言更新状态，触发当前页面 UI 刷新
     LaunchedEffect(languageUpdated) {
         if (languageUpdated) {
             Log.d("SettingsScreen", "语言更新触发，当前语言: ${viewModel.appLanguage.value}")
-            try {
-                val config = context.resources.configuration
-                val settings = viewModel.appLanguage.value
-                if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
-                    // 设置指定语言
-                    val locale = java.util.Locale(settings.code)
-                    val localeList = android.os.LocaleList(locale)
-                    config.setLocales(localeList)
-                } else {
-                    // 直接使用 LocaleManager 的强制系统语言方法
-                    val localeManager = viewModel.getLocaleManager()
-
-                    // 获取真正的系统语言用于更新资源配置
-                    var systemLocale = localeManager.getSystemLocale()
-                    // 处理英语区域设置，将 en_US 转换为 en
-                    if (systemLocale.language == "en") {
-                        // 创建一个新的只有语言代码的 Locale
-                        systemLocale = java.util.Locale("en")
-                        Log.d("SettingsScreen", "处理英语区域设置，转换为: $systemLocale")
-                    }
-
-                    // 更新资源配置
-                    val systemLocaleList = android.os.LocaleList(systemLocale)
-                    config.setLocales(systemLocaleList)
-                }
-
-                // 强制刷新页面，特别是对系统语言切换
-                Log.d("SettingsScreen", "系统语言切换，强制刷新页面")
-            } catch (e: Exception) {
-                Log.e("SettingsScreen", "Error updating resources: ${e.message}")
-            }
+            // 注意：这里不再手动更新资源配置，因为现在由 MainActivity 统一处理
+            // 这里只需要触发当前页面的重组即可
+            Log.d("SettingsScreen", "语言更新已触发，等待 MainActivity 处理全局语言更新")
         }
     }
 

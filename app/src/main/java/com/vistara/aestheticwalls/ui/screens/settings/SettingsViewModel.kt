@@ -258,13 +258,19 @@ class SettingsViewModel @Inject constructor(
                 }
                 _operationResult.value = message
 
-                // 发送语言变化事件，通知其他组件刷新
-                eventBus.emitLanguageChanged()
-
                 // 对于其他语言，正常触发 UI 刷新
                 _languageUpdated.value = true
                 delay(100)
                 _languageUpdated.value = false
+
+                // 发送语言变化事件，通知其他组件刷新
+                // 注意：这里使用非挂起函数版本，避免在挂起函数中调用挂起函数
+                try {
+                    Log.d(TAG, "发送语言变化事件，通知其他组件刷新")
+                    eventBus.emitLanguageChanged()
+                } catch (e: Exception) {
+                    Log.e(TAG, "发送语言变化事件失败: ${e.message}")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error updating language: ${e.message}")
                 _operationResult.value = "Error updating language: ${e.message}"

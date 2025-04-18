@@ -11,14 +11,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.vistara.aestheticwalls.data.model.AppLanguage
 import com.vistara.aestheticwalls.manager.LocaleManager
 import com.vistara.aestheticwalls.manager.ThemeManager
 import com.vistara.aestheticwalls.ui.navigation.MainNavigation
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.utils.EventBus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +43,12 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var localeManager: LocaleManager
+
+    @Inject
+    lateinit var eventBus: EventBus
+
+    // 用于跟踪语言变化，触发UI刷新
+    private var languageChangeCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,13 +80,49 @@ class MainActivity : ComponentActivity() {
         // 处理导航意图
         handleNavigationIntent(intent)
 
+        // 监听语言变化事件
+        val mainScope = CoroutineScope(Dispatchers.Main)
+        mainScope.launch {
+            eventBus.languageChangedEvent.collect {
+                Log.d("MainActivity", "语言变化事件接收到，刷新UI")
+                languageChangeCounter++
+
+                // 更新资源配置
+                val settings = localeManager.appLanguageFlow.first()
+                val config = resources.configuration
+
+                if (settings != AppLanguage.SYSTEM) {
+                    val locale = java.util.Locale(settings.code)
+                    val localeList = android.os.LocaleList(locale)
+                    config.setLocales(localeList)
+                } else {
+                    // 获取真正的系统语言
+                    val systemLocale = localeManager.getSystemLocale()
+                    val localeList = android.os.LocaleList(systemLocale)
+                    config.setLocales(localeList)
+                }
+
+                // 更新资源
+                resources.updateConfiguration(config, resources.displayMetrics)
+                Log.d("MainActivity", "已更新MainActivity资源配置: ${config.locales}")
+
+                // 强制重新创建内容
+                recreateContent()
+            }
+        }
+
+        recreateContent()
+    }
+
+    private fun recreateContent() {
         setContent {
             // 使用用户设置的主题
             val darkTheme by themeManager.darkTheme()
             val dynamicColors by themeManager.dynamicColors()
 
-            // 监听语言设置变化
-            val language by localeManager.appLanguageFlow.collectAsState(initial = com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM)
+            // 监听语言设置变化，使用languageChangeCounter作为key强制重组
+            val language by localeManager.appLanguageFlow.collectAsState(initial = AppLanguage.SYSTEM)
+            val scope = rememberCoroutineScope()
 
             // 使用 LocaleProvider 提供本地化资源
             com.vistara.aestheticwalls.ui.theme.LocaleProvider(language = language) {
