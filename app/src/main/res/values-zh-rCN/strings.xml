@@ -328,6 +328,9 @@
     <string name="upgrade_to_premium">升级到高级版</string>
     <string name="restore_purchases">恢复购买</string>
     <string name="payment_success_notice">支付成功后，您将立即获得高级功能。订阅可随时取消。</string>
+    <string name="subscription_terms">订阅即表示您同意我们的服务条款和隐私政策。除非在当前订阅期结束前至少24小时取消，否则订阅将自动续订。您可以在Google Play商店中管理或取消您的订阅。</string>
+    <string name="manage_subscription">管理订阅</string>
+    <string name="cancel_subscription">取消订阅</string>
 
     <!-- 测试工具相关 -->
     <string name="api_test_tool">API测试工具</string>

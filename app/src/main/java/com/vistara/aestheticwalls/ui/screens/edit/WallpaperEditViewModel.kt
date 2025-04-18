@@ -80,20 +80,75 @@ class WallpaperEditViewModel @Inject constructor(
 
     /**
      * 加载壁纸详情
+     * 优先从本地数据库加载，然后在后台更新
      */
     private fun loadWallpaper() {
         viewModelScope.launch {
             _wallpaperState.value = UiState.Loading
 
             try {
-                val wallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                // 先从本地数据库查询
+                var wallpaper: Wallpaper? = wallpaperRepository.getWallpaperById(wallpaperId)
+
+                // 如果本地数据库有这个壁纸，直接显示
                 if (wallpaper != null) {
                     _wallpaperState.value = UiState.Success(wallpaper)
 
                     // 加载原始位图
                     loadOriginalBitmap(wallpaper.url)
+
+                    // 同时在后台尝试从服务器获取最新数据更新本地缓存
+                    try {
+                        val updatedWallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                        if (updatedWallpaper != null && updatedWallpaper != wallpaper) {
+                            _wallpaperState.value = UiState.Success(updatedWallpaper)
+                            // 如果URL变了，重新加载原始位图
+                            if (updatedWallpaper.url != wallpaper.url) {
+                                loadOriginalBitmap(updatedWallpaper.url)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        // 忽略后台更新错误，不影响用户体验
+                    }
+                    return@launch
+                }
+
+                // 如果本地数据库没有，尝试多次从服务器获取
+                var retryCount = 0
+                val maxRetries = 3
+                var isRateLimitError = false
+
+                while (wallpaper == null && retryCount < maxRetries) {
+                    try {
+                        wallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                        if (wallpaper != null) {
+                            break
+                        }
+                    } catch (e: Exception) {
+                        // 检查是否是速率限制错误
+                        if (e.message?.contains("Rate Limit") == true || e.message?.contains("403") == true) {
+                            isRateLimitError = true
+                            // 如果是速率限制错误，等待时间更长
+                            kotlinx.coroutines.delay(2000) // 等待2秒
+                        }
+                    }
+                    retryCount++
+                    if (!isRateLimitError) {
+                        kotlinx.coroutines.delay(500) // 正常重试等待500毫秒
+                    }
+                }
+
+                if (wallpaper != null) {
+                    _wallpaperState.value = UiState.Success(wallpaper)
+                    // 加载原始位图
+                    loadOriginalBitmap(wallpaper.url)
                 } else {
-                    _wallpaperState.value = UiState.Error("壁纸不存在")
+                    // 如果多次重试后仍然无法获取壁纸详情，显示错误信息
+                    if (isRateLimitError) {
+                        _wallpaperState.value = UiState.Error("API请求频率超限，请稍后再试")
+                    } else {
+                        _wallpaperState.value = UiState.Error("壁纸不存在或加载失败")
+                    }
                 }
             } catch (e: Exception) {
                 _wallpaperState.value = UiState.Error(e.message ?: "加载壁纸失败")
@@ -103,18 +158,71 @@ class WallpaperEditViewModel @Inject constructor(
 
     /**
      * 加载原始位图
+     * 使用缓存策略，避免重复下载
      */
     private fun loadOriginalBitmap(url: String?) {
         if (url == null) return
 
+        // 检查是否已经有编辑后的图片
+        val editedImage = EditedImageCache.getEditedImage(wallpaperId)
+        if (editedImage != null) {
+            // 如果有编辑后的图片，使用它作为原始位图
+            originalBitmap = editedImage
+            // 更新裁剪后的位图
+            _editState.value = _editState.value.copy(croppedBitmap = editedImage)
+            return
+        }
+
         viewModelScope.launch {
             try {
+                // 尝试使用缓存的方式加载原始位图
                 withContext(Dispatchers.IO) {
-                    val imageUrl = URL(url)
-                    originalBitmap = BitmapFactory.decodeStream(imageUrl.openStream())
+                    try {
+                        // 先尝试使用缓存文件
+                        val cacheDir = File(context.cacheDir, "wallpapers")
+                        if (!cacheDir.exists()) {
+                            cacheDir.mkdirs()
+                        }
+
+                        val cacheFile = File(cacheDir, "original_${wallpaperId}.jpg")
+
+                        if (cacheFile.exists() && cacheFile.length() > 0) {
+                            // 如果缓存文件存在，直接从缓存加载
+                            originalBitmap = BitmapFactory.decodeFile(cacheFile.absolutePath)
+                        } else {
+                            // 如果缓存文件不存在，从网络加载并缓存
+                            val imageUrl = URL(url)
+                            val connection = imageUrl.openConnection()
+                            connection.connectTimeout = 5000
+                            connection.readTimeout = 5000
+
+                            val inputStream = connection.getInputStream()
+                            originalBitmap = BitmapFactory.decodeStream(inputStream)
+
+                            // 将位图保存到缓存文件
+                            if (originalBitmap != null) {
+                                val outputStream = FileOutputStream(cacheFile)
+                                originalBitmap?.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                                outputStream.close()
+                            }
+
+                            inputStream.close()
+                        }
+                    } catch (e: Exception) {
+                        // 如果缓存加载失败，直接从网络加载
+                        val imageUrl = URL(url)
+                        originalBitmap = BitmapFactory.decodeStream(imageUrl.openStream())
+                    }
                 }
             } catch (e: Exception) {
-                _wallpaperState.value = UiState.Error("加载图片失败: ${e.message}")
+                // 如果加载失败，显示错误信息，但不更新壁纸状态
+                // 因为壁纸状态已经是成功状态，只是原始位图加载失败
+                // 这样用户仍然可以看到壁纸信息，只是无法编辑
+                // 在UI中显示错误提示
+                withContext(Dispatchers.Main) {
+                    // 使用Toast或其他方式显示错误提示
+                    android.widget.Toast.makeText(context, "加载原始图片失败: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

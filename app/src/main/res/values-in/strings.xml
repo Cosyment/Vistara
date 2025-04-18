@@ -313,6 +313,9 @@
     <string name="upgrade_to_premium">Tingkatkan ke Premium</string>
     <string name="restore_purchases">Pulihkan Pembelian</string>
     <string name="payment_success_notice">Setelah pembayaran berhasil, Anda akan langsung mendapatkan fitur premium. Langganan dapat dibatalkan kapan saja.</string>
+    <string name="subscription_terms">Dengan berlangganan, Anda menyetujui Ketentuan Layanan dan Kebijakan Privasi kami. Langganan akan diperpanjang secara otomatis kecuali dibatalkan setidaknya 24 jam sebelum akhir periode saat ini. Anda dapat mengelola atau membatalkan langganan Anda di Google Play Store.</string>
+    <string name="manage_subscription">Kelola Langganan</string>
+    <string name="cancel_subscription">Batalkan Langganan</string>
 
     <!-- Test tools related -->
     <string name="check_login_status_failed">Gagal memeriksa status login: %1$s</string>

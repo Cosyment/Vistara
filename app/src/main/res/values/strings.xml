@@ -328,6 +328,9 @@
     <string name="upgrade_to_premium">Upgrade to Premium</string>
     <string name="restore_purchases">Restore Purchases</string>
     <string name="payment_success_notice">After successful payment, you will immediately get premium features. Subscription can be canceled at any time.</string>
+    <string name="subscription_terms">By subscribing, you agree to our Terms of Service and Privacy Policy. Subscriptions will automatically renew unless canceled at least 24 hours before the end of the current period. You can manage or cancel your subscriptions in Google Play Store.</string>
+    <string name="manage_subscription">Manage Subscription</string>
+    <string name="cancel_subscription">Cancel Subscription</string>
 
     <!-- Auth screen related -->
     <string name="app_subtitle">Wallpaper</string>

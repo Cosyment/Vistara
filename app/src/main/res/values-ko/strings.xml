@@ -315,6 +315,9 @@
     <string name="upgrade_to_premium">프리미엄으로 업그레이드</string>
     <string name="restore_purchases">구매 복원</string>
     <string name="payment_success_notice">결제 성공 후 즉시 프리미엄 기능을 이용하실 수 있습니다. 구독은 언제든지 취소할 수 있습니다.</string>
+    <string name="subscription_terms">구독함으로써 당사의 서비스 약관 및 개인정보 보호정책에 동의하게 됩니다. 현재 기간이 끝나기 적어도 24시간 전에 취소하지 않는 한 구독은 자동으로 갱신됩니다. Google Play 스토어에서 구독을 관리하거나 취소할 수 있습니다.</string>
+    <string name="manage_subscription">구독 관리</string>
+    <string name="cancel_subscription">구독 취소</string>
 
     <!-- 테스트 도구 관련 -->
     <string name="check_login_status_failed">로그인 상태 확인 실패: %1$s</string>

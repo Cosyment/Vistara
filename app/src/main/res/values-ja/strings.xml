@@ -315,6 +315,9 @@
     <string name="upgrade_to_premium">プレミアムにアップグレード</string>
     <string name="restore_purchases">購入を復元</string>
     <string name="payment_success_notice">支払いが成功すると、すぐにプレミアム機能が利用可能になります。サブスクリプションはいつでもキャンセルできます。</string>
+    <string name="subscription_terms">サブスクライブすることで、当社の利用規約とプライバシーポリシーに同意したことになります。現在の期間が終了する少なくとも24時間前にキャンセルしない限り、サブスクリプションは自動的に更新されます。Google Playストアでサブスクリプションを管理またはキャンセルすることができます。</string>
+    <string name="manage_subscription">サブスクリプション管理</string>
+    <string name="cancel_subscription">サブスクリプションをキャンセル</string>
 
     <!-- テストツール関連 -->
     <string name="check_login_status_failed">ログイン状態の確認に失敗しました: %1$s</string>

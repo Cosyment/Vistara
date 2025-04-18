@@ -97,20 +97,12 @@ fun WallpaperEditScreen(
     // 获取原始位图用于裁剪
     var originalBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-    // 当壁纸加载成功时，异步加载原始位图
+    // 当壁纸加载成功时，直接使用ViewModel中的原始位图
+    // 不需要在这里加载，因为ViewModel中已经处理了缓存和加载逻辑
     LaunchedEffect(wallpaperState) {
         if (wallpaperState is UiState.Success) {
-            val wallpaper = (wallpaperState as UiState.Success).data
-            if (wallpaper.url != null) {
-                withContext(Dispatchers.IO) {
-                    try {
-                        val url = URL(wallpaper.url)
-                        originalBitmap = BitmapFactory.decodeStream(url.openStream())
-                    } catch (e: Exception) {
-                        // 处理加载错误
-                    }
-                }
-            }
+            // 壁纸加载成功，但不需要在这里加载原始位图
+            // ViewModel中的loadWallpaper方法已经处理了原始位图的加载
         }
     }
 
@@ -183,7 +175,7 @@ fun WallpaperEditScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = (wallpaperState as UiState.Error).message ?: stringResource(R.string.unknown_error),
+                            text = (wallpaperState as UiState.Error).message,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -234,6 +226,8 @@ fun WallpaperEditScreen(
                                     model = ImageRequest.Builder(context)
                                         .data(wallpaper.url)
                                         .crossfade(true)
+                                        .memoryCacheKey("edit_${wallpaper.id}")
+                                        .diskCacheKey("edit_${wallpaper.id}")
                                         .build(),
                                     contentDescription = wallpaper.title,
                                     contentScale = ContentScale.Fit,

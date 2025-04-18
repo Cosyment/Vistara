@@ -1,13 +1,19 @@
 package com.vistara.aestheticwalls.ui.screens.premium
 
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vistara.aestheticwalls.BuildConfig
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.repository.UserRepository
+import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +22,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.vistara.aestheticwalls.R
-import com.vistara.aestheticwalls.utils.StringProvider
 
 /**
  * 升级页面的ViewModel
@@ -51,7 +55,8 @@ class PremiumViewModel @Inject constructor(
 
     // 计费连接状态
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
-    val billingConnectionState: StateFlow<BillingConnectionState> = _billingConnectionState.asStateFlow()
+    val billingConnectionState: StateFlow<BillingConnectionState> =
+        _billingConnectionState.asStateFlow()
 
     // 商品价格
     private val _productPrices = MutableStateFlow<Map<String, String>>(emptyMap())
@@ -104,22 +109,33 @@ class PremiumViewModel @Inject constructor(
                     is PurchaseState.Pending -> {
                         _isUpgrading.value = true
                     }
+
                     is PurchaseState.Completed -> {
                         _isUpgrading.value = false
                         _isPremiumUser.value = true
-                        _upgradeResult.value = UpgradeResult.Success(stringProvider.getString(R.string.upgrade_success))
+                        _upgradeResult.value =
+                            UpgradeResult.Success(stringProvider.getString(R.string.upgrade_success))
                     }
+
                     is PurchaseState.Failed -> {
                         _isUpgrading.value = false
-                        _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.upgrade_failed, state.message))
+                        _upgradeResult.value = UpgradeResult.Error(
+                            stringProvider.getString(
+                                R.string.upgrade_failed, state.message
+                            )
+                        )
                     }
+
                     is PurchaseState.Cancelled -> {
                         _isUpgrading.value = false
-                        _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.upgrade_cancelled))
+                        _upgradeResult.value =
+                            UpgradeResult.Error(stringProvider.getString(R.string.upgrade_cancelled))
                     }
+
                     is PurchaseState.Restoring -> {
                         _isUpgrading.value = true
                     }
+
                     else -> {
                         _isUpgrading.value = false
                     }
@@ -135,13 +151,16 @@ class PremiumViewModel @Inject constructor(
         val prices = mutableMapOf<String, String>()
 
         // 月度套餐
-        prices[BillingManager.SUBSCRIPTION_MONTHLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_MONTHLY)
+        prices[BillingManager.SUBSCRIPTION_MONTHLY] =
+            billingManager.getProductPrice(BillingManager.SUBSCRIPTION_MONTHLY)
 
         // 年度套餐
-        prices[BillingManager.SUBSCRIPTION_YEARLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_YEARLY)
+        prices[BillingManager.SUBSCRIPTION_YEARLY] =
+            billingManager.getProductPrice(BillingManager.SUBSCRIPTION_YEARLY)
 
         // 终身套餐
-        prices[BillingManager.PREMIUM_LIFETIME] = billingManager.getProductPrice(BillingManager.PREMIUM_LIFETIME)
+        prices[BillingManager.PREMIUM_LIFETIME] =
+            billingManager.getProductPrice(BillingManager.PREMIUM_LIFETIME)
 
         _productPrices.value = prices
     }
@@ -158,12 +177,14 @@ class PremiumViewModel @Inject constructor(
      */
     fun upgrade(activity: Activity?) {
         if (_isPremiumUser.value) {
-            _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.already_premium_user))
+            _upgradeResult.value =
+                UpgradeResult.Error(stringProvider.getString(R.string.already_premium_user))
             return
         }
 
         if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
+            _upgradeResult.value =
+                UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
             return
         }
 
@@ -183,7 +204,8 @@ class PremiumViewModel @Inject constructor(
      */
     fun restorePurchases() {
         if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value = UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
+            _upgradeResult.value =
+                UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
             return
         }
 
@@ -196,14 +218,56 @@ class PremiumViewModel @Inject constructor(
     fun clearUpgradeResult() {
         _upgradeResult.value = null
     }
+
+    /**
+     * 打开订阅管理页面
+     * 跳转到 Google Play 商店的订阅管理页面
+     * @param activity 当前 Activity
+     */
+    fun openSubscriptionManagementPage(activity: Activity?) {
+        if (activity == null) {
+            _upgradeResult.value =
+                UpgradeResult.Error(stringProvider.getString(R.string.unknown_error))
+            return
+        }
+
+        try {
+            // 打开 Google Play 商店的订阅管理页面
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data =
+                    "https://play.google.com/store/account/subscriptions?package=${BuildConfig.APPLICATION_ID}".toUri()
+                setPackage("com.android.vending") // Google Play 商店包名
+            }
+            activity.startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error opening subscription management page: ${e.message}")
+
+            // 如果无法打开特定页面，则打开 Google Play 商店主页
+            try {
+                val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
+                    data = Uri.parse("https://play.google.com/store/account")
+                }
+                activity.startActivity(fallbackIntent)
+            } catch (e2: Exception) {
+                Log.e(TAG, "Error opening Google Play: ${e2.message}")
+                _upgradeResult.value =
+                    UpgradeResult.Error(stringProvider.getString(R.string.unknown_error))
+            }
+        }
+    }
 }
 
 /**
  * 升级套餐
  */
-enum class UpgradePlan(val titleResId: Int, val descriptionResId: Int, val discountResId: Int? = null) {
-    MONTHLY(R.string.monthly_plan, R.string.monthly_plan_description),
-    YEARLY(R.string.yearly_plan, R.string.yearly_plan_description, R.string.save_about),
+enum class UpgradePlan(
+    val titleResId: Int, val descriptionResId: Int, val discountResId: Int? = null
+) {
+    MONTHLY(R.string.monthly_plan, R.string.monthly_plan_description), YEARLY(
+        R.string.yearly_plan,
+        R.string.yearly_plan_description,
+        R.string.save_about
+    ),
     LIFETIME(R.string.lifetime_plan, R.string.lifetime_plan_description)
 }
 

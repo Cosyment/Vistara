@@ -29,8 +29,4 @@
 # Gson TypeToken 相关
 -keep class com.google.gson.reflect.TypeToken { *; }
 
--keep class com.vistara.aestheticwalls.data.model.**{*;}
--keep class com.vistara.aestheticwalls.data.model.pexels.**{*;}
--keep class com.vistara.aestheticwalls.data.model.pixabay.**{*;}
--keep class com.vistara.aestheticwalls.data.model.unsplash.**{*;}
--keep class com.vistara.aestheticwalls.data.model.wallhaven.**{*;}
+-keep class com.vistara.aestheticwalls.data.**{*;}

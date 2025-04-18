@@ -215,7 +215,7 @@ private fun LinkItem(
                 .padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = AppIcons.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary
+                imageVector = AppIcons.Info, contentDescription = null,tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             )
 
             Spacer(modifier = Modifier.width(16.dp))
