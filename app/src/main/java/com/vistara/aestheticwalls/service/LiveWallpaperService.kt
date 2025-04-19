@@ -6,11 +6,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.service.wallpaper.WallpaperService
 import android.util.Log
 import android.view.SurfaceHolder
-import java.io.File
-import java.io.FileDescriptor
 import java.io.IOException
 
 /**
@@ -19,189 +19,167 @@ import java.io.IOException
  */
 class LiveWallpaperService : WallpaperService() {
 
-    /**
-     * 视频缩放模式
-     */
-    enum class ScaleMode {
-        /**
-         * 填充模式 - 视频将被缩放以填充整个屏幕，可能会发生变形
-         */
-        FILL,
-
-        /**
-         * 适应模式 - 视频将被缩放以适应屏幕，保持原始宽高比，可能有黑边
-         */
-        FIT,
-
-        /**
-         * 中心裁剪模式 - 视频将被缩放以覆盖屏幕，保持原始宽高比，可能会有部分内容被裁剪
-         */
-        CENTER_CROP
-    }
+    // Note: Keep ScaleMode enum as is.
+    enum class ScaleMode { FILL, FIT, CENTER_CROP }
 
     companion object {
         private const val TAG = "LiveWallpaperService"
-
-        // 用于传递视频URI的Intent extra key
-        const val EXTRA_VIDEO_URI = "video_uri"
-
-        // SharedPreferences的名称和key
+        const val EXTRA_VIDEO_URI = "video_uri" // Keep if used externally
         private const val PREFS_NAME = "video_wallpaper_prefs"
         private const val KEY_VIDEO_URI = "video_uri"
+        private const val KEY_UNIQUE_ID = "unique_id" // For debugging
 
-        // 用于保存当前设置的视频URI
-        private var currentVideoUri: Uri? = null
+        // No need for static currentVideoUri, rely solely on SharedPreferences
+        // for persistence across service restarts.
 
         /**
          * 设置视频URI
          */
         fun setVideoUri(context: Context, uri: Uri) {
             Log.d(TAG, "Setting video URI: $uri")
-
-            // 生成一个唯一的标识符，确保每次设置都被视为新的壁纸
-            val uniqueId = System.currentTimeMillis().toString()
-
-            // 不清除旧的URI设置，只更新当前的URI
+            val uniqueId = System.currentTimeMillis().toString() // For debugging/tracking
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-            // 设置新的URI
-            currentVideoUri = uri
-
-            // 保存URI和唯一标识符到SharedPreferences
-            prefs.edit()
-                .putString(KEY_VIDEO_URI, uri.toString())
-                .putString("unique_id", uniqueId) // 添加唯一标识符
+            prefs.edit().putString(KEY_VIDEO_URI, uri.toString()).putString(KEY_UNIQUE_ID, uniqueId) // Store unique ID for debugging
                 .apply()
             Log.d(TAG, "Video URI saved to preferences: $uri with unique ID: $uniqueId")
+            // Note: No need to update a static variable here.
+            // Consider broadcasting an update if the service is already running
+            // and needs to change video immediately without full restart.
         }
 
         /**
-         * 获取当前视频URI
+         * 获取当前视频URI (从 SharedPreferences 读取)
          */
         fun getCurrentVideoUri(context: Context): Uri? {
-            // 如果内存中有，直接返回
-            if (currentVideoUri != null) {
-                return currentVideoUri
-            }
-
-            // 否则从 SharedPreferences 中读取
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val uriString = prefs.getString(KEY_VIDEO_URI, null)
+            val uniqueId = prefs.getString(KEY_UNIQUE_ID, "none") // For debugging
 
-            if (uriString != null) {
+            return if (uriString != null) {
                 try {
-                    currentVideoUri = Uri.parse(uriString)
-                    Log.d(TAG, "Restored video URI from preferences: $currentVideoUri")
+                    val uri = Uri.parse(uriString)
+                    Log.d(TAG, "Retrieved video URI from preferences: $uri (ID: $uniqueId)")
+                    uri
                 } catch (e: Exception) {
                     Log.e(TAG, "Error parsing saved URI: $uriString", e)
+                    null
                 }
+            } else {
+                Log.w(TAG, "No video URI found in preferences.")
+                null
             }
-
-            return currentVideoUri
         }
     }
 
     override fun onCreateEngine(): Engine {
-        // 尝试从 SharedPreferences 恢复 URI
-        val restoredUri = getCurrentVideoUri(applicationContext)
-        Log.d(TAG, "Creating video wallpaper engine, current URI: $restoredUri")
+        Log.d(TAG, "Creating video wallpaper engine")
         return VideoEngine()
     }
 
-    /**
-     * 视频壁纸引擎
-     * 负责播放视频和处理生命周期事件
-     */
     inner class VideoEngine : Engine() {
         private var mediaPlayer: MediaPlayer? = null
         private var isMediaPlayerPrepared = false
-        private var visible = false
-        private val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        private var surfaceAvailable = false
+        private var surfaceHolder: SurfaceHolder? = null
+        private var currentVideoUri: Uri? = null // Store the URI used by this engine instance
 
-        // 屏幕尺寸
+        // Use ApplicationContext to avoid leaks
+        private val appContext: Context = applicationContext
+        private val handler = Handler(Looper.getMainLooper())
+
+        // Dimensions
         private var screenWidth = 0
         private var screenHeight = 0
-
-        // 视频尺寸
         private var videoWidth = 0
         private var videoHeight = 0
 
-        // 缩放模式
+        // Scaling mode (default or make it configurable via SharedPreferences)
         private var scaleMode = ScaleMode.CENTER_CROP
 
-        // 屏幕关闭广播接收器
-        private val screenOffReceiver = object : BroadcastReceiver() {
+        private val screenStateReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (intent?.action == Intent.ACTION_SCREEN_OFF) {
-                    pauseVideo()
-                } else if (intent?.action == Intent.ACTION_SCREEN_ON) {
-                    if (visible) {
-                        playVideo()
+                when (intent?.action) {
+                    Intent.ACTION_SCREEN_OFF -> {
+                        Log.d(TAG, "Screen OFF, pausing video")
+                        pauseVideo()
+                    }
+
+                    Intent.ACTION_SCREEN_ON -> {
+                        // Only resume if the wallpaper is actually visible
+                        if (isVisible) {
+                            Log.d(TAG, "Screen ON and visible, playing video")
+                            playVideo()
+                        } else {
+                            Log.d(TAG, "Screen ON but not visible, video remains paused")
+                        }
                     }
                 }
             }
         }
 
         init {
-            // 注册屏幕关闭广播接收器
+            Log.d(TAG, "VideoEngine initializing")
             val intentFilter = IntentFilter().apply {
                 addAction(Intent.ACTION_SCREEN_OFF)
                 addAction(Intent.ACTION_SCREEN_ON)
             }
-            registerReceiver(screenOffReceiver, intentFilter)
+            // Use appContext for receiver registration tied to service lifecycle
+            appContext.registerReceiver(screenStateReceiver, intentFilter)
         }
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
-
-            // 获取唯一标识符，用于调试
-            val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            val uniqueId = prefs.getString("unique_id", "none")
-            val videoUri = prefs.getString(KEY_VIDEO_URI, "none")
-            Log.d(TAG, "Engine onCreate with unique ID: $uniqueId, video URI: $videoUri")
+            Log.d(TAG, "Engine onCreate")
+            this.surfaceHolder = surfaceHolder
+            // Retrieve URI here once, when the engine is created
+            currentVideoUri = getCurrentVideoUri(appContext)
+            val uniqueId = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).getString(KEY_UNIQUE_ID, "N/A")
+            Log.d(TAG, "Engine created. Current URI: $currentVideoUri (ID: $uniqueId)")
         }
 
         override fun onSurfaceCreated(holder: SurfaceHolder) {
             super.onSurfaceCreated(holder)
             Log.d(TAG, "Surface created")
-            initMediaPlayer(holder)
+            surfaceAvailable = true
+            this.surfaceHolder = holder // Ensure holder is up-to-date
+            initializeAndPlayVideo() // Attempt to start video now that surface exists
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
             Log.d(TAG, "Surface changed: $width x $height")
-
-            // 保存屏幕尺寸
             screenWidth = width
             screenHeight = height
-
-            // 如果已经有视频尺寸信息，重新计算缩放矩阵
-            if (videoWidth > 0 && videoHeight > 0) {
+            this.surfaceHolder = holder // Update holder reference
+            // Re-apply scaling if video is already prepared
+            if (isMediaPlayerPrepared && videoWidth > 0 && videoHeight > 0) {
+                Log.d(TAG, "Surface changed, applying video scale")
                 updateVideoScale()
+                // Ensure video is playing if it should be
+                if (isVisible) {
+                    playVideo()
+                }
+            } else if (!isMediaPlayerPrepared && currentVideoUri != null) {
+                // If surface changed before media player was ready, try initializing again
+                Log.d(TAG, "Surface changed, attempting to initialize video again")
+                initializeAndPlayVideo()
             }
         }
 
         override fun onSurfaceDestroyed(holder: SurfaceHolder) {
             super.onSurfaceDestroyed(holder)
             Log.d(TAG, "Surface destroyed")
-            try {
-                // 先暂停播放
-                pauseVideo()
-                // 使用延迟释放，避免在Surface销毁过程中操作MediaPlayer
-                // 注意：我们在onDestroy中会调用releaseMediaPlayer，这里只暂停播放
-                // 避免重复释放资源
-            } catch (e: Exception) {
-                Log.e(TAG, "Error in onSurfaceDestroyed", e)
-                // 即使出错也要确保标记为未准备状态
-                isMediaPlayerPrepared = false
-            }
+            surfaceAvailable = false
+            // Surface is gone, pause and release the player is typically handled in onDestroy
+            // But pausing here ensures it stops drawing immediately.
+            pauseVideo()
+            // Consider releasing partially initialized player if needed, but full release in onDestroy
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
-            this.visible = visible
             Log.d(TAG, "Visibility changed: $visible")
-
             if (visible) {
                 playVideo()
             } else {
@@ -212,491 +190,277 @@ class LiveWallpaperService : WallpaperService() {
         override fun onDestroy() {
             super.onDestroy()
             Log.d(TAG, "Engine onDestroy")
-
             try {
-                // 先暂停播放
-                pauseVideo()
-                // 在主线程中安全地释放资源
-                handler.post {
-                    releaseMediaPlayer()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error releasing MediaPlayer in onDestroy", e)
-                // 即使出错也要确保释放资源
-                mediaPlayer = null
-                isMediaPlayerPrepared = false
-            }
-
-            try {
-                unregisterReceiver(screenOffReceiver)
+                appContext.unregisterReceiver(screenStateReceiver)
+            } catch (e: IllegalArgumentException) {
+                Log.w(TAG, "Receiver already unregistered or never registered.", e)
             } catch (e: Exception) {
                 Log.e(TAG, "Error unregistering receiver", e)
             }
-        }
 
-        /**
-         * 初始化MediaPlayer
-         */
-        private fun initMediaPlayer(holder: SurfaceHolder) {
-            try {
-                // 获取视频URI，从 SharedPreferences 中恢复
-                val videoUri = getCurrentVideoUri(applicationContext)
-                if (videoUri == null) {
-                    Log.e(TAG, "No video URI set")
-                    // 如果没有URI，安排延迟重试
-                    handler.postDelayed({
-                        Log.d(TAG, "Retrying initMediaPlayer after delay")
-                        initMediaPlayer(holder)
-                    }, 1000) // 1秒后重试
-                    return
-                }
-
-                // 检查URI类型并选择适当的初始化方法
-                val uriString = videoUri.toString()
-                try {
-                    Log.d(TAG, "Initializing MediaPlayer with URI: $videoUri")
-                    mediaPlayer = MediaPlayer().apply {
-                        // 如果是网络 URL，直接使用字符串设置数据源
-                        if (uriString.startsWith("http")) {
-                            Log.d(TAG, "Using network URL directly: $uriString")
-                            setDataSource(uriString)
-                        } else {
-                            // 如果是本地文件或内容提供者 URI，使用内容解析器
-                            Log.d(TAG, "Using ContentResolver for URI: $videoUri")
-                            setDataSource(applicationContext, videoUri)
-                        }
-
-                        setSurface(holder.surface)
-                        setOnPreparedListener { mp ->
-                            isMediaPlayerPrepared = true
-                            mp.isLooping = true
-                            if (visible) {
-                                mp.start()
-                            }
-                            Log.d(TAG, "MediaPlayer prepared successfully")
-                        }
-                        setOnErrorListener { mp, what, extra ->
-                            Log.e(TAG, "MediaPlayer error: $what, $extra")
-                            false
-                        }
-                        prepareAsync()
-                    }
-                    return
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error initializing MediaPlayer with URI: ${e.message}")
-                    e.printStackTrace()
-                    // 如果直接使用URI失败，尝试使用文件路径
-                }
-
-                // 直接使用ContentResolver打开文件描述符
-                var fileDescriptor: FileDescriptor? = null
-                try {
-                    val contentResolver = applicationContext.contentResolver
-                    val parcelFileDescriptor = contentResolver.openFileDescriptor(videoUri, "r")
-                    if (parcelFileDescriptor != null) {
-                        fileDescriptor = parcelFileDescriptor.fileDescriptor
-                        Log.d(TAG, "Successfully opened file descriptor for URI: $videoUri")
-                    } else {
-                        Log.e(TAG, "Failed to open file descriptor for URI: $videoUri")
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error opening file descriptor: ${e.message}")
-                    // 如果无法使用ContentResolver，尝试使用直接文件路径
-                    fileDescriptor = null
-                }
-
-                // 如果文件描述符方法失败，尝试使用直接文件路径
-                val uriPath = videoUri.toString()
-                val file = if (fileDescriptor == null) {
-                    if (uriPath.startsWith("file://")) {
-                        try {
-                            val path = uriPath.replace("file://", "")
-                            File(path)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error parsing file path: $uriPath", e)
-                            null
-                        }
-                    } else {
-                        try {
-                            // 尝试直接使用URI路径
-                            val path = videoUri.path
-                            if (path != null) {
-                                File(path)
-                            } else {
-                                null
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error creating file from URI path: $videoUri", e)
-                            null
-                        }
-                    }
-                } else {
-                    null // 如果有文件描述符，就不需要文件对象
-                }
-
-                // 如果有文件描述符，直接使用文件描述符初始化MediaPlayer
-                if (fileDescriptor != null) {
-                    Log.d(TAG, "Using file descriptor to initialize MediaPlayer")
-                    initMediaPlayerWithFileDescriptor(holder, fileDescriptor)
-                    return
-                }
-
-                // 如果没有文件描述符，检查文件是否存在
-                if (file == null || !file.exists() || !file.canRead()) {
-                    Log.e(TAG, "Video file does not exist or cannot be read: $videoUri")
-                    // 如果文件不存在，尝试清除当前的URI设置
-                    val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    prefs.edit().remove(KEY_VIDEO_URI).apply()
-                    currentVideoUri = null
-
-                    // 尝试从缓存目录查找最新的视频文件
-                    val cacheDir = File(applicationContext.cacheDir, "videos")
-                    if (cacheDir.exists() && cacheDir.isDirectory) {
-                        val videoFiles = cacheDir.listFiles { file -> file.name.endsWith(".mp4") }
-                        if (videoFiles != null && videoFiles.isNotEmpty()) {
-                            // 按修改时间排序，获取最新的视频文件
-                            val latestVideo = videoFiles.maxByOrNull { it.lastModified() }
-                            if (latestVideo != null && latestVideo.exists() && latestVideo.canRead()) {
-                                val newUri = Uri.fromFile(latestVideo)
-                                Log.d(TAG, "Found latest video file: ${latestVideo.absolutePath}")
-                                // 保存新的URI
-                                prefs.edit().putString(KEY_VIDEO_URI, newUri.toString()).apply()
-                                currentVideoUri = newUri
-                                // 使用新找到的文件初始化MediaPlayer
-                                Log.d(TAG, "Video file exists and is readable: ${latestVideo.absolutePath}")
-                                Log.d(TAG, "Initializing MediaPlayer with URI: $newUri")
-                                initMediaPlayerWithFile(holder, latestVideo)
-                                return
-                            }
-                        }
-                    }
-
-                    // 如果没有找到可用的视频文件，显示黑屏
-                    return
-                }
-                Log.d(TAG, "Video file exists and is readable: ${file.absolutePath}")
-
-                // 使用已验证的文件初始化MediaPlayer
-                initMediaPlayerWithFile(holder, file)
-            } catch (e: IOException) {
-                Log.e(TAG, "Error initializing MediaPlayer", e)
+            // Release MediaPlayer safely on the main thread
+            handler.post {
+                releaseMediaPlayer()
             }
+            surfaceHolder = null // Clear reference
         }
 
         /**
-         * 播放视频
+         * Initializes MediaPlayer if needed and starts playback.
          */
-        private fun playVideo() {
-            if (isMediaPlayerPrepared && mediaPlayer != null && !mediaPlayer!!.isPlaying) {
-                Log.d(TAG, "Starting video playback")
-                mediaPlayer?.start()
+        private fun initializeAndPlayVideo() {
+            if (!surfaceAvailable) {
+                Log.w(TAG, "initializeAndPlayVideo called, but surface is not available.")
+                return
             }
-        }
-
-        /**
-         * 暂停视频
-         */
-        private fun pauseVideo() {
-            if (isMediaPlayerPrepared && mediaPlayer != null && mediaPlayer!!.isPlaying) {
-                Log.d(TAG, "Pausing video playback")
-                mediaPlayer?.pause()
+            if (mediaPlayer != null && isMediaPlayerPrepared) {
+                Log.d(TAG, "MediaPlayer already prepared, ensuring playback if visible.")
+                if (isVisible) playVideo()
+                return
             }
-        }
-
-        /**
-         * 更新视频缩放
-         * 根据当前的缩放模式计算视频的显示区域
-         */
-        private fun updateVideoScale() {
-            if (videoWidth <= 0 || videoHeight <= 0 || screenWidth <= 0 || screenHeight <= 0) {
-                Log.e(TAG, "Cannot update video scale, invalid dimensions")
+            if (mediaPlayer != null && !isMediaPlayerPrepared) {
+                Log.w(TAG, "MediaPlayer exists but is not prepared. Waiting for preparation.")
+                // The existing prepareAsync should handle this.
                 return
             }
 
+            if (currentVideoUri == null) {
+                Log.e(TAG, "Cannot initialize MediaPlayer: Video URI is null.")
+                // Optionally display a default image or color here
+                return
+            }
+
+            Log.d(TAG, "Initializing MediaPlayer with URI: $currentVideoUri")
+            releaseMediaPlayer() // Ensure any previous instance is released cleanly
+
             try {
-                val mp = mediaPlayer ?: return
+                mediaPlayer = MediaPlayer().apply {
+                    // Set surface *before* setDataSource if possible and valid
+                    try {
+                        val surface = surfaceHolder?.surface
+                        if (surface != null && surface.isValid) {
+                            setSurface(surface)
+                            Log.d(TAG, "Set surface before data source")
+                        } else {
+                            Log.w(TAG, "Surface invalid or null when trying to set early")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error setting surface early", e)
+                    }
 
-                // 计算视频和屏幕的宽高比
-                val videoRatio = videoWidth.toFloat() / videoHeight.toFloat()
-                val screenRatio = screenWidth.toFloat() / screenHeight.toFloat()
+                    val uriString = currentVideoUri.toString()
+                    try {
+                        if (uriString.startsWith("http")) {
+                            Log.d(TAG, "Setting network data source: $uriString")
+                            setDataSource(uriString)
+                        } else {
+                            Log.d(TAG, "Setting content/file data source using context: $currentVideoUri")
+                            setDataSource(appContext, currentVideoUri!!) // Use context for content/file URIs
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to setDataSource for URI: $currentVideoUri", e)
+                        // Handle error: Maybe notify user, try fallback, or just stop.
+                        releaseMediaPlayer() // Clean up failed player
+                        return@apply // Exit apply block
+                    }
 
-                Log.d(TAG, "Video ratio: $videoRatio, Screen ratio: $screenRatio, Scale mode: $scaleMode")
+                    isLooping = true
+                    setVolume(0f, 0f) // Mute wallpaper videos by default
 
+                    setOnErrorListener { mp, what, extra ->
+                        Log.e(TAG, "MediaPlayer error - what: $what, extra: $extra")
+                        isMediaPlayerPrepared = false // Mark as not prepared
+                        releaseMediaPlayer() // Release the faulty player
+                        // Optionally schedule a retry after a delay
+                        // handler.postDelayed({ initializeAndPlayVideo() }, 5000)
+                        true // Error handled
+                    }
+
+                    setOnVideoSizeChangedListener { mp, width, height ->
+                        Log.d(TAG, "Video size changed: $width x $height")
+                        if (width > 0 && height > 0) {
+                            this@VideoEngine.videoWidth = width
+                            this@VideoEngine.videoHeight = height
+                            if (screenWidth > 0 && screenHeight > 0) {
+                                updateVideoScale()
+                            }
+                        } else {
+                            Log.w(TAG, "Video size reported as zero or negative.")
+                        }
+                    }
+
+                    setOnPreparedListener { mp ->
+                        Log.d(TAG, "MediaPlayer prepared.")
+                        isMediaPlayerPrepared = true
+
+                        // Get initial video size
+                        if (mp.videoWidth > 0 && mp.videoHeight > 0) {
+                            this@VideoEngine.videoWidth = mp.videoWidth
+                            this@VideoEngine.videoHeight = mp.videoHeight
+                            Log.d(TAG, "Initial Video dimensions on prepare: $videoWidth x $videoHeight")
+                            if (screenWidth > 0 && screenHeight > 0) {
+                                updateVideoScale()
+                            }
+                        } else {
+                            Log.w(TAG, "Video dimensions zero or negative on prepare.")
+                            // Request layout or wait for onVideoSizeChanged? Usually size is available here.
+                        }
+
+                        // Start playing only if the wallpaper is currently visible
+                        if (isVisible && surfaceAvailable) {
+                            Log.d(TAG, "MediaPlayer prepared and visible, starting playback.")
+                            mp.start()
+                        } else {
+                            Log.d(TAG, "MediaPlayer prepared but not visible or surface unavailable, will start on visibility change.")
+                        }
+                    }
+
+                    Log.d(TAG, "Calling prepareAsync()")
+                    prepareAsync() // Prepare asynchronously
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, "IOException during MediaPlayer setup", e)
+                releaseMediaPlayer()
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "IllegalArgumentException during MediaPlayer setup (likely bad URI or surface)", e)
+                releaseMediaPlayer()
+            } catch (e: SecurityException) {
+                Log.e(TAG, "SecurityException during MediaPlayer setup (permissions?)", e)
+                releaseMediaPlayer()
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "IllegalStateException during MediaPlayer setup (player state error?)", e)
+                releaseMediaPlayer()
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error during MediaPlayer setup", e)
+                releaseMediaPlayer()
+            }
+        }
+
+        private fun playVideo() {
+            if (mediaPlayer != null && isMediaPlayerPrepared && surfaceAvailable && !mediaPlayer!!.isPlaying) {
+                try {
+                    Log.d(TAG, "Attempting to start video playback.")
+                    mediaPlayer?.start()
+                } catch (e: IllegalStateException) {
+                    Log.e(TAG, "Error starting MediaPlayer (invalid state?)", e)
+                    // May need re-initialization
+                    releaseMediaPlayer()
+                    handler.postDelayed({ initializeAndPlayVideo() }, 1000) // Retry init
+                } catch (e: Exception) {
+                    Log.e(TAG, "Unexpected error starting MediaPlayer", e)
+                }
+            } else {
+                Log.d(
+                    TAG,
+                    "Conditions not met for playing video: prepared=$isMediaPlayerPrepared, surface=$surfaceAvailable, playing=${mediaPlayer?.isPlaying}"
+                )
+                // If not prepared but should be playing, ensure initialization is triggered
+                if (mediaPlayer == null && currentVideoUri != null && surfaceAvailable) {
+                    Log.d(TAG, "playVideo called but player is null, attempting init.")
+                    initializeAndPlayVideo()
+                }
+            }
+        }
+
+        private fun pauseVideo() {
+            if (mediaPlayer != null && isMediaPlayerPrepared && mediaPlayer!!.isPlaying) {
+                try {
+                    Log.d(TAG, "Pausing video playback.")
+                    mediaPlayer?.pause()
+                } catch (e: IllegalStateException) {
+                    Log.e(TAG, "Error pausing MediaPlayer (invalid state?)", e)
+                    // State might be messed up, potentially release?
+                } catch (e: Exception) {
+                    Log.e(TAG, "Unexpected error pausing MediaPlayer", e)
+                }
+            } else {
+                Log.d(TAG, "Conditions not met for pausing video: prepared=$isMediaPlayerPrepared, playing=${mediaPlayer?.isPlaying}")
+            }
+        }
+
+        private fun updateVideoScale() {
+            if (videoWidth <= 0 || videoHeight <= 0 || screenWidth <= 0 || screenHeight <= 0 || mediaPlayer == null || !isMediaPlayerPrepared) {
+                Log.w(
+                    TAG,
+                    "Cannot update video scale - invalid dimensions or player state. Vid($videoWidth x $videoHeight), Screen($screenWidth x $screenHeight), Prepared=$isMediaPlayerPrepared"
+                )
+                return
+            }
+
+            Log.d(TAG, "Updating video scale. Video: ${videoWidth}x$videoHeight, Screen: ${screenWidth}x$screenHeight, Mode: $scaleMode")
+
+            // Using setVideoScalingMode - ensure it's supported and works as expected.
+            // Alternatives (more complex) involve TextureView or SurfaceView manipulations not standard in WallpaperService.
+            try {
                 when (scaleMode) {
                     ScaleMode.FILL -> {
-                        // 填充模式 - 直接拉伸视频以填充屏幕
-                        // 不需要设置特殊参数，默认就是填充
+                        // This mode might stretch the video if aspect ratios don't match.
+                        // MediaPlayer might do this by default or require a specific mode if available.
+                        // Let's explicitly use SCALE_TO_FIT which might be closer, but FILL isn't a direct MediaPlayer mode.
+                        // For true fill (stretching), often no specific mode is needed, or it's the default.
+                        // Let's try setting it to SCALE_TO_FIT for consistency, behavior might vary.
+                        Log.d(TAG, "Setting scaling mode: SCALE_TO_FIT (intended for FILL)")
+                        mediaPlayer?.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT)
                     }
 
                     ScaleMode.FIT -> {
-                        // 适应模式 - 保持宽高比缩放视频以适应屏幕
-                        if (videoRatio > screenRatio) {
-                            // 视频更宽，需要上下黑边
-                            val scaledHeight = screenWidth / videoRatio
-                            val yOffset = (screenHeight - scaledHeight) / 2
-
-                            // 设置视频显示区域
-                            mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT)
-                        } else {
-                            // 视频更高，需要左右黑边
-                            val scaledWidth = screenHeight * videoRatio
-                            val xOffset = (screenWidth - scaledWidth) / 2
-
-                            // 设置视频显示区域
-                            mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT)
-                        }
+                        // Letterbox/Pillarbox: maintains aspect ratio, fits within screen bounds.
+                        Log.d(TAG, "Setting scaling mode: SCALE_TO_FIT")
+                        mediaPlayer?.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT)
                     }
 
                     ScaleMode.CENTER_CROP -> {
-                        // 中心裁剪模式 - 保持宽高比缩放视频以覆盖屏幕
-                        if (videoRatio > screenRatio) {
-                            // 视频更宽，需要左右裁剪
-                            mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
-                        } else {
-                            // 视频更高，需要上下裁剪
-                            mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
-                        }
+                        // Maintain aspect ratio, scale to fill screen, cropping excess.
+                        Log.d(TAG, "Setting scaling mode: SCALE_TO_FIT_WITH_CROPPING")
+                        mediaPlayer?.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING)
                     }
                 }
-
-                Log.d(TAG, "Video scaling updated for mode: $scaleMode")
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "Error setting video scaling mode (invalid state?)", e)
             } catch (e: Exception) {
-                Log.e(TAG, "Error updating video scale: ${e.message}")
+                Log.e(TAG, "Error setting video scaling mode", e)
             }
         }
 
-        /**
-         * 使用文件描述符初始化MediaPlayer
-         */
-        private fun initMediaPlayerWithFileDescriptor(holder: SurfaceHolder, fileDescriptor: FileDescriptor) {
-            try {
-                Log.d(TAG, "Initializing MediaPlayer with file descriptor")
-
-                // 创建MediaPlayer
-                mediaPlayer = MediaPlayer().apply {
-                    // 使用文件描述符设置数据源
-                    setDataSource(fileDescriptor)
-                    Log.d(TAG, "MediaPlayer data source set to file descriptor")
-
-                    // 设置错误监听器
-                    setOnErrorListener { mp, what, extra ->
-                        Log.e(TAG, "MediaPlayer error: $what, $extra")
-                        isMediaPlayerPrepared = false
-                        releaseMediaPlayer()
-                        // 尝试重新初始化
-                        handler.postDelayed({
-                            initMediaPlayer(holder)
-                        }, 1000)
-                        true
-                    }
-
-                    // 设置Surface
-                    try {
-                        val surface = holder.surface
-                        if (surface.isValid) {
-                            setSurface(surface)
-                            Log.d(TAG, "Set surface successfully")
-                        } else {
-                            Log.e(TAG, "Surface is not valid")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error setting surface: ${e.message}")
-                    }
-
-                    // 设置视频尺寸获取监听器
-                    setOnVideoSizeChangedListener { mp, width, height ->
-                        Log.d(TAG, "Video size changed: $width x $height")
-                        this@VideoEngine.videoWidth = width
-                        this@VideoEngine.videoHeight = height
-
-                        // 如果已经有屏幕尺寸信息，计算缩放矩阵
-                        if (screenWidth > 0 && screenHeight > 0) {
-                            updateVideoScale()
-                        }
-                    }
-
-                    // 设置准备完成监听器
-                    setOnPreparedListener { mp ->
-                        isMediaPlayerPrepared = true
-                        Log.d(TAG, "MediaPlayer prepared")
-
-                        try {
-                            // 设置循环播放
-                            mp.isLooping = true
-
-                            // 获取视频尺寸
-                            this@VideoEngine.videoWidth = mp.videoWidth
-                            this@VideoEngine.videoHeight = mp.videoHeight
-                            Log.d(TAG, "Video dimensions: $videoWidth x $videoHeight")
-
-                            // 计算缩放矩阵
-                            if (screenWidth > 0 && screenHeight > 0) {
-                                updateVideoScale()
-                            }
-
-                            // 如果可见，开始播放
-                            if (visible) {
-                                mp.start()
-                                Log.d(TAG, "Starting video playback after prepare")
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error in onPrepared: ${e.message}")
-                        }
-                    }
-
-                    // 开始异步准备
-                    prepareAsync()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error initializing MediaPlayer with file descriptor", e)
-                // 如果初始化失败，尝试清除当前的URI设置
-                val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                prefs.edit().remove(KEY_VIDEO_URI).apply()
-                currentVideoUri = null
-            }
-        }
-
-        /**
-         * 使用指定的文件初始化MediaPlayer
-         */
-        private fun initMediaPlayerWithFile(holder: SurfaceHolder, file: File) {
-            try {
-                Log.d(TAG, "Initializing MediaPlayer with file: ${file.absolutePath}")
-
-                // 创建MediaPlayer
-                mediaPlayer = MediaPlayer().apply {
-                    // 使用文件路径设置数据源
-                    setDataSource(file.absolutePath)
-                    Log.d(TAG, "MediaPlayer data source set to file: ${file.absolutePath}")
-
-                    // 设置错误监听器
-                    setOnErrorListener { mp, what, extra ->
-                        Log.e(TAG, "MediaPlayer error: $what, $extra")
-                        isMediaPlayerPrepared = false
-                        releaseMediaPlayer()
-                        // 尝试重新初始化
-                        handler.postDelayed({
-                            initMediaPlayer(holder)
-                        }, 1000)
-                        true
-                    }
-
-                    // 设置Surface
-                    try {
-                        val surface = holder.surface
-                        if (surface.isValid) {
-                            setSurface(surface)
-                            Log.d(TAG, "Set surface successfully")
-                        } else {
-                            Log.e(TAG, "Surface is not valid")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error setting surface: ${e.message}")
-                    }
-
-                    // 设置视频尺寸获取监听器
-                    setOnVideoSizeChangedListener { mp, width, height ->
-                        Log.d(TAG, "Video size changed: $width x $height")
-                        this@VideoEngine.videoWidth = width
-                        this@VideoEngine.videoHeight = height
-
-                        // 如果已经有屏幕尺寸信息，计算缩放矩阵
-                        if (screenWidth > 0 && screenHeight > 0) {
-                            updateVideoScale()
-                        }
-                    }
-
-                    // 设置准备完成监听器
-                    setOnPreparedListener { mp ->
-                        isMediaPlayerPrepared = true
-                        Log.d(TAG, "MediaPlayer prepared")
-
-                        try {
-                            // 设置循环播放
-                            mp.isLooping = true
-
-                            // 获取视频尺寸
-                            this@VideoEngine.videoWidth = mp.videoWidth
-                            this@VideoEngine.videoHeight = mp.videoHeight
-                            Log.d(TAG, "Video dimensions: $videoWidth x $videoHeight")
-
-                            // 计算缩放矩阵
-                            if (screenWidth > 0 && screenHeight > 0) {
-                                updateVideoScale()
-                            }
-
-                            // 如果可见，开始播放
-                            if (visible) {
-                                mp.start()
-                                Log.d(TAG, "Starting video playback after prepare")
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error in onPrepared: ${e.message}")
-                        }
-                    }
-
-                    // 开始异步准备
-                    prepareAsync()
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error initializing MediaPlayer with file", e)
-                // 如果初始化失败，尝试清除当前的URI设置
-                val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                prefs.edit().remove(KEY_VIDEO_URI).apply()
-                currentVideoUri = null
-            }
-        }
-
-        /**
-         * 释放MediaPlayer资源
-         */
         @Synchronized
         private fun releaseMediaPlayer() {
-            Log.d(TAG, "Releasing MediaPlayer")
-            val player = mediaPlayer
-            // 首先将mediaPlayer设置为null，避免其他线程访问
-            mediaPlayer = null
+            if (mediaPlayer == null) {
+                return // Nothing to release
+            }
+            Log.d(TAG, "Releasing MediaPlayer instance.")
             isMediaPlayerPrepared = false
+            val playerToRelease = mediaPlayer
+            mediaPlayer = null // Set to null immediately
 
-            // 然后在单独的try-catch块中处理每个操作
-            if (player != null) {
-                try {
-                    if (player.isPlaying) {
-                        player.stop()
+            // Perform release operations in background or carefully handle states
+            try {
+                // Check state before calling stop/reset if possible, though catching exceptions is safer
+                if (playerToRelease != null) {
+                    if (playerToRelease.isPlaying) {
+                        playerToRelease.stop()
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error stopping MediaPlayer", e)
+                    playerToRelease.reset() // Reset listeners and state
+                    playerToRelease.release() // Release native resources
+                    Log.d(TAG, "MediaPlayer released successfully.")
                 }
-
+            } catch (e: IllegalStateException) {
+                Log.e(TAG, "IllegalStateException during MediaPlayer release", e)
+                // Might happen if already released or in wrong state, try to release anyway if possible
                 try {
-                    player.reset()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error resetting MediaPlayer", e)
+                    playerToRelease?.release()
+                } catch (ex: Exception) { /* ignore inner */
                 }
-
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during MediaPlayer release", e)
+                // Ensure release is called even if stop/reset fail
                 try {
-                    player.release()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error releasing MediaPlayer", e)
+                    playerToRelease?.release()
+                } catch (ex: Exception) { /* ignore inner */
                 }
             }
 
-            // 清除当前的URI设置，确保下次初始化时重新加载
-            try {
-                val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                prefs.edit().remove(KEY_VIDEO_URI).apply()
-                currentVideoUri = null
-                Log.d(TAG, "Cleared video URI from preferences")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error clearing video URI", e)
-            }
-
-            // 等待一下，确保资源已释放
-            try {
-                Thread.sleep(50)
-            } catch (e: Exception) {
-                // 忽略中断异常
-            }
+            // DO NOT clear the URI from SharedPreferences here.
+            // It should persist until the user changes it.
         }
     }
 }

@@ -99,6 +99,8 @@ dependencies {
 
     // StaggeredGrid for waterfall layout
     implementation(libs.compose.glide)
+    // 添加Glide注解处理器
+    ksp(libs.glide.compiler)
     implementation(libs.accompanist.flowlayout)
     implementation(libs.accompanist.swiperefresh)
 
@@ -157,7 +159,7 @@ dependencies {
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.androidx.core.testing)
     testImplementation(libs.androidx.datastore.preferences.core)
-    
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.mockito.android)

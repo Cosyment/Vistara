@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import com.vistara.aestheticwalls.R
 
 /**

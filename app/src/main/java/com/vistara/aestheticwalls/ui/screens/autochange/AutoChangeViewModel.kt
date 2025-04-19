@@ -338,18 +338,18 @@ class AutoChangeViewModel @Inject constructor(
                     if (wallpaper != null) {
                         // 使用AppWallpaperManager设置壁纸
                         val stringProvider = StringProvider(context)
-                        val wallpaperManager = AppWallpaperManager(context, notificationUtil, stringProvider)
+                        val wallpaperManager = AppWallpaperManager(context)
                         wallpaperManager.setWallpaper(
-                            activity = activity,
                             wallpaper = wallpaper,
-                            target = _autoChangeTarget.value
-                        ) { success ->
-                            if (success) {
-                                Log.d(TAG, "Auto change wallpaper set successfully")
-                            } else {
-                                Log.e(TAG, "Failed to set auto change wallpaper")
+                            target = _autoChangeTarget.value,
+                            onComplete = { success ->
+                                if (success) {
+                                    Log.d(TAG, "Auto change wallpaper set successfully")
+                                } else {
+                                    Log.e(TAG, "Failed to set auto change wallpaper")
+                                }
                             }
-                        }
+                        )
                     }
 
                     Log.d(TAG, "Test auto change completed successfully")

@@ -73,6 +73,7 @@
     <string name="my_downloads_desc">모든 다운로드한 배경화면 보기</string>
     <string name="auto_change_wallpaper">자동 배경화면 변경</string>
     <string name="auto_change_wallpaper_desc">자동 배경화면 변경 빈도 및 소스 설정</string>
+    <string name="settings_applied_successfully">설정이 성공적으로 적용되었습니다</string>
     <string name="settings_desc">앱 환경설정 및 알림 조정</string>
     <string name="rate_feedback">평가 및 피드백</string>
     <string name="rate_feedback_desc">앱 개선에 도움 주기</string>
@@ -233,6 +234,7 @@
     <string name="set_both_screens">둘 다 설정</string>
     <string name="collapse_info">정보 접기</string>
     <string name="expand_info">정보 펼치기</string>
+    <string name="preview_wallpaper">벽지 미리 보기</string>
     <string name="set_as">다음으로 설정</string>
     <string name="home_screen_wallpaper">홈 화면 배경화면</string>
     <string name="lock_screen_wallpaper">잠금 화면 배경화면</string>
@@ -421,4 +423,15 @@
     <string name="logout_success">로그아웃 성공</string>
     <string name="logout_failed">로그아웃 실패: %1$s</string>
     <string name="premium_crown">프리미엄 👑</string>
+    <string name="system_language">시스템</string>
+    <string name="english_language">English</string>
+    <string name="chinese_language">中文</string>
+    <string name="japanese_language">日本語</string>
+    <string name="korean_language">한국어</string>
+    <string name="indonesian_language">Bahasa Indonesia</string>
+    <!-- 새로 추가된 문자열 -->
+    <string name="notification_channel_live_wallpaper">라이브 배경화면 알림</string>
+    <string name="notification_channel_live_wallpaper_desc">보류 중인 라이브 배경화면 설정에 대한 알림</string>
+    <string name="notification_live_wallpaper_pending_title">비디오 배경화면 준비 완료</string>
+    <string name="notification_live_wallpaper_pending_text">터치하여 "%1$s"를 비디오 배경화면으로 설정하세요</string>
 </resources>

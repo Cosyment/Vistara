@@ -47,6 +47,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.utils.SharedExoPlayer
 import kotlinx.coroutines.delay
 
 /**
@@ -72,30 +73,46 @@ fun VideoPreviewItem(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // 视频状态
-    var isVideoReady by remember { mutableStateOf(false) }
-    var isBuffering by remember { mutableStateOf(true) }
-    var isPlayerVisible by remember { mutableStateOf(false) }
-    var isVideoInitialized by remember { mutableStateOf(false) }
+    // 视频状态 - 使用remember(wallpaper.id)确保状态与特定壁纸关联
+    var isVideoReady by remember(wallpaper.id) { mutableStateOf(false) }
+    var isBuffering by remember(wallpaper.id) { mutableStateOf(true) }
+    var isPlayerVisible by remember(wallpaper.id) { mutableStateOf(false) }
+    var isVideoInitialized by remember(wallpaper.id) { mutableStateOf(false) }
 
-    // 创建ExoPlayer实例
+    // 获取或创建共享ExoPlayer实例
+    // 使用应用级别的单例模式，而不是为每个项创建实例
     val exoPlayer = remember {
-        ExoPlayer.Builder(context)
-            .build()
-            .apply {
-                // 设置循环播放
-                repeatMode = Player.REPEAT_MODE_ONE
-                // 设置静音
-                volume = 0f
-                // 设置播放时立即播放
-                playWhenReady = true
+        // 检查是否已经存在共享ExoPlayer实例
+        if (SharedExoPlayer.player == null) {
+            // 创建新实例并存储在共享对象中
+            val newPlayer = ExoPlayer.Builder(context)
+                .build()
+                .apply {
+                    // 设置循环播放
+                    repeatMode = Player.REPEAT_MODE_ONE
+                    // 设置静音
+                    volume = 0f
+                    // 设置播放时立即播放
+                    playWhenReady = true
+                }
+            SharedExoPlayer.player = newPlayer
+            newPlayer
+        } else {
+            // 使用现有实例
+            SharedExoPlayer.player!!
+        }
+    }
 
-                // 不在初始化时加载视频，而是在LaunchedEffect中加载
-            }
+    // 跟踪当前播放的视频ID
+    LaunchedEffect(isVisible, wallpaper.id) {
+        if (isVisible) {
+            // 更新当前播放的视频ID
+            SharedExoPlayer.currentPlayingId = wallpaper.id
+        }
     }
 
     // 监听生命周期事件
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner, wallpaper.id) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
@@ -123,14 +140,18 @@ fun VideoPreviewItem(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            exoPlayer.stop()
-            exoPlayer.clearMediaItems()
-            exoPlayer.release()
+            // 不释放共享ExoPlayer实例，只清除媒体项
+            if (SharedExoPlayer.currentPlayingId == wallpaper.id) {
+                exoPlayer.stop()
+                exoPlayer.clearMediaItems()
+                SharedExoPlayer.currentPlayingId = null
+            }
         }
     }
 
     // 监听播放器状态
-    LaunchedEffect(exoPlayer) {
+    // 添加wallpaper.id作为key，确保当壁纸变化时重新执行
+    LaunchedEffect(exoPlayer, wallpaper.id) {
         val listener = object : Player.Listener {
             // 缓冲计数器，用于跟踪缓冲状态切换的频率
             var bufferingCount = 0
@@ -248,7 +269,8 @@ fun VideoPreviewItem(
     }
 
     // 延迟加载视频，只在可见时加载
-    LaunchedEffect(isVisible) {
+    // 使用wallpaper.id作为key，确保当壁纸变化时重新执行
+    LaunchedEffect(isVisible, wallpaper.id) {
         if (isVisible && !isVideoInitialized && wallpaper.url != null) {
             // 延迟200毫秒再加载，避免快速滚动时频繁加载
             delay(200)
@@ -268,12 +290,21 @@ fun VideoPreviewItem(
                         exoPlayer.setMediaItem(MediaItem.fromUri(fallbackUrl))
                     } else {
                         Log.d("VideoPreviewItem", "Using actual video URL for ${wallpaper.id}: $videoUrl")
-                        // 重置播放器状态
-                        exoPlayer.stop()
-                        exoPlayer.clearMediaItems()
+                        // 检查当前播放的视频ID
+                        if (SharedExoPlayer.currentPlayingId != wallpaper.id) {
+                            // 重置播放器状态
+                            exoPlayer.stop()
+                            exoPlayer.clearMediaItems()
 
-                        // 设置新的媒体项
-                        exoPlayer.setMediaItem(MediaItem.fromUri(videoUrl))
+                            // 设置新的媒体项
+                            exoPlayer.setMediaItem(MediaItem.fromUri(videoUrl))
+
+                            // 更新当前播放的视频ID
+                            SharedExoPlayer.currentPlayingId = wallpaper.id
+                        } else if (exoPlayer.currentMediaItem == null) {
+                            // 如果当前没有媒体项，设置新的媒体项
+                            exoPlayer.setMediaItem(MediaItem.fromUri(videoUrl))
+                        }
                     }
 
                     // 设置播放时立即播放
@@ -304,51 +335,74 @@ fun VideoPreviewItem(
     }
 
     // 根据可见性控制播放状态
-    LaunchedEffect(isVisible, isVideoReady, isBuffering) {
-        if (isVisible && isVideoReady && !isBuffering) {
-            exoPlayer.play()
-        } else {
-            exoPlayer.pause()
+    // 添加wallpaper.id作为key，确保当壁纸变化时重新执行
+    LaunchedEffect(isVisible, isVideoReady, isBuffering, wallpaper.id) {
+        try {
+            // 只有当这个视频是当前激活的视频时才播放
+            if (isVisible && isVideoReady && !isBuffering && SharedExoPlayer.currentPlayingId == wallpaper.id) {
+                exoPlayer.play()
+            } else {
+                // 如果这个视频是当前激活的视频，则暂停
+                if (SharedExoPlayer.currentPlayingId == wallpaper.id) {
+                    exoPlayer.pause()
+                }
 
-            // 如果不可见，释放更多资源
-            if (!isVisible) {
-                // 重置播放器状态
-                isPlayerVisible = false
+                // 如果不可见，释放更多资源
+                if (!isVisible) {
+                    // 重置播放器状态
+                    isPlayerVisible = false
 
-                // 如果视频已经初始化，重置到开始位置
-                if (isVideoInitialized) {
-                    exoPlayer.seekTo(0)
+                    // 如果视频已经初始化且是当前激活的视频，重置到开始位置
+                    if (isVideoInitialized && SharedExoPlayer.currentPlayingId == wallpaper.id) {
+                        exoPlayer.seekTo(0)
+                        // 清除当前激活的视频ID
+                        SharedExoPlayer.currentPlayingId = null
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Log.e("VideoPreviewItem", "Error controlling playback: ${e.message}")
         }
     }
 
     // 处理循环播放逻辑
-    LaunchedEffect(isVisible, isVideoReady, isBuffering) {
+    // 添加wallpaper.id作为key，确保当壁纸变化时重新执行
+    LaunchedEffect(isVisible, isVideoReady, isBuffering, wallpaper.id) {
         // 只有当视频可见、准备就绪且不在缓冲时才循环播放
-        if (isVisible && isVideoReady && !isBuffering) {
+        // 并且必须是当前激活的视频
+        if (isVisible && isVideoReady && !isBuffering && SharedExoPlayer.currentPlayingId == wallpaper.id) {
             Log.d("VideoPreviewItem", "Starting playback timer for ${wallpaper.id}")
             val playDuration = 6000L // 每个视频播放6秒
             var totalPlayTime = 0L
             val startTime = System.currentTimeMillis()
 
-            // 循环播放直到播放时间达到指定时间
-            while (isVisible && isVideoReady && !isBuffering) {
-                val currentTime = System.currentTimeMillis()
-                totalPlayTime = currentTime - startTime
+            try {
+                // 使用更安全的方式检查状态，避免无限循环
+                var isPlaying = true
+                while (isPlaying && totalPlayTime < playDuration) {
+                    // 检查组件是否仍然在组合中且是当前激活的视频
+                    if (!isVisible || !isVideoReady || isBuffering || SharedExoPlayer.currentPlayingId != wallpaper.id) {
+                        isPlaying = false
+                        break
+                    }
 
-                // 如果播放时间超过6秒，通知播放完成
-                if (totalPlayTime >= playDuration) {
+                    val currentTime = System.currentTimeMillis()
+                    totalPlayTime = currentTime - startTime
+
+                    // 等待一小段时间再检查
+                    delay(500) // 每500毫秒检查一次
+                }
+
+                // 只有在正常完成播放时才通知
+                if (isPlaying && totalPlayTime >= playDuration && SharedExoPlayer.currentPlayingId == wallpaper.id) {
                     // 通知播放完成
                     Log.d("VideoPreviewItem", "Video complete: ${wallpaper.id}")
                     // 播放完成后隐藏播放器，显示缩略图
                     isPlayerVisible = false
                     onVideoComplete(wallpaper.id)
-                    break
                 }
-
-                // 等待一小段时间再检查
-                delay(500) // 每500毫秒检查一次
+            } catch (e: Exception) {
+                Log.e("VideoPreviewItem", "Error in playback timer: ${e.message}")
             }
 
             Log.d("VideoPreviewItem", "Playback timer ended for ${wallpaper.id}")
@@ -422,12 +476,11 @@ fun VideoPreviewItem(
                                 view.player = exoPlayer
                             }
                         },
-                        // 添加shouldUpdate参数，防止不必要的更新
                         onReset = { playerView ->
                             // 释放资源
                             playerView.player = null
-                        },
-//                        shouldUpdate = { _ -> false } // 始终返回false，防止重组时更新
+                        }
+                        // 注意：AndroidView不支持key参数，我们已经在remember中使用wallpaper.id作为key
                     )
                 }
             }
@@ -459,10 +512,6 @@ fun VideoPreviewItem(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            shape = RoundedCornerShape(4.dp)
-                        )
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(

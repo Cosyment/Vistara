@@ -5,12 +5,12 @@ import android.widget.Toast
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,20 +25,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
-import com.vistara.aestheticwalls.ui.theme.AppColors
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.vistara.aestheticwalls.R
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
+import com.vistara.aestheticwalls.ui.theme.AppColors
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import kotlinx.coroutines.launch
 
 /**
@@ -75,6 +81,9 @@ fun WallpaperDetailScreen(
     val activity = LocalActivity.current
     val coroutineScope = rememberCoroutineScope()
 
+    // 设置沉浸式状态栏和导航栏
+    val systemUiController = rememberSystemUiController()
+
     // 创建SnackbarHostState
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -102,9 +111,22 @@ fun WallpaperDetailScreen(
     // 处理壁纸设置成功消息
     LaunchedEffect(wallpaperSetSuccess) {
         wallpaperSetSuccess?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            // 只有当消息非空时才显示Toast
+            if (message.isNotEmpty()) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+
             // 清除成功消息，避免重复显示
             viewModel.clearWallpaperSetSuccess()
+
+            // 壁纸设置成功后，重新应用沉浸式效果
+            systemUiController.setStatusBarColor(
+                color = Color.Transparent, darkIcons = false
+            )
+            systemUiController.setNavigationBarColor(
+                color = Color.Transparent, darkIcons = false
+            )
+            systemUiController.systemBarsDarkContentEnabled = false
         }
     }
 
@@ -135,9 +157,6 @@ fun WallpaperDetailScreen(
         }
     }
 
-    // 设置沉浸式状态栏和导航栏
-    val systemUiController = rememberSystemUiController()
-
     // 使用LaunchedEffect确保系统栏设置在每次重组时都生效
     LaunchedEffect(Unit) {
         // 设置状态栏和导航栏为完全透明
@@ -157,8 +176,6 @@ fun WallpaperDetailScreen(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         },
-        // 设置Scaffold的内容颜色为黑色，确保壁纸详情页始终使用黑色背景
-        containerColor = AppColors.WallpaperDetailBackground, contentColor = Color.White,
         // 移除所有的内容填充，确保全屏效果
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
@@ -192,6 +209,48 @@ fun WallpaperDetailScreen(
 
                     // 获取编辑后的图片
                     val editedBitmap by viewModel.editedBitmap
+
+                    // 根据壁纸类型设置背景
+                    if (!wallpaper.isLive) {
+                        // 对于图片壁纸，使用模糊背景
+                        val blurredBitmap by viewModel.blurredBackgroundBitmap
+
+                        if (blurredBitmap != null) {
+                            // 如果有预先计算好的模糊位图，直接使用
+                            androidx.compose.foundation.Image(
+                                bitmap = blurredBitmap!!.asImageBitmap(),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            // 如果没有预先计算好的模糊位图，使用黑色背景并应用AsyncImage加载并模糊
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(AppColors.WallpaperDetailBackground)
+                            )
+
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(wallpaper.url)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = null,
+                                contentScale = ContentScale.FillBounds,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .blur(radius = 20.dp) // 应用模糊效果
+                            )
+                        }
+                    } else {
+                        // 对于视频壁纸，使用纯黑色背景
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(AppColors.WallpaperDetailBackground)
+                        )
+                    }
 
                     WallpaperDetail(
                         wallpaper = wallpaper,
@@ -233,6 +292,10 @@ fun WallpaperDetailScreen(
                                 onNavigateToEdit(wallpaperId)
                             }
                         },
+                        onPreview = {
+                            // 直接调用系统壁纸预览
+                            viewModel.previewWallpaper(activity)
+                        },
                         isPremiumUser = isPremiumUser,
                         editedBitmap = editedBitmap,
                         isProcessingWallpaper = isProcessingWallpaper
@@ -248,13 +311,20 @@ fun WallpaperDetailScreen(
                                 usePlatformDefaultWidth = false
                             )
                         ) {
-                            WallpaperSetOptions(onSetHomeScreen = {
-                                viewModel.setWallpaper(activity, WallpaperTarget.HOME)
-                            }, onSetLockScreen = {
-                                viewModel.setWallpaper(activity, WallpaperTarget.LOCK)
-                            }, onSetBoth = {
-                                viewModel.setWallpaper(activity, WallpaperTarget.BOTH)
-                            }, onDismiss = { viewModel.hideSetWallpaperOptions() })
+                            WallpaperSetOptions(
+                                onSetHomeScreen = {
+                                    viewModel.setWallpaper(activity, WallpaperTarget.HOME)
+                                },
+                                onSetLockScreen = {
+                                    viewModel.setWallpaper(activity, WallpaperTarget.LOCK)
+                                },
+                                onSetBoth = {
+                                    viewModel.setWallpaper(activity, WallpaperTarget.BOTH)
+                                },
+                                onDismiss = {
+                                    viewModel.hideSetWallpaperOptions()
+                                }
+                            )
                         }
                     }
 

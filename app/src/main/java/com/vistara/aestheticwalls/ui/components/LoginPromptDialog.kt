@@ -1,7 +1,7 @@
 package com.vistara.aestheticwalls.ui.components
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import com.vistara.aestheticwalls.R
 
 /**

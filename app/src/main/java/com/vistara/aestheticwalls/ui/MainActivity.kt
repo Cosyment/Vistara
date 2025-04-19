@@ -12,7 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,12 +22,9 @@ import com.vistara.aestheticwalls.manager.ThemeManager
 import com.vistara.aestheticwalls.receiver.UnlockWallpaperReceiver
 import com.vistara.aestheticwalls.ui.navigation.MainNavigation
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
-import com.vistara.aestheticwalls.utils.EventBus
+import com.vistara.aestheticwalls.utils.ActivityProvider
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -46,12 +42,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var localeManager: LocaleManager
 
-    @Inject
-    lateinit var eventBus: EventBus
-
-    // 用于跟踪语言变化，触发UI刷新
-    private var languageChangeCounter = 0
-
     // 解锁屏幕广播接收器
     private lateinit var unlockReceiver: UnlockWallpaperReceiver
     private var isReceiverRegistered = false
@@ -60,63 +50,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // 应用语言设置
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-//                val settings = localeManager.appLanguageFlow.first()
-//                localeManager.applyCurrentLanguage()
-//
-//                // 强制应用语言设置到当前 Activity
-//                val config = resources.configuration
-//                val locale = java.util.Locale.getDefault()
-//                if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
-//                    val localeList = android.os.LocaleList(java.util.Locale(settings.code))
-//                    config.setLocales(localeList)
-//                } else {
-//                    config.setLocales(android.os.LocaleList.getDefault())
-//                }
-//                resources.updateConfiguration(config, resources.displayMetrics)
-            } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to apply language settings: ${e.message}")
-            }
-        }
+        // 注册Activity实例到ActivityProvider
+        ActivityProvider.setMainActivity(this)
+
+        // 应用语言设置 - 在 attachBaseContext 中已经处理
+        // 使用 LocaleProvider 和 staticCompositionLocalOf 确保语言变化时整个应用都能更新
 
         // 处理导航意图
         handleNavigationIntent(intent)
 
         // 注册解锁屏幕广播接收器
         registerUnlockReceiver()
-
-        // 监听语言变化事件
-//        val mainScope = CoroutineScope(Dispatchers.Main)
-//        mainScope.launch {
-//            eventBus.languageChangedEvent.collect {
-//                Log.d("MainActivity", "语言变化事件接收到，刷新UI")
-//                languageChangeCounter++
-//
-//                // 更新资源配置
-//                val settings = localeManager.appLanguageFlow.first()
-//                val config = resources.configuration
-//
-//                if (settings != AppLanguage.SYSTEM) {
-//                    val locale = java.util.Locale(settings.code)
-//                    val localeList = android.os.LocaleList(locale)
-//                    config.setLocales(localeList)
-//                } else {
-//                    // 获取真正的系统语言
-//                    val systemLocale = localeManager.getSystemLocale()
-//                    val localeList = android.os.LocaleList(systemLocale)
-//                    config.setLocales(localeList)
-//                }
-//
-//                // 更新资源
-//                resources.updateConfiguration(config, resources.displayMetrics)
-//                Log.d("MainActivity", "已更新MainActivity资源配置: ${config.locales}")
-//
-//                // 强制重新创建内容
-//                recreateContent()
-//            }
-//        }
 
         recreateContent()
     }
@@ -127,9 +71,9 @@ class MainActivity : ComponentActivity() {
             val darkTheme by themeManager.darkTheme()
             val dynamicColors by themeManager.dynamicColors()
 
-            // 监听语言设置变化，使用languageChangeCounter作为key强制重组
+            // 监听语言设置变化
+            // 由于 appLanguageFlow 是 Flow，当值变化时会自动触发 UI 重组
             val language by localeManager.appLanguageFlow.collectAsState(initial = AppLanguage.SYSTEM)
-            rememberCoroutineScope()
 
             // 使用 LocaleProvider 提供本地化资源
             com.vistara.aestheticwalls.ui.theme.LocaleProvider(language = language) {
@@ -163,6 +107,10 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         // 取消注册广播接收器
         unregisterUnlockReceiver()
+
+        // 清除ActivityProvider中的引用
+        ActivityProvider.clearMainActivity()
+
         super.onDestroy()
     }
 
@@ -174,7 +122,7 @@ class MainActivity : ComponentActivity() {
 
         // 创建带有语言设置的新 Context
         val config = android.content.res.Configuration(newBase.resources.configuration)
-        if (settings != com.vistara.aestheticwalls.data.model.AppLanguage.SYSTEM) {
+        if (settings != AppLanguage.SYSTEM) {
             val locale = java.util.Locale(settings.code)
             java.util.Locale.setDefault(locale)
             val localeList = android.os.LocaleList(locale)
@@ -236,20 +184,6 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {
                 Log.e("MainActivity", "取消注册解锁屏幕广播接收器失败: ${e.message}")
             }
-        }
-    }
-
-    /**
-     * 测试解锁屏幕广播
-     * 用于调试目的，手动触发解锁屏幕广播
-     */
-    fun testUnlockBroadcast() {
-        try {
-            val intent = Intent(Intent.ACTION_USER_PRESENT)
-            sendBroadcast(intent)
-            Log.d("MainActivity", "已手动发送解锁屏幕广播")
-        } catch (e: Exception) {
-            Log.e("MainActivity", "发送解锁屏幕广播失败: ${e.message}")
         }
     }
 }

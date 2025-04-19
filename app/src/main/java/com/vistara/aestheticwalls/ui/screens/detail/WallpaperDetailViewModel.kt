@@ -34,6 +34,7 @@ import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.manager.AppWallpaperManager
+import com.vistara.aestheticwalls.utils.ImageUtils
 import com.vistara.aestheticwalls.utils.NotificationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -92,6 +93,10 @@ class WallpaperDetailViewModel @Inject constructor(
     // 编辑后的图片
     private val _editedBitmap = mutableStateOf<Bitmap?>(null)
     val editedBitmap: State<Bitmap?> = _editedBitmap
+
+    // 模糊背景图片
+    private val _blurredBackgroundBitmap = mutableStateOf<Bitmap?>(null)
+    val blurredBackgroundBitmap: State<Bitmap?> = _blurredBackgroundBitmap
 
     // 当前壁纸ID
     private var currentWallpaperId: String = ""
@@ -285,6 +290,11 @@ class WallpaperDetailViewModel @Inject constructor(
                 if (wallpaper != null) {
                     _wallpaperState.value = UiState.Success(wallpaper)
                     checkFavoriteStatus()
+
+                    // 如果是图片壁纸，加载并模糊背景
+                    if (!wallpaper.isLive) {
+                        loadAndBlurBackground(wallpaper)
+                    }
                 } else {
                     // 如果多次重试后仍然无法获取壁纸详情，显示错误信息
                     Log.e(TAG, "多次重试后仍然无法获取壁纸详情: $wallpaperId")
@@ -467,24 +477,98 @@ class WallpaperDetailViewModel @Inject constructor(
 
             // 使用统一的WallpaperManager设置壁纸
             wallpaperManager.setWallpaper(
-                activity = context, wallpaper = currentWallpaper, target = target, editedBitmap = _editedBitmap.value
-            ) { success ->
-                _isProcessingWallpaper.value = false
-                if (success) {
-                    // 设置成功，更新成功消息
-                    val message = when (target) {
-                        WallpaperTarget.HOME -> context.getString(R.string.home_screen_wallpaper_set)
-                        WallpaperTarget.LOCK -> context.getString(R.string.lock_screen_wallpaper_set)
-                        WallpaperTarget.BOTH -> context.getString(R.string.both_screens_wallpaper_set)
-                    }
-                    _wallpaperSetSuccess.value = message
-                }
-            }
+                wallpaper = currentWallpaper, target = target, editedBitmap = _editedBitmap.value,
+                onComplete = { success ->
+                    _isProcessingWallpaper.value = false
+                    // 设置一个成功消息，触发重新应用沉浸式效果
+                    // 使用空字符串避免显示实际的Toast
+                    _wallpaperSetSuccess.value = ""
+                },
+            )
         }
     }
 
-    // 已移除handleLiveWallpaper和handleStaticWallpaper方法
-    // 现在使用统一的WallpaperManager类处理壁纸设置
+    /**
+     * 预览壁纸
+     * 直接调用系统的壁纸预览功能
+     */
+    fun previewWallpaper(context: Activity?) {
+        // 检查上下文是否为空
+        if (context == null) {
+            Log.e("WallpaperDetailViewModel", "Context is null")
+            return
+        }
+
+        viewModelScope.launch {
+            Log.d("WallpaperDetailViewModel", "Previewing wallpaper")
+            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+
+            // 检查是否为视频壁纸
+            if (currentWallpaper.isLive) {
+                // 视频壁纸不支持系统预览
+//                Toast.makeText(context, "视频壁纸不支持预览", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            // 直接调用系统壁纸预览
+            wallpaperManager.previewWallpaper(
+                context = context,
+                wallpaper = currentWallpaper,
+                editedBitmap = _editedBitmap.value
+            )
+
+            // 设置一个成功消息，触发重新应用沉浸式效果
+            // 使用空字符串避免显示实际的Toast
+            _wallpaperSetSuccess.value = ""
+        }
+    }
+
+    /**
+     * 使用系统壁纸预览设置壁纸
+     * 调用系统的壁纸裁剪器和预览功能
+     */
+    fun setWallpaperWithSystemCropper(context: Activity?, target: WallpaperTarget) {
+        // 检查登录状态
+        if (!_isLoggedIn.value) {
+            _needLoginAction.value = LoginAction.SET_WALLPAPER
+            return
+        }
+
+        // 检查上下文是否为空
+        if (context == null) {
+            Log.e("WallpaperDetailViewModel", "Context is null")
+            return
+        }
+
+        viewModelScope.launch {
+            Log.d("WallpaperDetailViewModel", "Setting wallpaper with system cropper for target: $target")
+            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+
+            // 检查是否为视频壁纸
+            if (currentWallpaper.isLive) {
+                // 视频壁纸不支持系统裁剪器，使用普通方式设置
+                setWallpaper(context, target)
+                return@launch
+            }
+
+            // 立即隐藏选项对话框，提供即时反馈
+            _showSetWallpaperOptions.value = false
+
+            // 设置正在处理状态，避免重复操作
+            _isProcessingWallpaper.value = true
+
+            // 使用统一的WallpaperManager设置壁纸，并启用系统裁剪器
+            wallpaperManager.setWallpaper(
+                wallpaper = currentWallpaper, target = target, editedBitmap = _editedBitmap.value,
+                onComplete = { success ->
+                    _isProcessingWallpaper.value = false
+                    // 设置一个成功消息，触发重新应用沉浸式效果
+                    // 使用空字符串避免显示实际的Toast
+                    _wallpaperSetSuccess.value = ""
+                },
+            )
+        }
+    }
 
     /**
      * 下载壁纸
@@ -962,6 +1046,38 @@ class WallpaperDetailViewModel @Inject constructor(
         if (currentWallpaperId.isNotEmpty()) {
             val editedImage = EditedImageCache.getEditedImage(currentWallpaperId)
             _editedBitmap.value = editedImage
+        }
+    }
+
+    /**
+     * 加载并模糊背景图片
+     */
+    private fun loadAndBlurBackground(wallpaper: Wallpaper) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                // 使用较低分辨率的URL以提高加载速度
+                val imageUrl = wallpaper.thumbnailUrl ?: wallpaper.url
+                if (imageUrl != null) {
+                    val url = URL(imageUrl)
+                    val originalBitmap = BitmapFactory.decodeStream(url.openStream())
+
+                    // 应用高斯模糊
+                    val blurredBitmap = ImageUtils.applyGaussianBlur(
+                        context,
+                        originalBitmap,
+                        radius = 25f,
+                        scale = 0.2f
+                    )
+
+                    // 更新状态
+                    withContext(Dispatchers.Main) {
+                        _blurredBackgroundBitmap.value = blurredBitmap
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "加载并模糊背景图片失败: ${e.message}")
+                // 失败时不更新状态，保持默认黑色背景
+            }
         }
     }
 

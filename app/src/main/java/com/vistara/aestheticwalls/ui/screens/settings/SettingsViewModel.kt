@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.R
@@ -14,7 +13,6 @@ import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.LocaleManager
-import com.vistara.aestheticwalls.utils.EventBus
 import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -24,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
-import java.util.Locale
 import javax.inject.Inject
 
 /**
@@ -38,8 +35,7 @@ class SettingsViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
     private val localeManager: LocaleManager,
-    private val stringProvider: StringProvider,
-    private val eventBus: EventBus
+    private val stringProvider: StringProvider
 ) : ViewModel() {
 
     companion object {
@@ -64,8 +60,7 @@ class SettingsViewModel @Inject constructor(
 
     // 壁纸更换通知
     private val _showWallpaperChangeNotification = MutableStateFlow(true)
-    val showWallpaperChangeNotification: StateFlow<Boolean> =
-        _showWallpaperChangeNotification.asStateFlow()
+    val showWallpaperChangeNotification: StateFlow<Boolean> = _showWallpaperChangeNotification.asStateFlow()
 
     // 下载原始质量
     private val _downloadOriginalQuality = MutableStateFlow(true)
@@ -170,8 +165,7 @@ class SettingsViewModel @Inject constructor(
                 _dynamicColors.value = userSettings.dynamicColors
                 _appLanguage.value = userSettings.appLanguage
                 _showDownloadNotification.value = userSettings.showDownloadNotification
-                _showWallpaperChangeNotification.value =
-                    userSettings.showWallpaperChangeNotification
+                _showWallpaperChangeNotification.value = userSettings.showWallpaperChangeNotification
                 _downloadOriginalQuality.value = userSettings.downloadOriginalQuality
 
                 Log.d(TAG, "User settings loaded successfully")
@@ -208,69 +202,22 @@ class SettingsViewModel @Inject constructor(
     private val _languageUpdated = MutableStateFlow(false)
     val languageUpdated: StateFlow<Boolean> = _languageUpdated.asStateFlow()
 
-    /**
-     * 获取 LocaleManager 实例
-     * 用于在 UI 中获取系统语言
-     */
-    fun getLocaleManager(): LocaleManager {
-        return localeManager
-    }
-
     fun updateAppLanguage(language: AppLanguage) {
         Log.d(TAG, "updateAppLanguage called with language: $language")
 
-        // 获取当前语言设置
-        val currentLocale = AppCompatDelegate.getApplicationLocales()
-        Log.d(
-            TAG,
-            "Current ApplicationLocales in ViewModel: $currentLocale, isEmpty: ${currentLocale.isEmpty}"
-        )
-        Log.d(TAG, "Current default locale in ViewModel: ${Locale.getDefault()}")
-
-        // 即使语言相同，也强制应用语言设置
+        // 立即更新 _appLanguage.value，确保 UI 能立即反映语言变化
         _appLanguage.value = language
-        Log.d(TAG, "Saving language setting: $language")
-        saveSettings()
+        Log.d(TAG, "Updated _appLanguage.value to: $language")
 
         // 应用语言设置
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Calling localeManager.updateAppLanguage with: $language")
-                val needRestart = localeManager.updateAppLanguage(language)
-                Log.d(TAG, "Need restart: $needRestart")
-
-                // 再次检查设置后的结果
-                val afterLocale = AppCompatDelegate.getApplicationLocales()
-                Log.d(
-                    TAG,
-                    "After updateAppLanguage, ApplicationLocales: $afterLocale, isEmpty: ${afterLocale.isEmpty}"
-                )
-                Log.d(TAG, "After updateAppLanguage, default locale: ${Locale.getDefault()}")
-
-                // 通知 UI 语言已更新，但不重启 Activity
-                // 使用 stringProvider 而不是直接使用 context.getString 来确保使用更新后的语言资源
-                val message = if (language == AppLanguage.SYSTEM) {
-                    // 获取真正的系统语言
-                    val systemLocale = localeManager.getSystemLocale()
-                    "\u5207换到系统语言: ${systemLocale.displayLanguage}"
-                } else {
-                    stringProvider.getString(R.string.language_changed) + ": ${language.name}"
-                }
-                _operationResult.value = message
-
-                // 对于其他语言，正常触发 UI 刷新
+                // 使用 LocaleManager 更新语言设置
+                localeManager.updateAppLanguage(language)
+                // 触发 UI 刷新
                 _languageUpdated.value = true
                 delay(100)
                 _languageUpdated.value = false
-
-                // 发送语言变化事件，通知其他组件刷新
-                // 注意：这里使用非挂起函数版本，避免在挂起函数中调用挂起函数
-                try {
-                    Log.d(TAG, "发送语言变化事件，通知其他组件刷新")
-                    eventBus.emitLanguageChanged()
-                } catch (e: Exception) {
-                    Log.e(TAG, "发送语言变化事件失败: ${e.message}")
-                }
             } catch (e: Exception) {
                 Log.e(TAG, "Error updating language: ${e.message}")
                 _operationResult.value = "Error updating language: ${e.message}"

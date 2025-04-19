@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -21,31 +22,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.LiveVideoGrid
 import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.rememberVideoPlaybackManager
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
-import kotlinx.coroutines.launch
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 动态壁纸库页面
@@ -55,9 +50,7 @@ import kotlinx.coroutines.launch
 @Suppress("OPT_IN_USAGE")
 @Composable
 fun LiveLibraryScreen(
-    onWallpaperClick: (Wallpaper) -> Unit,
-    onSearchClick: () -> Unit = {},
-    viewModel: LiveLibraryViewModel = hiltViewModel()
+    onWallpaperClick: (Wallpaper) -> Unit, onSearchClick: () -> Unit = {}, viewModel: LiveLibraryViewModel = hiltViewModel()
 ) {
     // 从 ViewModel 中获取状态
     val wallpapersState by viewModel.wallpapersState.collectAsState()
@@ -88,8 +81,7 @@ fun LiveLibraryScreen(
                 )
             }
         }, colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-            titleContentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f), titleContentColor = MaterialTheme.colorScheme.onBackground
         )
         )
     }) { paddingValues ->
@@ -102,9 +94,7 @@ fun LiveLibraryScreen(
         ) {
             // 分类选择器 - 使用remember缓存分类选择器
             CategorySelector(
-                categories = categories,
-                selectedCategory = selectedCategory,
-                onCategorySelected = { category ->
+                categories = categories, selectedCategory = selectedCategory, onCategorySelected = { category ->
                     viewModel.filterByCategory(category)
                 })
             // 将整个when表达式包裹在一个组合函数中
@@ -129,38 +119,49 @@ fun LiveLibraryScreen(
 
                     is UiState.Success -> {
                         val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
-
-                        // 使用Column包裹LazyRow和WallpaperStaggeredGrid
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            // 显示动态壁纸网格 (统一大小布局)
-                            Box(modifier = Modifier.weight(1f)) {
-                                // 创建LazyGridState并保持它的状态
-                                val gridState = rememberLazyGridState()
-
-                                // 创建视频播放管理器
-                                val videoPlaybackManager = rememberVideoPlaybackManager()
-                                // 启用顺序播放模式，确保同一时间只有一个视频在播放
-                                videoPlaybackManager.setSequentialPlayback(true)
-
-                                // 使用remember缓存LiveVideoGrid组件
-                                val rememberedWallpapers = remember(wallpapers) { wallpapers }
-                                val rememberedIsLoadingMore =
-                                    remember(isLoadingMore) { isLoadingMore }
-                                val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
-
-                                LiveVideoGrid(
-                                    wallpapers = rememberedWallpapers,
-                                    onWallpaperClick = onWallpaperClick,
-                                    onLoadMore = { viewModel.loadMore() },
-                                    isLoadingMore = rememberedIsLoadingMore,
-                                    canLoadMore = rememberedCanLoadMore,
-                                    showEndMessage = !rememberedCanLoadMore,
-                                    videoPlaybackManager = videoPlaybackManager,
-                                    // 使用固定列数，确保统一大小
-                                    columns = 2,
-                                    gridState = gridState,
-                                    modifier = Modifier.fillMaxSize(),
+                        if (wallpapers.isEmpty()) {
+                            // 显示空状
+                            Box(
+                                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.no_wallpapers_found),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
+                            }
+                        } else {
+                            // 使用Column包裹LazyRow和WallpaperStaggeredGrid
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                // 显示动态壁纸网格 (统一大小布局)
+                                Box(modifier = Modifier.weight(1f)) {
+                                    // 创建LazyGridState并保持它的状态
+                                    val gridState = rememberLazyGridState()
+
+                                    // 创建视频播放管理器
+                                    val videoPlaybackManager = rememberVideoPlaybackManager()
+                                    // 启用顺序播放模式，确保同一时间只有一个视频在播放
+                                    videoPlaybackManager.setSequentialPlayback(true)
+
+                                    // 使用remember缓存LiveVideoGrid组件
+                                    val rememberedWallpapers = remember(wallpapers) { wallpapers }
+                                    val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
+                                    val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
+
+                                    LiveVideoGrid(
+                                        wallpapers = rememberedWallpapers,
+                                        onWallpaperClick = onWallpaperClick,
+                                        onLoadMore = { viewModel.loadMore() },
+                                        isLoadingMore = rememberedIsLoadingMore,
+                                        canLoadMore = rememberedCanLoadMore,
+                                        showEndMessage = !rememberedCanLoadMore,
+                                        videoPlaybackManager = videoPlaybackManager,
+                                        // 使用固定列数，确保统一大小
+                                        columns = 2,
+                                        gridState = gridState,
+                                        modifier = Modifier.fillMaxSize(),
+                                    )
+                                }
                             }
                         }
                     }

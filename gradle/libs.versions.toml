@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.0-alpha06"
+agp = "8.9.1"
 firebaseBom = "33.12.0"
 firebaseFirestore = "25.1.3"
 imagecropper = "4.6.0"
@@ -108,6 +108,7 @@ androidx-material = { group = "androidx.compose.material", name = "material" }
 # Compose
 compose = { group = "androidx.compose.foundation", name = "foundation" }
 compose-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glideCompose" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version = "4.16.0" }
 
 # Billing
 google-play-billing = { group = "com.android.billingclient", name = "billing", version.ref = "billing" }

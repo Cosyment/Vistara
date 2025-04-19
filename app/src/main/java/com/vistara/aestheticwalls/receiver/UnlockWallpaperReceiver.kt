@@ -6,9 +6,10 @@ import android.content.Intent
 import android.util.Log
 import com.vistara.aestheticwalls.data.model.AutoChangeFrequency
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
-import com.vistara.aestheticwalls.data.model.WallpaperTarget
+import com.vistara.aestheticwalls.data.model.AutoChangeSource
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
+import com.vistara.aestheticwalls.manager.AppWallpaperManager
 import com.vistara.aestheticwalls.utils.NetworkUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -32,6 +33,9 @@ class UnlockWallpaperReceiver : BroadcastReceiver() {
     @Inject
     lateinit var networkUtil: NetworkUtil
 
+    @Inject
+    lateinit var appWallpaperManager: AppWallpaperManager
+
     companion object {
         private const val TAG = "UnlockWallpaperReceiver"
     }
@@ -39,17 +43,17 @@ class UnlockWallpaperReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_USER_PRESENT) {
             Log.d(TAG, "Screen unlocked, checking auto change settings")
-            
+
             // 使用协程处理异步操作
             CoroutineScope(Dispatchers.IO).launch {
+                // 首先检查是否有待处理的视频壁纸
                 try {
                     // 获取用户设置
                     val userSettings = userPrefsRepository.getUserSettings()
-                    Log.d(TAG, "用户设置获取成功: autoChangeEnabled=${userSettings.autoChangeEnabled}, "
-                        + "frequency=${userSettings.autoChangeFrequency}, "
-                        + "source=${userSettings.autoChangeSource}, "
-                        + "target=${userSettings.autoChangeTarget}, "
-                        + "wifiOnly=${userSettings.autoChangeWifiOnly}")
+                    Log.d(
+                        TAG,
+                        "用户设置获取成功: autoChangeEnabled=${userSettings.autoChangeEnabled}, " + "frequency=${userSettings.autoChangeFrequency}, " + "source=${userSettings.autoChangeSource}, " + "target=${userSettings.autoChangeTarget}, " + "wifiOnly=${userSettings.autoChangeWifiOnly}"
+                    )
 
                     // 检查是否启用了自动更换壁纸
                     if (!userSettings.autoChangeEnabled) {
@@ -76,7 +80,7 @@ class UnlockWallpaperReceiver : BroadcastReceiver() {
                     // 根据来源获取壁纸
                     Log.d(TAG, "根据来源获取壁纸: ${userSettings.autoChangeSource}")
                     val wallpaper = when (userSettings.autoChangeSource) {
-                        com.vistara.aestheticwalls.data.model.AutoChangeSource.FAVORITES -> {
+                        AutoChangeSource.FAVORITES -> {
                             // 从收藏中随机获取
                             Log.d(TAG, "从收藏中随机获取壁纸")
                             wallpaperRepository.getRandomFavoriteWallpaper()
@@ -94,13 +98,13 @@ class UnlockWallpaperReceiver : BroadcastReceiver() {
                             }
                         }
 
-                        com.vistara.aestheticwalls.data.model.AutoChangeSource.DOWNLOADED -> {
+                        AutoChangeSource.DOWNLOADED -> {
                             // 从下载中随机获取
                             Log.d(TAG, "从下载中随机获取壁纸")
                             wallpaperRepository.getRandomDownloadedWallpaper()
                         }
 
-                        com.vistara.aestheticwalls.data.model.AutoChangeSource.TRENDING -> {
+                        AutoChangeSource.TRENDING -> {
                             // 从热门壁纸中随机获取
                             Log.d(TAG, "从热门壁纸中随机获取")
                             wallpaperRepository.getRandomTrendingWallpaper()
@@ -132,95 +136,19 @@ class UnlockWallpaperReceiver : BroadcastReceiver() {
 
                     // 设置壁纸
                     Log.d(TAG, "开始设置壁纸，目标屏幕: ${userSettings.autoChangeTarget}")
-                    val success = setWallpaper(context, wallpaper, userSettings.autoChangeTarget)
 
-                    if (success) {
-                        Log.d(TAG, "自动更换壁纸设置成功！")
-                    } else {
-                        Log.e(TAG, "自动更换壁纸设置失败！")
-                    }
+                    appWallpaperManager.setWallpaper(wallpaper, target = userSettings.autoChangeTarget, onComplete ={ success ->
+                        if (success) {
+                            Log.d(TAG, "壁纸设置成功")
+                        } else {
+                            Log.e(TAG, "壁纸设置失败")
+                        }
+                    })
                 } catch (e: Exception) {
                     Log.e(TAG, "自动更换壁纸过程中出错: ${e.message}")
                     e.printStackTrace()
                 }
             }
-        }
-    }
-
-    /**
-     * 设置壁纸
-     */
-    private suspend fun setWallpaper(
-        context: Context,
-        wallpaper: com.vistara.aestheticwalls.data.model.Wallpaper,
-        target: WallpaperTarget
-    ): Boolean {
-        return try {
-            // 检查壁纸是否已下载
-            val localFile = wallpaperRepository.getLocalFile(wallpaper.id)
-            Log.d(TAG, "检查本地文件: ${localFile?.absolutePath}, 存在: ${localFile?.exists()}")
-
-            val bitmap = if (localFile != null && localFile.exists()) {
-                // 使用本地文件
-                Log.d(TAG, "使用本地文件加载壁纸")
-                android.graphics.BitmapFactory.decodeFile(localFile.absolutePath)
-            } else {
-                // 从URL下载
-                Log.d(TAG, "从网络加载壁纸: ${wallpaper.url}")
-                val url = java.net.URL(wallpaper.url)
-                android.graphics.BitmapFactory.decodeStream(url.openStream())
-            }
-
-            if (bitmap == null) {
-                Log.e(TAG, "解码位图失败，无法设置壁纸")
-                return false
-            }
-
-            Log.d(TAG, "位图加载成功，尺寸: ${bitmap.width}x${bitmap.height}")
-
-            // 设置壁纸
-            val wallpaperManager = android.app.WallpaperManager.getInstance(context)
-            Log.d(TAG, "开始设置壁纸，Android版本: ${android.os.Build.VERSION.SDK_INT}")
-
-            when (target) {
-                WallpaperTarget.HOME -> {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        wallpaperManager.setBitmap(
-                            bitmap, null, true, android.app.WallpaperManager.FLAG_SYSTEM
-                        )
-                    } else {
-                        wallpaperManager.setBitmap(bitmap)
-                    }
-                }
-
-                WallpaperTarget.LOCK -> {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        wallpaperManager.setBitmap(
-                            bitmap, null, true, android.app.WallpaperManager.FLAG_LOCK
-                        )
-                    }
-                }
-
-                WallpaperTarget.BOTH -> {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                        wallpaperManager.setBitmap(
-                            bitmap,
-                            null,
-                            true,
-                            android.app.WallpaperManager.FLAG_SYSTEM or android.app.WallpaperManager.FLAG_LOCK
-                        )
-                    } else {
-                        wallpaperManager.setBitmap(bitmap)
-                    }
-                }
-            }
-
-            Log.d(TAG, "壁纸设置成功")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "设置壁纸时出错: ${e.message}")
-            e.printStackTrace()
-            false
         }
     }
 }

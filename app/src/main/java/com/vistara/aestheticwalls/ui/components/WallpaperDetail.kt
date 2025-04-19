@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Share
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,7 +54,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -62,6 +62,7 @@ import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Resolution
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 @Composable
 fun WallpaperDetail(
@@ -77,6 +78,7 @@ fun WallpaperDetail(
     onDownload: () -> Unit,
     onShare: () -> Unit,
     onEdit: () -> Unit,
+    onPreview: () -> Unit = {},
     modifier: Modifier = Modifier,
     isPremiumUser: Boolean = false,
     editedBitmap: Bitmap? = null,
@@ -157,6 +159,23 @@ fun WallpaperDetail(
                             .align(Alignment.Center)
                             .padding(horizontal = 56.dp) // 留出两边按钮的空间
                     )
+                }
+
+                // 如果是图片壁纸，显示预览按钮
+                if (!wallpaper.isLive) {
+                    IconButton(
+                        onClick = onPreview,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .padding(end = 8.dp)
+                            .size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.WallpaperPreview,
+                            contentDescription = stringResource(R.string.preview_wallpaper),
+                            tint = Color.White
+                        )
+                    }
                 }
             }
         }
@@ -384,22 +403,31 @@ fun WallpaperDetail(
                 val canSetWallpaper = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
                 Button(
                     onClick = onSetWallpaper,
-                    // 当正在处理壁纸时禁用按钮
-                    enabled = !isProcessingWallpaper, modifier = Modifier
+                    // 当正在处理壁纸时禁用按钮，防止重复点击
+                    enabled = !isProcessingWallpaper,
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 16.dp)
-                        .height(48.dp), colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        // 自定义禁用状态的颜色，使其保持高可见度
+                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        // 自定义禁用状态的文字颜色，使其保持高可见度
+                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f),
+                        // 正常状态的颜色
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         if (isProcessingWallpaper) {
-                            // 显示加载指示器
+                            // 显示加载指示器，使用高对比度的颜色
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
+                                color = MaterialTheme.colorScheme.onPrimary, // 确保加载指示器清晰可见
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -407,14 +435,16 @@ fun WallpaperDetail(
                             // 对于高级壁纸和非高级用户，显示皇冠图标
                             Text(
                                 text = "👑", // 皇冠emoji
-                                style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(end = 4.dp)
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(end = 4.dp)
                             )
                         }
                         Text(
                             text = if (isProcessingWallpaper) stringResource(R.string.setting_wallpaper)
-                                  else if (canSetWallpaper) stringResource(R.string.set_as_wallpaper)
-                                  else stringResource(R.string.upgrade_to_unlock),
+                            else if (canSetWallpaper) stringResource(R.string.set_as_wallpaper)
+                            else stringResource(R.string.upgrade_to_unlock),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            // 不需要显式设置颜色，因为我们已经在ButtonDefaults中设置了disabledContentColor
                         )
                     }
                 }
@@ -427,7 +457,7 @@ fun WallpaperDetail(
 
 @Composable
 fun WallpaperSetOptions(
-    onSetHomeScreen: () -> Unit, onSetLockScreen: () -> Unit, onSetBoth: () -> Unit, onDismiss: () -> Unit
+    onSetHomeScreen: () -> Unit, onSetLockScreen: () -> Unit, onSetBoth: () -> Unit, onDismiss: () -> Unit,
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -486,17 +516,17 @@ fun WallpaperDetailPreview() {
     VistaraTheme {
         WallpaperDetail(
             wallpaper = Wallpaper(
-            id = "1",
-            title = "Beautiful Landscape",
-            url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
-            thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
-            author = "John Doe",
-            source = "Unsplash",
-            isPremium = true,
-            isLive = false,
-            tags = listOf("nature", "landscape"),
-            resolution = Resolution(1920, 1080)
-        ),
+                id = "1",
+                title = "Beautiful Landscape",
+                url = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+                thumbnailUrl = "https://s3.us-west-2.amazonaws.com/images.unsplash.com/small/photo-1739911013984-8b3bf696a182",
+                author = "John Doe",
+                source = "Unsplash",
+                isPremium = true,
+                isLive = false,
+                tags = listOf("nature", "landscape"),
+                resolution = Resolution(1920, 1080)
+            ),
             onBackPressed = {},
             onToggleInfo = {},
             onDownload = {},

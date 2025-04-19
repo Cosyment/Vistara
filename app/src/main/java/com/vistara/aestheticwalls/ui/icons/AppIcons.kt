@@ -1104,4 +1104,83 @@ object AppIcons {
                 }
             }.build()
         }
+
+    /**
+     * 壁纸预览图标 - 更现代的壁纸预览设计
+     */
+    val WallpaperPreview: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "wallpaper_preview",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 外框
+                    moveTo(21.0f, 3.0f)
+                    horizontalLineTo(3.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    verticalLineToRelative(14.0f)
+                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineToRelative(18.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    verticalLineTo(5.0f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    close()
+
+                    // 内框
+                    moveTo(21.0f, 19.0f)
+                    horizontalLineTo(3.0f)
+                    verticalLineTo(5.0f)
+                    horizontalLineToRelative(18.0f)
+                    verticalLineTo(19.0f)
+                    close()
+
+                    // 山
+                    moveTo(6.0f, 17.0f)
+                    horizontalLineTo(18.0f)
+                    lineTo(15.0f, 13.0f)
+                    lineTo(12.0f, 16.0f)
+                    lineTo(9.0f, 13.0f)
+                    lineTo(6.0f, 17.0f)
+                    close()
+
+                    // 太阳
+                    moveTo(8.0f, 10.0f)
+                    arcTo(2.0f, 2.0f, 0.0f, false, true, 6.0f, 8.0f)
+                    arcTo(2.0f, 2.0f, 0.0f, false, true, 8.0f, 6.0f)
+                    arcTo(2.0f, 2.0f, 0.0f, false, true, 10.0f, 8.0f)
+                    arcTo(2.0f, 2.0f, 0.0f, false, true, 8.0f, 10.0f)
+                    close()
+
+                    // 眼睛
+                    moveTo(12.0f, 8.5f)
+                    curveToRelative(-1.66f, 0.0f, -3.0f, 1.34f, -3.0f, 3.0f)
+                    reflectiveCurveToRelative(1.34f, 3.0f, 3.0f, 3.0f)
+                    reflectiveCurveToRelative(3.0f, -1.34f, 3.0f, -3.0f)
+                    reflectiveCurveTo(13.66f, 8.5f, 12.0f, 8.5f)
+                    close()
+
+                    // 眼睛瞳孔
+                    moveTo(12.0f, 13.0f)
+                    curveToRelative(-0.83f, 0.0f, -1.5f, -0.67f, -1.5f, -1.5f)
+                    reflectiveCurveToRelative(0.67f, -1.5f, 1.5f, -1.5f)
+                    reflectiveCurveToRelative(1.5f, 0.67f, 1.5f, 1.5f)
+                    reflectiveCurveTo(12.83f, 13.0f, 12.0f, 13.0f)
+                    close()
+                }
+            }.build()
+        }
 }

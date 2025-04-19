@@ -1,6 +1,5 @@
 package com.vistara.aestheticwalls.ui.screens.search
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,9 +7,7 @@ import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
-import com.vistara.aestheticwalls.utils.EventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,8 +22,6 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
-    @ApplicationContext private val context: Context,
-    private val eventBus: EventBus
 ) : ViewModel() {
 
     companion object {
@@ -47,12 +42,12 @@ class SearchViewModel @Inject constructor(
     val searchHistory: StateFlow<List<String>> = _searchHistory.asStateFlow()
 
     // 搜索建议
-    private val _searchSuggestions = MutableStateFlow<List<String>>(emptyList())
-    val searchSuggestions: StateFlow<List<String>> = _searchSuggestions.asStateFlow()
+    private val _searchSuggestions = MutableStateFlow<List<WallpaperCategory>>(emptyList())
+    val searchSuggestions: StateFlow<List<WallpaperCategory>> = _searchSuggestions.asStateFlow()
 
     // 热门搜索关键词
-    private val _hotSearches = MutableStateFlow<List<String>>(emptyList())
-    val hotSearches: StateFlow<List<String>> = _hotSearches.asStateFlow()
+    private val _hotSearches = MutableStateFlow<List<WallpaperCategory>>(emptyList())
+    val hotSearches: StateFlow<List<WallpaperCategory>> = _hotSearches.asStateFlow()
 
     // 加载状态
     private val _isLoading = MutableStateFlow(false)
@@ -65,29 +60,13 @@ class SearchViewModel @Inject constructor(
     init {
         loadSearchHistory()
         loadHotSearches()
-
-        // 监听语言变化事件
-        viewModelScope.launch {
-            eventBus.languageChangedEvent.collect {
-                // 语言变化时刷新热门搜索类别
-                loadHotSearches()
-                Log.d(TAG, "语言变化，已刷新热门搜索类别")
-            }
-        }
     }
 
     /**
      * 加载热门搜索类别
      */
     private fun loadHotSearches() {
-        _hotSearches.value = WallpaperCategory.getAllCategories().map { it.name }.subList(0, 5)
-    }
-
-    /**
-     * 当语言变化时更新热门搜索类别
-     */
-    fun refreshHotSearches() {
-        loadHotSearches()
+        _hotSearches.value = WallpaperCategory.getAllCategories().subList(0, 5)
     }
 
     /**
@@ -133,12 +112,12 @@ class SearchViewModel @Inject constructor(
 
         // 从热门搜索中筛选匹配的建议
         val hotMatches = _hotSearches.value.filter {
-            it.contains(query, ignoreCase = true)
+            it.name.contains(query, ignoreCase = true)
         }
 
         // 合并建议并去重
         val suggestions = (historyMatches + hotMatches).distinct().take(5)
-        _searchSuggestions.value = suggestions
+        _searchSuggestions.value = suggestions as List<WallpaperCategory>
     }
 
     /**
@@ -214,9 +193,9 @@ class SearchViewModel @Inject constructor(
     /**
      * 从搜索历史中选择
      */
-    fun selectFromHistory(historyItem: String) {
-        _query.value = historyItem
-        search(historyItem)
+    fun selectFromHistory(historyItem: WallpaperCategory) {
+        _query.value = historyItem.apiValue
+        search(historyItem.apiValue)
     }
 
     /**

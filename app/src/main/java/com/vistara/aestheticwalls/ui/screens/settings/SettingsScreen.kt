@@ -122,18 +122,6 @@ fun SettingsScreen(
         }
     }
 
-    // 监听语言更新状态
-    val languageUpdated by viewModel.languageUpdated.collectAsState()
-    // 监听语言更新状态，触发当前页面 UI 刷新
-    LaunchedEffect(languageUpdated) {
-        if (languageUpdated) {
-            Log.d("SettingsScreen", "语言更新触发，当前语言: ${viewModel.appLanguage.value}")
-            // 注意：这里不再手动更新资源配置，因为现在由 MainActivity 统一处理
-            // 这里只需要触发当前页面的重组即可
-            Log.d("SettingsScreen", "语言更新已触发，等待 MainActivity 处理全局语言更新")
-        }
-    }
-
     // 使用 refreshTrigger 强制重组整个页面
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, topBar = {
         TopAppBar(title = {

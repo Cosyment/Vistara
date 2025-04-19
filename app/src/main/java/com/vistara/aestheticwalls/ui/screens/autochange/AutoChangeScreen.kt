@@ -44,7 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -77,7 +77,6 @@ fun AutoChangeScreen(
     val autoChangeTarget by viewModel.autoChangeTarget.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isChangingWallpaper by viewModel.isChangingWallpaper.collectAsState()
-    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val needLogin by viewModel.needLogin.collectAsState()
     val settingsApplied by viewModel.settingsApplied.collectAsState()
 

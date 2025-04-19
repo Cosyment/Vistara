@@ -57,7 +57,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -184,7 +184,7 @@ fun AuthScreen(
                                 MaterialTheme.colorScheme.primary,
                                 MaterialTheme.colorScheme.primary.copy(alpha = 0f)
                             )
-                        ), shape = CircleShape
+                        ), shape = RoundedCornerShape(100)
                     )
             )
 
@@ -223,8 +223,8 @@ fun AuthScreen(
                                 scaleX = scale
                                 scaleY = scale
                             }
-                            .shadow(8.dp, CircleShape)
-                            .clip(CircleShape)
+                            .shadow(8.dp, RoundedCornerShape(100))
+                            .clip(RoundedCornerShape(100))
                             .background(
                                 brush = Brush.radialGradient(
                                     colors = listOf(
@@ -238,7 +238,7 @@ fun AuthScreen(
                             painter = painterResource(id = R.drawable.ic_launcher_round),
                             contentDescription = "App Logo",
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(120.dp)
                                 .alpha(0.9f)
                         )
                     }

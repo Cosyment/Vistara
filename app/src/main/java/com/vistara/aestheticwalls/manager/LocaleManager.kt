@@ -37,13 +37,16 @@ class LocaleManager @Inject constructor(
     /**
      * 更新应用语言设置
      * @param language 要设置的语言
-     * @return 是否需要重启应用
      */
-    suspend fun updateAppLanguage(language: AppLanguage): Boolean {
+    suspend fun updateAppLanguage(language: AppLanguage) {
+        // 只更新 UserPrefsRepository 中的值，不做其他操作
+        // 由于 appLanguageFlow 是 Flow，当值变化时会自动触发 UI 重组
         val currentSettings = userPrefsRepository.getUserSettings()
         val updatedSettings = currentSettings.copy(appLanguage = language)
         userPrefsRepository.saveUserSettings(updatedSettings)
-        return applyLanguage(language)
+
+        // 应用语言设置
+        applyLanguage(language)
     }
 
     /**
@@ -154,93 +157,25 @@ class LocaleManager @Inject constructor(
 
     /**
      * 强制重置应用语言到系统语言
-     * 这个方法会尝试多种方式来确保应用使用系统语言
+     * 使用简化的逻辑确保应用使用系统语言
      */
     fun forceSystemLanguage() {
         Log.d(TAG, "强制重置应用语言到系统语言")
 
-        // 获取真正的系统语言
-        var systemLocale = getSystemLocale()
-        Log.d(TAG, "强制设置系统语言(原始): $systemLocale")
+        try {
+            // 获取真正的系统语言
+            val systemLocale = getSystemLocale()
+            Log.d(TAG, "获取到系统语言: $systemLocale")
 
-        // 处理英语区域设置，将 en_US 转换为 en
-        if (systemLocale.language == "en") {
-            // 创建一个新的只有语言代码的 Locale
-            systemLocale = Locale("en")
-            Log.d(TAG, "处理英语区域设置，转换为: $systemLocale")
-        }
-
-        // 检查语言是否合理
-        if (systemLocale.language != "en" && systemLocale.language != Locale.getDefault().language) {
-            Log.d(TAG, "检测到的系统语言不合理，尝试使用英语")
-            // 如果系统语言不合理，则使用英语
-            val englishLocale = Locale("en")
-
-            // 先设置默认语言
-            Locale.setDefault(englishLocale)
-            Log.d(TAG, "设置默认语言为英语: ${Locale.getDefault()}")
-
-            // 然后设置应用语言
-            val englishLocaleList = LocaleListCompat.create(englishLocale)
-            AppCompatDelegate.setApplicationLocales(englishLocaleList)
-            Log.d(TAG, "设置应用语言为英语: $englishLocaleList")
-
-            // 尝试多种方式强制更新资源配置
-            try {
-                // 方式1: 设置空的 LocaleList 然后再设置英语
-                AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
-                Log.d(TAG, "设置空的 LocaleList")
-
-                // 等待一下再设置英语
-                val englishLocaleList = LocaleListCompat.create(englishLocale)
-                AppCompatDelegate.setApplicationLocales(englishLocaleList)
-                Log.d(TAG, "再次设置英语: $englishLocaleList")
-
-                // 方式2: 尝试更新系统资源配置
-                val config = Resources.getSystem().configuration
-                val localeList = android.os.LocaleList(englishLocale)
-                config.setLocales(localeList)
-                Log.d(TAG, "强制更新资源配置为英语")
-            } catch (e: Exception) {
-                Log.e(TAG, "强制更新资源配置时出错: ${e.message}")
-            }
-
-            // 检查设置后的结果
-            val afterLocales = AppCompatDelegate.getApplicationLocales()
-            Log.d(TAG, "设置后的应用语言(英语): $afterLocales, isEmpty: ${afterLocales.isEmpty}")
-        } else {
-            // 先设置默认语言
-            Locale.setDefault(systemLocale)
-            Log.d(TAG, "设置默认语言为系统语言: ${Locale.getDefault()}")
-
-            // 然后设置应用语言
-            val systemLocaleList = LocaleListCompat.create(systemLocale)
-            AppCompatDelegate.setApplicationLocales(systemLocaleList)
-            Log.d(TAG, "设置应用语言为系统语言: $systemLocaleList")
-
-            // 尝试多种方式强制更新资源配置
-            try {
-                // 方式1: 设置空的 LocaleList 然后再设置系统语言
-                AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
-                Log.d(TAG, "设置空的 LocaleList")
-
-                // 等待一下再设置系统语言
-                val systemLocaleList = LocaleListCompat.create(systemLocale)
-                AppCompatDelegate.setApplicationLocales(systemLocaleList)
-                Log.d(TAG, "再次设置系统语言: $systemLocaleList")
-
-                // 方式2: 尝试更新系统资源配置
-                val config = Resources.getSystem().configuration
-                val localeList = android.os.LocaleList(systemLocale)
-                config.setLocales(localeList)
-                Log.d(TAG, "强制更新资源配置为系统语言")
-            } catch (e: Exception) {
-                Log.e(TAG, "强制更新资源配置时出错: ${e.message}")
-            }
+            // 设置空的语言列表，这会使应用使用系统语言
+            AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
+            Log.d(TAG, "设置空的语言列表，使应用使用系统语言")
 
             // 检查设置后的结果
             val afterLocales = AppCompatDelegate.getApplicationLocales()
             Log.d(TAG, "设置后的应用语言: $afterLocales, isEmpty: ${afterLocales.isEmpty}")
+        } catch (e: Exception) {
+            Log.e(TAG, "强制设置系统语言时出错: ${e.message}")
         }
     }
 
@@ -249,14 +184,7 @@ class LocaleManager @Inject constructor(
      * @return 系统语言区域
      */
     fun getSystemLocale(): Locale {
-        // 尝试多种方式获取真正的系统语言
-        Log.d(TAG, "开始获取真正的系统语言...")
-
-        // 记录所有可能的系统语言来源
-        val javaLocale = Locale.getDefault()
-        Log.d(TAG, "从 Java Locale.getDefault() 获取的语言: $javaLocale")
-
-
+        // 使用 Resources.getSystem() 获取系统资源，不受应用语言设置影响
         val configuration = Resources.getSystem().configuration
         val systemLocale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             configuration.locales.get(0)
@@ -264,16 +192,8 @@ class LocaleManager @Inject constructor(
             @Suppress("DEPRECATION") configuration.locale
         }
 
-        Log.e(TAG, " $systemLocale  ${Locale.getDefault()}")
         Log.d(TAG, "从 Resources.getSystem() 获取的系统语言: $systemLocale")
-
-        // 如果所有方式都失败，则使用 Java 的 Locale.getDefault()
-        if (systemLocale.language != "en" && systemLocale.language != javaLocale.language) {
-            Log.d(TAG, "所有方式都失败，使用 Java 的 Locale.getDefault(): $javaLocale")
-            return javaLocale
-        }
-
-        return javaLocale
+        return systemLocale
     }
 
     /**

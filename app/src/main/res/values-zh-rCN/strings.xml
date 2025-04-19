@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
-    <string name="search_hint">搜索壁纸...</string>
+    <string name="search_hint">搜索壁纸…</string>
 
     <!-- 通知相关字符串 -->
     <string name="notification_channel_wallpaper">壁纸更换通知</string>
@@ -209,6 +209,7 @@
     <string name="set_both_screens">同时设置</string>
     <string name="collapse_info">收起信息</string>
     <string name="expand_info">展开信息</string>
+    <string name="preview_wallpaper">预览壁纸</string>
     <string name="set_as">设置为</string>
     <string name="home_screen_wallpaper">主屏幕壁纸</string>
     <string name="lock_screen_wallpaper">锁屏壁纸</string>
@@ -422,4 +423,15 @@
     <string name="auth_app_description">精美壁纸，让您的设备焕然一新</string>
     <string name="sign_in_with_google">使用Google账号登录</string>
     <string name="skip_login">跳过登录并浏览</string>
+    <string name="system_language">跟随系统</string>
+    <string name="english_language">English</string>
+    <string name="chinese_language">中文</string>
+    <string name="japanese_language">日本語</string>
+    <string name="korean_language">한국어</string>
+    <string name="indonesian_language">Bahasa Indonesia</string>
+    <!-- 新增字符串 -->
+    <string name="notification_channel_live_wallpaper">动态壁纸通知</string>
+    <string name="notification_channel_live_wallpaper_desc">关于待处理的动态壁纸设置的通知</string>
+    <string name="notification_live_wallpaper_pending_title">视频壁纸已就绪</string>
+    <string name="notification_live_wallpaper_pending_text">点击将"%1$s"设置为您的视频壁纸</string>
 </resources>

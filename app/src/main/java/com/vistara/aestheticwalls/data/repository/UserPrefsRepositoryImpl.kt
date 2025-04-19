@@ -54,6 +54,9 @@ class UserPrefsRepositoryImpl @Inject constructor(
 
         // 搜索历史
         private val SEARCH_HISTORY = stringSetPreferencesKey("search_history")
+
+        // 待处理的视频壁纸
+        private val PENDING_LIVE_WALLPAPER = stringPreferencesKey("pending_live_wallpaper")
     }
 
     /**
@@ -211,5 +214,32 @@ class UserPrefsRepositoryImpl @Inject constructor(
      */
     override suspend fun clearUserSettings() {
         dataStore.edit { it.clear() }
+    }
+
+    /**
+     * 设置待处理的视频壁纸ID
+     */
+    override suspend fun setPendingLiveWallpaper(wallpaperId: String) {
+        dataStore.edit { preferences ->
+            preferences[PENDING_LIVE_WALLPAPER] = wallpaperId
+        }
+    }
+
+    /**
+     * 获取待处理的视频壁纸ID
+     */
+    override suspend fun getPendingLiveWallpaper(): String? {
+        return dataStore.data.map { preferences ->
+            preferences[PENDING_LIVE_WALLPAPER]
+        }.first()
+    }
+
+    /**
+     * 清除待处理的视频壁纸ID
+     */
+    override suspend fun clearPendingLiveWallpaper() {
+        dataStore.edit { preferences ->
+            preferences.remove(PENDING_LIVE_WALLPAPER)
+        }
     }
 }

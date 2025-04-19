@@ -42,11 +42,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 @Composable
 fun SearchBar(
@@ -64,8 +64,8 @@ fun SearchBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .height(56.dp),
+            .padding(vertical = 5.dp)
+            .height(50.dp),
         shape = RoundedCornerShape(28.dp),
         shadowElevation = elevation.dp,
         color = backgroundColor
@@ -73,8 +73,7 @@ fun SearchBar(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
+                .padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxSize()
@@ -95,9 +94,7 @@ fun SearchBar(
                         .fillMaxHeight(),
                     placeholder = {
                         Text(
-                            text = placeholder,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = contentColor.copy(alpha = 0.5f)
+                            text = placeholder, style = MaterialTheme.typography.bodyMedium, color = contentColor.copy(alpha = 0.5f)
                         )
                     },
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = contentColor),
@@ -187,8 +184,7 @@ private fun SuggestionItem(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(Color.Transparent)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(8.dp), verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
             imageVector = Icons.Default.Search,
@@ -227,8 +223,7 @@ fun SearchBarWithCategories(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categories) { category ->
                 CategoryChip(
@@ -246,9 +241,7 @@ fun CategoryChip(
     category: String, onClick: () -> Unit, modifier: Modifier = Modifier
 ) {
     Surface(
-        modifier = modifier.clip(RoundedCornerShape(16.dp)),
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        onClick = onClick
+        modifier = modifier.clip(RoundedCornerShape(16.dp)), color = MaterialTheme.colorScheme.secondaryContainer, onClick = onClick
     ) {
         Text(
             text = category,
@@ -339,9 +332,7 @@ private fun HistoryItem(
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -377,8 +368,7 @@ fun AdvancedSearchBar(
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyRow(
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(categories) { category ->
                     CategoryChip(

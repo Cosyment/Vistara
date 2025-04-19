@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
-    <string name="search_hint">Search wallpapers...</string>
+    <string name="search_hint">Search wallpapers…</string>
 
     <!-- Notification related strings -->
     <string name="notification_channel_wallpaper">Wallpaper Change Notification</string>
     <string name="notification_channel_wallpaper_desc">Notifications about wallpaper auto-change status</string>
     <string name="notification_channel_download">Download Notification</string>
     <string name="notification_channel_download_desc">Notifications about wallpaper download progress and completion</string>
+    <string name="notification_channel_live_wallpaper">Live Wallpaper Notification</string>
+    <string name="notification_channel_live_wallpaper_desc">Notifications about pending live wallpaper settings</string>
 
     <string name="notification_wallpaper_changed_title">Wallpaper Changed</string>
     <string name="notification_wallpaper_changed_text">Your wallpaper has been successfully changed</string>
@@ -17,6 +19,9 @@
 
     <string name="notification_download_complete_title">Wallpaper Download Complete</string>
     <string name="notification_download_complete_text">Wallpaper has been successfully downloaded to your device</string>
+
+    <string name="notification_live_wallpaper_pending_title">Video Wallpaper Ready</string>
+    <string name="notification_live_wallpaper_pending_text">Tap to set "%1$s" as your video wallpaper</string>
 
     <!-- Video wallpaper related strings -->
     <string name="video_wallpaper_description">Use video as live wallpaper</string>
@@ -240,6 +245,7 @@
     <string name="set_both_screens">Set Both</string>
     <string name="collapse_info">Collapse Info</string>
     <string name="expand_info">Expand Info</string>
+    <string name="preview_wallpaper">Preview Wallpaper</string>
     <string name="set_as">Set as</string>
     <string name="home_screen_wallpaper">Home Screen Wallpaper</string>
     <string name="lock_screen_wallpaper">Lock Screen Wallpaper</string>
@@ -432,4 +438,10 @@
     <string name="login_failed_with_message">Login failed: %1$s</string>
     <string name="logout_success">Logged out successfully</string>
     <string name="logout_failed">Logout failed: %1$s</string>
+    <string name="system_language">System</string>
+    <string name="english_language">English</string>
+    <string name="chinese_language">中文</string>
+    <string name="japanese_language">日本語</string>
+    <string name="korean_language">한국어</string>
+    <string name="indonesian_language">Bahasa Indonesia</string>
 </resources>

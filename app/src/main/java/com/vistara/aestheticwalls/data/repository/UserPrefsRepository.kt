@@ -64,4 +64,19 @@ interface UserPrefsRepository {
      * 清除所有用户设置
      */
     suspend fun clearUserSettings()
+
+    /**
+     * 设置待处理的视频壁纸ID
+     */
+    suspend fun setPendingLiveWallpaper(wallpaperId: String)
+
+    /**
+     * 获取待处理的视频壁纸ID
+     */
+    suspend fun getPendingLiveWallpaper(): String?
+
+    /**
+     * 清除待处理的视频壁纸ID
+     */
+    suspend fun clearPendingLiveWallpaper()
 }

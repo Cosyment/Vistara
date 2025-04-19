@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.ui.theme.LocalAppResources
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -354,19 +354,32 @@ fun BottomNavBar(navController: NavController, modifier: Modifier = Modifier) {
 enum class NavDestination(val route: String, val titleResId: Int) {
     Home("home", R.string.nav_home) {
         @Composable
-        override fun getTitle(): String = stringResource(R.string.home)
+        override fun getTitle(): String {
+            // 使用 LocalAppResources 确保语言变化时能正确更新
+            val resources = LocalAppResources.current
+            return resources.getString(R.string.home)
+        }
     },
     StaticWallpapers("static", R.string.nav_static) {
         @Composable
-        override fun getTitle(): String = stringResource(R.string.category_static)
+        override fun getTitle(): String {
+            val resources = LocalAppResources.current
+            return resources.getString(R.string.category_static)
+        }
     },
     LiveWallpapers("live", R.string.nav_live) {
         @Composable
-        override fun getTitle(): String = stringResource(R.string.category_live)
+        override fun getTitle(): String {
+            val resources = LocalAppResources.current
+            return resources.getString(R.string.category_live)
+        }
     },
     Mine("mine", R.string.nav_mine) {
         @Composable
-        override fun getTitle(): String = stringResource(R.string.mine)
+        override fun getTitle(): String {
+            val resources = LocalAppResources.current
+            return resources.getString(R.string.mine)
+        }
     };
 
     @Composable

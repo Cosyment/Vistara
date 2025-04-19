@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,28 +32,26 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.CategoryChip
 import com.vistara.aestheticwalls.ui.components.SearchBar
 import com.vistara.aestheticwalls.ui.components.WallpaperItem
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 搜索屏幕
  * 显示搜索栏、搜索历史、热门搜索和搜索结果
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    onWallpaperClick: (Wallpaper) -> Unit,
-    onBackClick: () -> Unit,
-    viewModel: SearchViewModel = hiltViewModel()
+    onWallpaperClick: (Wallpaper) -> Unit, onBackClick: () -> Unit, viewModel: SearchViewModel = hiltViewModel()
 ) {
     // 从ViewModel获取状态
     val query by viewModel.query.collectAsState()
@@ -70,16 +67,14 @@ fun SearchScreen(
             Column(modifier = Modifier.statusBarsPadding()) {
                 // 顶部导航栏和搜索栏组合
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
+                    verticalAlignment = Alignment.CenterVertically, modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 4.dp, end = 16.dp, top = 8.dp)
                 ) {
                     // 返回按钮
                     IconButton(onClick = onBackClick) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+                            imageVector = Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back)
                         )
                     }
 
@@ -96,14 +91,13 @@ fun SearchScreen(
                 // 如果有搜索历史、热门搜索或建议，显示它们
                 if (query.isEmpty() && (searchHistory.isNotEmpty() || hotSearches.isNotEmpty())) {
                     LazyRow(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(hotSearches) { category ->
                             CategoryChip(
-                                category = category, onClick = {
+                                category = stringResource(category.titleRes), onClick = {
                                     viewModel.selectFromHistory(category)
-                                    viewModel.search(category)
+                                    viewModel.search(category.apiValue)
                                 })
                         }
                     }
@@ -115,14 +109,14 @@ fun SearchScreen(
                             .padding(horizontal = 16.dp)
                     ) {
                         searchSuggestions.forEach { suggestion ->
-                            Row(modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.selectSuggestion(suggestion)
-                                    viewModel.search(suggestion)
-                                }
-                                .padding(vertical = 8.dp, horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.selectSuggestion(suggestion.apiValue)
+                                        viewModel.search(suggestion.apiValue)
+                                    }
+                                    .padding(vertical = 8.dp, horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Search,
                                     contentDescription = null,
@@ -133,7 +127,7 @@ fun SearchScreen(
                                 Spacer(modifier = Modifier.width(16.dp))
 
                                 Text(
-                                    text = suggestion,
+                                    text = stringResource(suggestion.titleRes),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -153,9 +147,7 @@ fun SearchScreen(
             if (query.isEmpty() && searchResults.isEmpty()) {
                 // 初始状态：显示热门搜索
                 InitialSearchState(
-                    hotSearches = hotSearches,
-                    onCategorySelected = viewModel::selectFromHistory,
-                    modifier = Modifier
+                    hotSearches = hotSearches, onCategorySelected = viewModel::selectFromHistory, modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
                 )
@@ -171,12 +163,10 @@ fun SearchScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+                        .padding(16.dp), contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center
                     ) {
                         Text(
                             text = stringResource(R.string.no_wallpapers_found),
@@ -212,14 +202,11 @@ fun SearchScreen(
                     // 搜索结果网格
                     items(searchResults.chunked(2)) { rowItems ->
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()
                         ) {
                             rowItems.forEachIndexed { index, wallpaper ->
                                 WallpaperItem(
-                                    wallpaper = wallpaper,
-                                    onClick = { onWallpaperClick(wallpaper) },
-                                    modifier = Modifier
+                                    wallpaper = wallpaper, onClick = { onWallpaperClick(wallpaper) }, modifier = Modifier
                                         .weight(1f)
                                         .height(240.dp)
                                 )
@@ -243,7 +230,7 @@ fun SearchScreen(
  */
 @Composable
 private fun InitialSearchState(
-    hotSearches: List<String>, onCategorySelected: (String) -> Unit, modifier: Modifier = Modifier
+    hotSearches: List<WallpaperCategory>, onCategorySelected: (WallpaperCategory) -> Unit, modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         Text(
@@ -254,12 +241,11 @@ private fun InitialSearchState(
         )
 
         LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(hotSearches) { category ->
-                com.vistara.aestheticwalls.ui.components.CategoryChip(
-                    category = category, onClick = { onCategorySelected(category) })
+                CategoryChip(
+                    category = stringResource(category.titleRes), onClick = { onCategorySelected(category) })
             }
         }
 
@@ -276,18 +262,15 @@ private fun InitialSearchState(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             SearchTip(
-                title = stringResource(R.string.use_specific_descriptions),
-                description = stringResource(R.string.specific_description_examples)
+                title = stringResource(R.string.use_specific_descriptions), description = stringResource(R.string.specific_description_examples)
             )
 
             SearchTip(
-                title = stringResource(R.string.try_different_languages),
-                description = stringResource(R.string.english_keywords_tip)
+                title = stringResource(R.string.try_different_languages), description = stringResource(R.string.english_keywords_tip)
             )
 
             SearchTip(
-                title = stringResource(R.string.combine_keywords),
-                description = stringResource(R.string.keyword_combination_examples)
+                title = stringResource(R.string.combine_keywords), description = stringResource(R.string.keyword_combination_examples)
             )
         }
     }
@@ -302,17 +285,13 @@ private fun SearchTip(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
+            text = title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = description,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            text = description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
     }
 }

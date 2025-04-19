@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
-    <string name="search_hint">壁紙を検索...</string>
+    <string name="search_hint">壁紙を検索…</string>
 
     <!-- 通知関連の文字列 -->
     <string name="notification_channel_wallpaper">壁紙変更通知</string>
@@ -73,6 +73,7 @@
     <string name="my_downloads_desc">ダウンロードした壁紙をすべて表示</string>
     <string name="auto_change_wallpaper">壁紙自動変更</string>
     <string name="auto_change_wallpaper_desc">壁紙自動変更の頻度とソースを設定</string>
+    <string name="settings_applied_successfully">設定が正常に適用されました</string>
     <string name="settings_desc">アプリの設定と通知を調整</string>
     <string name="rate_feedback">評価とフィードバック</string>
     <string name="rate_feedback_desc">アプリの改善にご協力ください</string>
@@ -233,6 +234,7 @@
     <string name="set_both_screens">両方に設定</string>
     <string name="collapse_info">情報を折りたたむ</string>
     <string name="expand_info">情報を展開</string>
+    <string name="preview_wallpaper">壁紙のプレビュー</string>
     <string name="set_as">設定先</string>
     <string name="home_screen_wallpaper">ホーム画面の壁紙</string>
     <string name="lock_screen_wallpaper">ロック画面の壁紙</string>
@@ -421,4 +423,15 @@
     <string name="logout_success">ログアウト成功</string>
     <string name="logout_failed">ログアウト失敗: %1$s</string>
     <string name="premium_crown">プレミアム 👑</string>
+    <string name="system_language">システム</string>
+    <string name="english_language">English</string>
+    <string name="chinese_language">中文</string>
+    <string name="japanese_language">日本語</string>
+    <string name="korean_language">한국어</string>
+    <string name="indonesian_language">Bahasa Indonesia</string>
+    <!-- 新しく追加された文字列 -->
+    <string name="notification_channel_live_wallpaper">ライブ壁紙通知</string>
+    <string name="notification_channel_live_wallpaper_desc">保留中のライブ壁紙設定に関する通知</string>
+    <string name="notification_live_wallpaper_pending_title">ビデオ壁紙の準備が完了しました</string>
+    <string name="notification_live_wallpaper_pending_text">タップして「%1$s」をビデオ壁紙として設定します</string>
 </resources>

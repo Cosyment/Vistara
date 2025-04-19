@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.data.repository
 
+import android.content.Context
 import android.util.Log
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.local.WallpaperDao
@@ -22,8 +23,11 @@ import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import com.vistara.aestheticwalls.data.remote.safeApiCall
+import com.vistara.aestheticwalls.manager.AppWallpaperManager
 import com.vistara.aestheticwalls.utils.NetworkMonitor
+import com.vistara.aestheticwalls.utils.NotificationUtil
 import com.vistara.aestheticwalls.utils.StringProvider
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -37,6 +41,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class WallpaperRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context, // 应用上下文
     private val unsplashApiService: UnsplashApiService,
     private val pexelsApiService: PexelsApiService,
     private val pixabayApiService: PixabayApiService,
@@ -962,9 +967,10 @@ class WallpaperRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getLocalFile(wallpaperId: String): File? {
-        // 从本地存储中获取已下载的文件
-        // 具体实现依赖于文件存储机制
-        return null // 暂时返回null，待实现
+        // 直接检查本地文件
+        val wallpapersDir = File(context.filesDir, "wallpapers")
+        val file = File(wallpapersDir, "$wallpaperId.jpg")
+        return if (file.exists()) file else null
     }
 
     override suspend fun recordAutoChangeHistory(history: AutoChangeHistory) {

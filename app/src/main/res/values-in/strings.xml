@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Vistara</string>
-    <string name="search_hint">Cari wallpaper...</string>
+    <string name="search_hint">Cari wallpaper…</string>
 
     <!-- Notification related strings -->
     <string name="notification_channel_wallpaper">Notifikasi Perubahan Wallpaper</string>
@@ -71,6 +71,7 @@
     <string name="my_downloads_desc">Lihat semua wallpaper yang telah Anda unduh</string>
     <string name="auto_change_wallpaper">Ubah Wallpaper Otomatis</string>
     <string name="auto_change_wallpaper_desc">Atur frekuensi dan sumber untuk perubahan wallpaper otomatis</string>
+    <string name="settings_applied_successfully">Pengaturan berhasil diterapkan</string>
     <string name="settings_desc">Sesuaikan preferensi aplikasi dan notifikasi</string>
     <string name="rate_feedback">Nilai &amp; Umpan Balik</string>
     <string name="rate_feedback_desc">Bantu kami meningkatkan aplikasi</string>
@@ -231,6 +232,7 @@
     <string name="set_both_screens">Atur Keduanya</string>
     <string name="collapse_info">Ciutkan Info</string>
     <string name="expand_info">Perluas Info</string>
+    <string name="preview_wallpaper">Pratonton</string>
     <string name="set_as">Atur sebagai</string>
     <string name="home_screen_wallpaper">Wallpaper Layar Utama</string>
     <string name="lock_screen_wallpaper">Wallpaper Layar Kunci</string>
@@ -422,4 +424,16 @@
     <string name="logout_success">Berhasil keluar</string>
     <string name="logout_failed">Gagal keluar: %1$s</string>
     <string name="premium_crown">Premium 👑</string>
+    <string name="system_language">Sistem</string>
+    <string name="english_language">English</string>
+    <string name="chinese_language">中文</string>
+    <string name="japanese_language">日本語</string>
+    <string name="korean_language">한국어</string>
+    <string name="indonesian_language">Bahasa Indonesia</string>
+
+    <!-- String baru ditambahkan -->
+    <string name="notification_channel_live_wallpaper">Notifikasi Wallpaper Hidup</string>
+    <string name="notification_channel_live_wallpaper_desc">Notifikasi tentang pengaturan wallpaper hidup yang tertunda</string>
+    <string name="notification_live_wallpaper_pending_title">Wallpaper Video Siap</string>
+    <string name="notification_live_wallpaper_pending_text">Ketuk untuk mengatur "%1$s" sebagai wallpaper video Anda</string>
 </resources>

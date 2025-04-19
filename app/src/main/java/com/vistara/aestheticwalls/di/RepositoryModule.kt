@@ -42,6 +42,7 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideWallpaperRepository(
+        @ApplicationContext context: Context,
         unsplashApiService: UnsplashApiService,
         pexelsApiService: PexelsApiService,
         pixabayApiService: PixabayApiService,
@@ -73,7 +74,8 @@ object RepositoryModule {
             networkMonitor = networkMonitor,
             wallpaperApiAdapter = wallpaperApiAdapter,
             pexelsApiAdapter = pexelsApiAdapter,
-            stringProvider = stringProvider
+            stringProvider = stringProvider,
+            context = context
         )
     }
 
