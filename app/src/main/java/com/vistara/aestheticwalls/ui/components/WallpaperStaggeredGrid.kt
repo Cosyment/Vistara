@@ -73,9 +73,6 @@ fun WallpaperStaggeredGrid(
             val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
             val firstVisibleItemIndex = gridState.firstVisibleItemIndex
 
-            // 记录滚动位置
-            Log.d("WallpaperStaggeredGrid", "Scroll position: first=$firstVisibleItemIndex, last=$lastVisibleItemIndex, total=$totalItemsNumber")
-
             // 如果最后可见项的索引接近总项数，则认为滚动到了底部
             lastVisibleItemIndex > 0 && lastVisibleItemIndex >= totalItemsNumber - 5
         }

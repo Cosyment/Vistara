@@ -18,11 +18,17 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -30,6 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -159,16 +167,43 @@ fun WallpaperDetailScreen(
 
     // 使用LaunchedEffect确保系统栏设置在每次重组时都生效
     LaunchedEffect(Unit) {
-        // 设置状态栏和导航栏为完全透明
-        systemUiController.setStatusBarColor(
-            color = Color.Transparent, darkIcons = false // 使用白色图标，因为背景可能是深色
-        )
-        systemUiController.setNavigationBarColor(
-            color = Color.Transparent, darkIcons = false
-        )
+        applyImmersiveMode(systemUiController)
+    }
 
-        // 设置系统栏可见性
-        systemUiController.systemBarsDarkContentEnabled = false
+    // 使用SideEffect确保在每次重组时都应用沉浸式效果
+    SideEffect {
+        applyImmersiveMode(systemUiController)
+    }
+
+    // 使用DisposableEffect监听生命周期事件，在应用恢复时重新应用沉浸式效果
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val lifecycleObserver = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME || event == Lifecycle.Event.ON_START) {
+                // 当应用恢复或开始时，重新应用沉浸式效果
+                applyImmersiveMode(systemUiController)
+            }
+        }
+        // 添加生命周期观察者
+        lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
+
+        // 当组件销毁时移除观察者
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(lifecycleObserver)
+        }
+    }
+
+    // 添加额外的LaunchedEffect来监听焦点变化，确保在从系统设置页面返回时重新应用沉浸式效果
+    val focusManager = LocalFocusManager.current
+    LaunchedEffect(focusManager) {
+        // 当焦点变化时，重新应用沉浸式效果
+        applyImmersiveMode(systemUiController)
+    }
+
+    // 使用额外的LaunchedEffect来监听活动状态变化
+    LaunchedEffect(activity) {
+        // 当活动状态变化时，重新应用沉浸式效果
+        applyImmersiveMode(systemUiController)
     }
 
     // 使用Scaffold作为根布局，可以更好地控制浮动按钮
@@ -373,4 +408,21 @@ fun WallpaperDetailScreen(
             message = message
         )
     }
+}
+
+/**
+ * 应用沉浸式模式
+ * 设置状态栏和导航栏为透明，并使用白色图标
+ */
+private fun applyImmersiveMode(systemUiController: com.google.accompanist.systemuicontroller.SystemUiController) {
+    // 设置状态栏和导航栏为完全透明
+    systemUiController.setStatusBarColor(
+        color = Color.Transparent, darkIcons = false // 使用白色图标，因为背景可能是深色
+    )
+    systemUiController.setNavigationBarColor(
+        color = Color.Transparent, darkIcons = false
+    )
+
+    // 设置系统栏可见性
+    systemUiController.systemBarsDarkContentEnabled = false
 }

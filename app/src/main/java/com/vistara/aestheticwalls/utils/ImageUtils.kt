@@ -10,7 +10,7 @@ import android.renderscript.ScriptIntrinsicBlur
 /**
  * 图像处理工具类
  */
-object ImageUtils {
+object ImageUtil {
 
     /**
      * 对图像应用高斯模糊

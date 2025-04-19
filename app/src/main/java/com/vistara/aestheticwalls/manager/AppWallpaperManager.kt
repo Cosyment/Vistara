@@ -3,8 +3,8 @@ package com.vistara.aestheticwalls.manager
 import android.Manifest
 import android.app.Activity
 import android.app.WallpaperManager
-import android.content.ActivityNotFoundException
 import android.content.ComponentName
+import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,10 +13,11 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.core.content.FileProvider
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
@@ -27,13 +28,19 @@ import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.net.URL
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,6 +55,14 @@ class AppWallpaperManager @Inject constructor(
     companion object {
         private const val TAG = "AppWallpaperManager"
         private const val WALLPAPERS_DIR = "wallpapers"
+        private const val DOWNLOAD_BUFFER_SIZE = 8192 // 8KB buffer size for downloads
+    }
+
+    /**
+     * 下载进度回调接口
+     */
+    interface DownloadProgressCallback {
+        fun onProgressUpdate(progress: Float)
     }
 
 
@@ -69,8 +84,7 @@ class AppWallpaperManager @Inject constructor(
      * @param useSystemCropper 是否使用系统壁纸裁剪器
      */
     suspend fun setWallpaper(
-        wallpaper: Wallpaper, target: WallpaperTarget, editedBitmap: Bitmap? = null, onComplete: (Boolean) -> Unit,
-        useSystemCropper: Boolean = false
+        wallpaper: Wallpaper, target: WallpaperTarget, editedBitmap: Bitmap? = null, onComplete: (Boolean) -> Unit
     ) {
         try {
             val activity = ActivityProvider.getMainActivity()
@@ -183,79 +197,9 @@ class AppWallpaperManager @Inject constructor(
             // 使用壁纸预览工具类调用系统壁纸预览
             val success = com.vistara.aestheticwalls.utils.WallpaperPreviewUtil.previewWallpaper(context, bitmap)
             if (!success) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "预览壁纸失败", Toast.LENGTH_SHORT).show()
-                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error previewing wallpaper", e)
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "预览壁纸失败: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    /**
-     * 启动系统壁纸裁剪器
-     * @return 是否成功启动系统裁剪器
-     */
-    private suspend fun launchSystemWallpaperCropper(activity: Activity, bitmap: Bitmap, target: WallpaperTarget): Boolean {
-        return withContext(Dispatchers.IO) {
-            try {
-                // 将位图保存到缓存文件
-                val cachePath = File(activity.cacheDir, "wallpapers")
-                cachePath.mkdirs()
-
-                val wallpaperFile = File(cachePath, "temp_wallpaper_${System.currentTimeMillis()}.jpg")
-                FileOutputStream(wallpaperFile).use { out ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                }
-
-                // 使用FileProvider获取URI
-                val contentUri = FileProvider.getUriForFile(
-                    activity, "${activity.packageName}.fileprovider", wallpaperFile
-                )
-
-                // 创建设置壁纸的Intent
-                val intent = Intent(Intent.ACTION_ATTACH_DATA)
-                intent.addCategory(Intent.CATEGORY_DEFAULT)
-                intent.setDataAndType(contentUri, "image/*")
-                intent.putExtra("mimeType", "image/*")
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-                // 根据目标设置额外参数
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    when (target) {
-                        WallpaperTarget.HOME -> {
-                            intent.putExtra("which", WallpaperManager.FLAG_SYSTEM)
-                        }
-
-                        WallpaperTarget.LOCK -> {
-                            intent.putExtra("which", WallpaperManager.FLAG_LOCK)
-                        }
-
-                        WallpaperTarget.BOTH -> {
-                            // 对于同时设置两者，系统会提供选项
-                        }
-                    }
-                }
-
-                // 创建选择器
-                val chooserIntent = Intent.createChooser(intent, stringProvider.getString(R.string.set_as_wallpaper))
-
-                withContext(Dispatchers.Main) {
-                    try {
-                        activity.startActivity(chooserIntent)
-                        true
-                    } catch (e: ActivityNotFoundException) {
-                        Log.e(TAG, "No app can handle setting wallpaper", e)
-                        false
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error launching system wallpaper cropper", e)
-                false
-            }
         }
     }
 
@@ -287,15 +231,21 @@ class AppWallpaperManager @Inject constructor(
             if (cachedFile == null) {
                 // 缓存中不存在，需要下载
                 Log.d(TAG, "Starting to download video from URL: $videoUrl")
-                val downloadedFile = downloadVideo(activity, videoUrl)
-                if (downloadedFile == null) {
-                    Log.e(TAG, "Failed to download video")
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(activity, stringProvider.getString(R.string.video_download_failed), Toast.LENGTH_SHORT).show()
-                        onComplete(false)
-                    }
-                    return
+                val cacheDir = File(context.cacheDir, "videos")
+                if (!cacheDir.exists()) {
+                    cacheDir.mkdirs()
                 }
+
+
+                // 创建空的进度回调（因为这里不需要显示进度）
+                val emptyProgressCallback = object : DownloadProgressCallback {
+                    override fun onProgressUpdate(progress: Float) {
+                        // 不需要显示进度
+                    }
+                }
+
+                // 使用通用下载方法下载文件
+                downloadFile(videoUrl, videoFile, emptyProgressCallback)
             } else {
                 Log.d(TAG, "Using cached video file: ${cachedFile.absolutePath}")
             }
@@ -404,46 +354,6 @@ class AppWallpaperManager @Inject constructor(
     }
 
     /**
-     * 下载视频到本地缓存
-     */
-    private suspend fun downloadVideo(context: Context, videoUrl: String): File? = withContext(Dispatchers.IO) {
-        try {
-            // 创建缓存目录
-            val cacheDir = File(context.cacheDir, "videos")
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs()
-            }
-
-            // 创建视频文件
-            val fileName = "video_${System.currentTimeMillis()}.mp4"
-            val videoFile = File(cacheDir, fileName)
-
-            // 下载视频
-            val url = URL(videoUrl)
-            val connection = url.openConnection()
-            connection.connect()
-
-            // 将视频保存到文件
-            val inputStream: InputStream = connection.getInputStream()
-            val outputStream = FileOutputStream(videoFile)
-            val buffer = ByteArray(1024)
-            var bytesRead: Int
-
-            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                outputStream.write(buffer, 0, bytesRead)
-            }
-
-            outputStream.close()
-            inputStream.close()
-
-            return@withContext videoFile
-        } catch (e: IOException) {
-            Log.e(TAG, "Error downloading video", e)
-            return@withContext null
-        }
-    }
-
-    /**
      * 设置视频壁纸的结果
      */
     data class WallpaperSetResult(
@@ -477,6 +387,7 @@ class AppWallpaperManager @Inject constructor(
                     activity.startActivity(intent)
                 }
                 Log.d(TAG, "Started ACTION_CHANGE_LIVE_WALLPAPER intent as fallback")
+                // Always consider this a success, even though the user still needs to complete the action in the system UI
                 return@withContext WallpaperSetResult(directSuccess = false, anyMethodSucceeded = true)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to start ACTION_CHANGE_LIVE_WALLPAPER intent: ${e.message}")
@@ -560,6 +471,370 @@ class AppWallpaperManager @Inject constructor(
 
 
     /**
+     * 下载壁纸到设备存储
+     * 支持图片和视频壁纸，并处理原始质量和普通质量的选择
+     *
+     * @param wallpaper 要下载的壁纸
+     * @param downloadOriginalQuality 是否下载原始质量
+     * @return 下载进度流，包含0.0-1.0的进度值和最终的文件路径
+     */
+    fun downloadWallpaper(
+        wallpaper: Wallpaper, downloadOriginalQuality: Boolean
+    ): Flow<Pair<Float, String?>> = channelFlow {
+        try {
+            // 初始进度
+            send(Pair(0f, null))
+
+            // 创建进度回调
+            val progressCallback = object : DownloadProgressCallback {
+                override fun onProgressUpdate(progress: Float) {
+                    trySend(Pair(progress, null))
+                }
+            }
+
+            // 根据壁纸类型选择下载方法
+            val filePath = if (wallpaper.isLive) {
+                // 视频壁纸
+                downloadVideoFile(wallpaper, downloadOriginalQuality, progressCallback)
+            } else {
+                // 图片壁纸
+                downloadImageFile(wallpaper, downloadOriginalQuality, progressCallback)
+            }
+
+            // 完成下载，返回文件路径
+            send(Pair(1f, filePath))
+        } catch (e: Exception) {
+            Log.e(TAG, "Download failed: ${e.message}")
+            e.printStackTrace()
+            // 发送错误状态
+            send(Pair(-1f, null))
+            throw e
+        }
+    }
+
+    /**
+     * 下载图片文件（带进度回调）
+     *
+     * @param wallpaper 要下载的壁纸
+     * @param downloadOriginalQuality 是否下载原始质量
+     * @param progressCallback 进度回调
+     * @return 下载的文件路径
+     */
+    private suspend fun downloadImageFile(
+        wallpaper: Wallpaper, downloadOriginalQuality: Boolean, progressCallback: DownloadProgressCallback
+    ): String = withContext(Dispatchers.IO) {
+        try {
+            // 根据壁纸来源和设置选择正确的URL
+            val imageUrl = if (downloadOriginalQuality) {
+                // 使用原始质量图片URL
+                if (wallpaper.id.startsWith("pexels_photo_") && wallpaper.url?.contains("/photos/") == true) {
+                    // 对于Pexels图片，使用原始质量的URL
+                    wallpaper.url // 已经是original URL
+                } else {
+                    // 其他来源，使用downloadUrl或url
+                    wallpaper.downloadUrl ?: wallpaper.url
+                }
+            } else {
+                // 使用普通质量图片URL
+                if (wallpaper.id.startsWith("pexels_photo_") && wallpaper.url?.contains("/photos/") == true) {
+                    // 对于Pexels图片，使用压缩质量的URL
+                    // 从原始URL生成压缩版本
+                    wallpaper.url?.replace(".jpeg", ".jpeg?auto=compress&cs=tinysrgb&h=650&w=940") ?: wallpaper.url
+                } else {
+                    // 其他来源，使用previewUrl或url
+                    wallpaper.previewUrl ?: wallpaper.url
+                }
+            } ?: throw IllegalArgumentException("Image URL is null")
+
+            Log.d(TAG, "Downloading image from: $imageUrl with original quality: $downloadOriginalQuality")
+
+            // 创建临时文件
+            val cacheDir = File(context.cacheDir, "images")
+            if (!cacheDir.exists()) {
+                cacheDir.mkdirs()
+            }
+            val tempFile = File(cacheDir, "temp_${System.currentTimeMillis()}.jpg")
+
+            // 使用通用下载方法下载文件
+            val downloadedFile = downloadFile(imageUrl, tempFile, progressCallback)
+
+            // 将文件转换为Bitmap
+            val bitmap = BitmapFactory.decodeFile(downloadedFile.absolutePath)
+
+            // 保存到公共目录
+            val fileName = "Vistara_${wallpaper.id}_${System.currentTimeMillis()}.jpg"
+            val filePath = saveImageToPublicStorage(bitmap, fileName)
+
+            // 删除临时文件
+            downloadedFile.delete()
+
+            return@withContext filePath
+        } catch (e: Exception) {
+            Log.e(TAG, "Error downloading image wallpaper: ${e.message}")
+            throw e
+        }
+    }
+
+    /**
+     * 下载视频文件（带进度回调）
+     *
+     * @param wallpaper 要下载的壁纸
+     * @param downloadOriginalQuality 是否下载原始质量
+     * @param progressCallback 进度回调
+     * @return 下载的文件路径
+     */
+    private suspend fun downloadVideoFile(
+        wallpaper: Wallpaper, downloadOriginalQuality: Boolean, progressCallback: DownloadProgressCallback
+    ): String = withContext(Dispatchers.IO) {
+        try {
+            // 根据壁纸来源和设置选择正确的URL
+            val videoUrl = if (wallpaper.id.startsWith("pexels_video_")) {
+                // 对于Pexels视频，根据质量设置选择不同的URL
+                if (downloadOriginalQuality) {
+                    // 如果选择原始质量，尝试使用uhd或hd质量
+                    // 从原始URL提取视频ID
+                    val videoId = wallpaper.id.substringAfter("pexels_video_")
+                    // 尝试使用高清版本
+                    "https://videos.pexels.com/video-files/$videoId/$videoId-uhd_2160_4096_25fps.mp4"
+                } else {
+                    // 如果选择普通质量，尝试使用sd质量
+                    val videoId = wallpaper.id.substringAfter("pexels_video_")
+                    // 尝试使用标清版本
+                    "https://videos.pexels.com/video-files/$videoId/$videoId-sd_506_960_25fps.mp4"
+                }
+            } else if (downloadOriginalQuality) {
+                // 其他来源，使用downloadUrl或url
+                wallpaper.downloadUrl ?: wallpaper.url
+            } else {
+                // 其他来源，使用previewUrl或url
+                wallpaper.previewUrl ?: wallpaper.url
+            } ?: throw IllegalArgumentException("Video URL is null")
+
+            Log.d(TAG, "Downloading video from: $videoUrl with original quality: $downloadOriginalQuality")
+
+            // 创建临时文件
+            val cacheDir = File(context.cacheDir, "videos")
+            if (!cacheDir.exists()) {
+                cacheDir.mkdirs()
+            }
+            val tempFile = File(cacheDir, "temp_${System.currentTimeMillis()}.mp4")
+
+            // 使用通用下载方法下载文件
+            val downloadedFile = downloadFile(videoUrl, tempFile, progressCallback)
+
+            // 保存到公共目录
+            val fileName = "Vistara_${wallpaper.id}_${System.currentTimeMillis()}.mp4"
+            val filePath = saveVideoToPublicStorage(downloadedFile)
+            return@withContext filePath
+        } catch (e: Exception) {
+            Log.e(TAG, "Error downloading video wallpaper: ${e.message}")
+            throw e
+        }
+    }
+
+    /**
+     * 通用文件下载方法（使用OkHttp）
+     *
+     * @param url 要下载的URL
+     * @param outputFile 输出文件（可以是临时文件）
+     * @param progressCallback 进度回调
+     * @return 下载的文件
+     */
+    private suspend fun downloadFile(
+        url: String, outputFile: File, progressCallback: DownloadProgressCallback
+    ): File = withContext(Dispatchers.IO) {
+        try {
+            Log.d(TAG, "Downloading file from: $url")
+
+            // 创建 OkHttp 客户端
+            val client = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build()
+
+            // 创建请求
+            val request = Request.Builder().url(url).build()
+
+            // 执行请求
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Toast.makeText(context, stringProvider.getString(R.string.video_wallpaper_download_failed), Toast.LENGTH_SHORT).show()
+                    throw IOException("Unexpected response code: ${response.code}")
+                }
+
+                // 获取内容长度
+                val contentLength = response.body?.contentLength() ?: -1L
+
+                // 创建输出流
+                FileOutputStream(outputFile).use { outputStream ->
+                    // 获取输入流
+                    response.body?.byteStream()?.let { inputStream ->
+                        val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE)
+                        var bytesRead: Int
+                        var totalBytesRead: Long = 0
+
+                        // 读取数据并更新进度
+                        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                            outputStream.write(buffer, 0, bytesRead)
+                            totalBytesRead += bytesRead
+
+                            // 更新进度
+                            if (contentLength > 0) {
+                                val progress = totalBytesRead.toFloat() / contentLength.toFloat()
+                                progressCallback.onProgressUpdate(progress)
+                            }
+                        }
+
+                        outputStream.flush()
+                    } ?: throw IOException("Response body is null")
+                }
+            }
+
+            return@withContext outputFile
+        } catch (e: Exception) {
+            Toast.makeText(context, stringProvider.getString(R.string.video_wallpaper_download_failed), Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Error downloading file: ${e.message}")
+            throw e
+        }
+    }
+
+    /**
+     * 保存图片到公共存储
+     *
+     * @param bitmap 要保存的位图
+     * @param fileName 文件名
+     * @return 保存的文件路径
+     */
+    private suspend fun saveImageToPublicStorage(
+        bitmap: Bitmap, fileName: String
+    ): String = withContext(Dispatchers.IO) {
+        var imageUri: Uri? = null
+        var filePath = ""
+
+        // 使用MediaStore API保存图片到公共目录
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10及以上使用MediaStore API
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+
+            imageUri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + "/" + fileName
+        } else {
+            // Android 9及以下直接使用文件系统
+            val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+            val image = File(imagesDir, fileName)
+            filePath = image.absolutePath
+
+            // 创建文件URI
+            imageUri = Uri.fromFile(image)
+        }
+
+        // 写入文件
+        imageUri?.let { uri ->
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                // 压缩并写入文件
+                val buffer = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, buffer)
+                val byteArray = buffer.toByteArray()
+
+                // 一次性写入整个文件
+                outputStream.write(byteArray)
+                outputStream.flush()
+            }
+
+            // 如果是Android Q及以上，需要更新IS_PENDING状态
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val updateValues = ContentValues().apply {
+                    put(MediaStore.Images.Media.IS_PENDING, 0)
+                }
+                context.contentResolver.update(uri, updateValues, null, null)
+            }
+
+            // 通知媒体扫描器更新相册
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                mediaScanIntent.data = uri
+                context.sendBroadcast(mediaScanIntent)
+            }
+        }
+
+        return@withContext filePath
+    }
+
+    /**
+     * 保存视频到公共存储
+     *
+     * @param file 视频文件
+     * @return 保存的文件路径
+     */
+    private suspend fun saveVideoToPublicStorage(
+        file: File
+    ): String = withContext(Dispatchers.IO) {
+        val fileName = "Vistara_video_${System.currentTimeMillis()}.mp4"
+        var videoUri: Uri? = null
+        var filePath = ""
+
+        // 使用MediaStore API保存视频到公共目录
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10及以上使用MediaStore API
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Video.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+                put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES)
+                put(MediaStore.Video.Media.IS_PENDING, 1)
+            }
+
+            videoUri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, contentValues)
+            filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).absolutePath + "/" + fileName
+        } else {
+            // Android 9及以下直接使用文件系统
+            val moviesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
+            val video = File(moviesDir, fileName)
+            filePath = video.absolutePath
+
+            // 创建文件URI
+            videoUri = Uri.fromFile(video)
+        }
+
+        // 写入文件
+        videoUri?.let { uri ->
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                // 从源文件读取并写入目标文件
+                FileInputStream(file).use { inputStream ->
+                    val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE)
+                    var bytesRead: Int
+
+                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                        outputStream.write(buffer, 0, bytesRead)
+                    }
+                    outputStream.flush()
+                }
+            }
+
+            // 如果是Android Q及以上，需要更新IS_PENDING状态
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val updateValues = ContentValues().apply {
+                    put(MediaStore.Video.Media.IS_PENDING, 0)
+                }
+                context.contentResolver.update(uri, updateValues, null, null)
+            }
+
+            // 通知媒体扫描器更新相册
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                mediaScanIntent.data = uri
+                context.sendBroadcast(mediaScanIntent)
+            }
+
+            // 删除临时文件
+            file.delete()
+        }
+
+        return@withContext filePath
+    }
+
+    /**
      * 发送壁纸更换通知
      * 统一处理壁纸更换通知的发送
      *
@@ -593,4 +868,6 @@ class AppWallpaperManager @Inject constructor(
             Log.e(TAG, "Error sending wallpaper changed notification: ${e.message}")
         }
     }
+
+
 }
