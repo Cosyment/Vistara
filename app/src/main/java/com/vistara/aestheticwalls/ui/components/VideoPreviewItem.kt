@@ -109,7 +109,7 @@ fun VideoPreviewItem(
     // --- Keep your existing UI structure ---
     Card(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp)) // Apply clipping here if needed
+            .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Black) // Keep original colors

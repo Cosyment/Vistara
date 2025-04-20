@@ -113,7 +113,7 @@ fun LiveVideoGrid(
                 isCurrentlyPlaying = isCurrentlyPlaying, // Tell the item if it should play
                 onClick = { onWallpaperClick(wallpaper) }, // Handle item clicks
                 modifier = Modifier
-                    .aspectRatio(9f / 16f) // Maintain aspect ratio (adjust if needed)
+                    .aspectRatio(8f / 12f) // Maintain aspect ratio (adjust if needed)
                     .animateItemPlacement() // Animate item position changes
             )
         }
