@@ -36,6 +36,8 @@ data class Wallpaper(
     val isFavorite: Boolean = false,
     val isDownloaded: Boolean = false,
     val downloadUrl: String? = null, // 高清下载链接
+    val downloadSdUrl: String? = null, // 标清下载链接
+    val downloadHdUrl: String? = null, // 高清下载链接
     val downloadCount: Int = 0,
     val resolution: Resolution? = null,
     val tags: List<String> = emptyList(),

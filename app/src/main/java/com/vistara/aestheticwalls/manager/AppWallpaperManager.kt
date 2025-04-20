@@ -588,27 +588,17 @@ class AppWallpaperManager @Inject constructor(
     ): String = withContext(Dispatchers.IO) {
         try {
             // 根据壁纸来源和设置选择正确的URL
-            val videoUrl = if (wallpaper.id.startsWith("pexels_video_")) {
-                // 对于Pexels视频，根据质量设置选择不同的URL
-                if (downloadOriginalQuality) {
-                    // 如果选择原始质量，尝试使用uhd或hd质量
-                    // 从原始URL提取视频ID
-                    val videoId = wallpaper.id.substringAfter("pexels_video_")
-                    // 尝试使用高清版本
-                    "https://videos.pexels.com/video-files/$videoId/$videoId-uhd_2160_4096_25fps.mp4"
-                } else {
-                    // 如果选择普通质量，尝试使用sd质量
-                    val videoId = wallpaper.id.substringAfter("pexels_video_")
-                    // 尝试使用标清版本
-                    "https://videos.pexels.com/video-files/$videoId/$videoId-sd_506_960_25fps.mp4"
-                }
-            } else if (downloadOriginalQuality) {
-                // 其他来源，使用downloadUrl或url
-                wallpaper.downloadUrl ?: wallpaper.url
+            // 使用原始URL，避免构造可能不正确的URL
+            val videoUrl = if (downloadOriginalQuality) {
+                // 优先使用下载URL，如果没有则使用普通URL
+                wallpaper.downloadHdUrl ?: wallpaper.downloadUrl
             } else {
-                // 其他来源，使用previewUrl或url
-                wallpaper.previewUrl ?: wallpaper.url
+                // 优先使用预览URL，如果没有则使用普通URL
+                wallpaper.downloadSdUrl ?: wallpaper.downloadUrl
             } ?: throw IllegalArgumentException("Video URL is null")
+
+            // 记录下载URL，便于调试
+            Log.d(TAG, "Using video URL: $videoUrl for wallpaper ID: ${wallpaper.id}")
 
             Log.d(TAG, "Downloading video from: $videoUrl with original quality: $downloadOriginalQuality")
 
@@ -623,11 +613,16 @@ class AppWallpaperManager @Inject constructor(
             val downloadedFile = downloadFile(videoUrl, tempFile, progressCallback)
 
             // 保存到公共目录
-            val fileName = "Vistara_${wallpaper.id}_${System.currentTimeMillis()}.mp4"
             val filePath = saveVideoToPublicStorage(downloadedFile)
             return@withContext filePath
         } catch (e: Exception) {
-            Log.e(TAG, "Error downloading video wallpaper: ${e.message}")
+            Log.e(TAG, "Error downloading video wallpaper: ${e.message}", e)
+            // Add more detailed logging for debugging purposes
+            if (e.message?.contains("AccessDenied") == true || e.message?.contains("403") == true) {
+                Log.e(TAG, "Access denied error detected. URL might be invalid or restricted.")
+            } else if (e.message?.contains("404") == true) {
+                Log.e(TAG, "File not found error detected. URL might be incorrect.")
+            }
             throw e
         }
     }
@@ -655,7 +650,10 @@ class AppWallpaperManager @Inject constructor(
             // 执行请求
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Toast.makeText(context, stringProvider.getString(R.string.video_wallpaper_download_failed), Toast.LENGTH_SHORT).show()
+                    // Show toast on main thread to avoid 'Looper.prepare()' error
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, stringProvider.getString(R.string.video_wallpaper_download_failed), Toast.LENGTH_SHORT).show()
+                    }
                     throw IOException("Unexpected response code: ${response.code}")
                 }
 
@@ -689,8 +687,17 @@ class AppWallpaperManager @Inject constructor(
 
             return@withContext outputFile
         } catch (e: Exception) {
-            Toast.makeText(context, stringProvider.getString(R.string.video_wallpaper_download_failed), Toast.LENGTH_SHORT).show()
-            Log.e(TAG, "Error downloading file: ${e.message}")
+            // Show toast on main thread to avoid 'Looper.prepare()' error
+            withContext(Dispatchers.Main) {
+                val errorMessage = when {
+                    e.message?.contains("AccessDenied") == true -> stringProvider.getString(R.string.video_wallpaper_download_failed) + ": AccessDenied"
+                    e.message?.contains("403") == true -> stringProvider.getString(R.string.video_wallpaper_download_failed) + ": Permission Denied (403)"
+                    e.message?.contains("404") == true -> stringProvider.getString(R.string.video_wallpaper_download_failed) + ": File Not Found (404)"
+                    else -> stringProvider.getString(R.string.video_wallpaper_download_failed)
+                }
+                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+            Log.e(TAG, "Error downloading file: ${e.message}", e)
             throw e
         }
     }

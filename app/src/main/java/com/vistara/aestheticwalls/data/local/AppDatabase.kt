@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.data.local.DatabaseMigrations
 
 /**
  * 应用数据库类
@@ -16,7 +17,7 @@ import com.vistara.aestheticwalls.data.model.Wallpaper
         Wallpaper::class,
         AutoChangeHistory::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -40,7 +41,11 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 DATABASE_NAME
-            ).build()
+            )
+            .addMigrations(DatabaseMigrations.MIGRATION_1_2) // 添加1到2的迁移策略
+            // 如果迁移失败，允许回退到破坏性迁移（会清除数据）
+            .fallbackToDestructiveMigration()
+            .build()
         }
     }
-} 
+}

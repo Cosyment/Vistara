@@ -2,7 +2,6 @@ package com.vistara.aestheticwalls.ui.screens.detail
 
 import android.Manifest
 import android.app.Activity
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -12,8 +11,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -46,14 +43,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.net.URL
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 /**
@@ -241,6 +233,7 @@ class WallpaperDetailViewModel @Inject constructor(
             try {
                 // 先从本地数据库查询
                 var wallpaper: Wallpaper? = wallpaperRepository.getWallpaperById(wallpaperId)
+                print("---------->>local $wallpaper")
 
                 // 如果本地数据库有这个壁纸，直接显示
                 if (wallpaper != null) {
@@ -251,6 +244,7 @@ class WallpaperDetailViewModel @Inject constructor(
                     // 同时在后台尝试从服务器获取最新数据更新本地缓存
                     try {
                         val updatedWallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
+                        print("---------->>remote $updatedWallpaper")
                         if (updatedWallpaper != null && updatedWallpaper != wallpaper) {
                             _wallpaperState.value = UiState.Success(updatedWallpaper)
                         }
@@ -512,9 +506,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
             // 直接调用系统壁纸预览
             wallpaperManager.previewWallpaper(
-                context = context,
-                wallpaper = currentWallpaper,
-                editedBitmap = _editedBitmap.value
+                context = context, wallpaper = currentWallpaper, editedBitmap = _editedBitmap.value
             )
 
             // 设置一个成功消息，触发重新应用沉浸式效果
@@ -609,7 +601,10 @@ class WallpaperDetailViewModel @Inject constructor(
 
                         // 更新通知进度
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                            if (ActivityCompat.checkSelfPermission(
+                                    context, Manifest.permission.POST_NOTIFICATIONS
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
                                 notificationUtil.showDownloadProgressNotification(wallpaper, (progress * 100).toInt())
                             }
                         } else {
@@ -631,7 +626,10 @@ class WallpaperDetailViewModel @Inject constructor(
                 // 显示下载完成通知
                 if (filePath != null) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        if (ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
                             notificationUtil.showDownloadCompleteNotification(wallpaper, filePath!!)
                         }
                     } else {
@@ -656,15 +654,14 @@ class WallpaperDetailViewModel @Inject constructor(
             val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
 
             // 分享壁纸信息
-            val shareText =
-                context.getString(
-                    R.string.share_wallpaper_text,
-                    currentWallpaper.title ?: context.getString(R.string.unnamed_wallpaper),
-                    currentWallpaper.author,
-                    currentWallpaper.source,
-                    currentWallpaper.resolution?.width ?: 0,
-                    currentWallpaper.resolution?.height ?: 0
-                )
+            val shareText = context.getString(
+                R.string.share_wallpaper_text,
+                currentWallpaper.title ?: context.getString(R.string.unnamed_wallpaper),
+                currentWallpaper.author,
+                currentWallpaper.source,
+                currentWallpaper.resolution?.width ?: 0,
+                currentWallpaper.resolution?.height ?: 0
+            )
 
             try {
                 // 下载图片并生成分享图
@@ -822,10 +819,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
                     // 应用高斯模糊
                     val blurredBitmap = ImageUtil.applyGaussianBlur(
-                        context,
-                        originalBitmap,
-                        radius = 25f,
-                        scale = 0.2f
+                        context, originalBitmap, radius = 25f, scale = 0.2f
                     )
 
                     // 更新状态

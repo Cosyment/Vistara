@@ -81,7 +81,8 @@ class PexelsMapper @Inject constructor() {
             attributionRequired = true, // Pexels API要求显示署名
             isPremium = false, // Pexels所有照片都可免费使用
             isLive = false, // 照片不是动态壁纸
-            resolution = Resolution(source.width, source.height))
+            resolution = Resolution(source.width, source.height)
+        )
     }
 
     /**
@@ -144,17 +145,15 @@ class PexelsMapper @Inject constructor() {
             "https://www.pexels.com/video/${source.id}/download"
         }
 
-        // 打印日志以便调试
-        if (videoFile != null) {
-//            android.util.Log.d("PexelsMapper", "Selected video file: ${videoFile.quality}, ${videoFile.width}x${videoFile.height}")
-        }
-
         return Wallpaper(
             id = "pexels_video_${source.id}",
             title = "",
             url = videoUrl, // 使用选择的视频URL
             thumbnailUrl = bestPreview, // 使用最佳预览图
             previewUrl = bestPreview,
+            downloadUrl = source.videoFiles.maxByOrNull { it.width * it.height }?.link, // 使用选择的视频URL
+            downloadSdUrl = source.videoFiles.firstOrNull { it.quality == "sd" }?.link,
+            downloadHdUrl = source.videoFiles.firstOrNull { it.quality == "hd" }?.link,
             width = source.width,
             height = source.height,
             author = source.user.name,
@@ -165,7 +164,8 @@ class PexelsMapper @Inject constructor() {
             isPremium = source.id % 3 == 0, // 每三个视频中有一个是高级内容
             isLive = true, // 这是动态壁纸
             tags = tags, // 添加标签便于分类
-            resolution = Resolution(source.width, source.height))
+            resolution = Resolution(source.width, source.height)
+        )
     }
 
     /**
@@ -200,12 +200,13 @@ class PixabayMapper @Inject constructor() : WallpaperMapper<PixabayImage> {
             authorUrl = source.userImageURL,
             source = "Pixabay",
             sourceUrl = source.pageURL,
-            attributionRequired = false,
+            attributionRequired = true,
             isPremium = false,
             isLive = false,
             tags = tagsList,
             downloadCount = source.downloads,
-            resolution = Resolution(source.width, source.height))
+            resolution = Resolution(source.width, source.height)
+        )
     }
 }
 
@@ -227,10 +228,11 @@ class WallhavenMapper @Inject constructor() : WallpaperMapper<WallhavenWallpaper
             author = source.uploader?.username,
             source = "Wallhaven",
             sourceUrl = source.url,
-            attributionRequired = false,
+            attributionRequired = true,
             isPremium = source.category == "people" && source.purity != "sfw",
             isLive = false,
             tags = source.tags.map { it.name },
-            resolution = Resolution(source.dimensionX, source.dimensionY))
+            resolution = Resolution(source.dimensionX, source.dimensionY)
+        )
     }
 }

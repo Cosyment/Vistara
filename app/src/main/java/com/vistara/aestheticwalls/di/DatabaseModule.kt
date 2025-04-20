@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.di
 import android.content.Context
 import androidx.room.Room
 import com.vistara.aestheticwalls.data.local.AppDatabase
+import com.vistara.aestheticwalls.data.local.DatabaseMigrations
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import dagger.Module
 import dagger.Provides
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-    
+
     @Provides
     @Singleton
     fun provideAppDatabase(
@@ -24,9 +25,13 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "vistara_db"
-        ).build()
+        )
+        .addMigrations(DatabaseMigrations.MIGRATION_1_2) // 添加1到2的迁移策略
+        // 如果迁移失败，允许回退到破坏性迁移（会清除数据）
+        .fallbackToDestructiveMigration()
+        .build()
     }
-    
+
     @Provides
     @Singleton
     fun provideWallpaperDao(
@@ -34,4 +39,4 @@ object DatabaseModule {
     ): WallpaperDao {
         return database.wallpaperDao()
     }
-} 
+}
