@@ -29,7 +29,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override val isPremiumUser: Flow<Boolean> = dataStore.data.map { preferences ->
-        val isPremium = preferences[IS_PREMIUM_USER] ?: false
+        val isPremium = preferences[IS_PREMIUM_USER] == true
         val expiryDate = preferences[PREMIUM_EXPIRY_DATE] ?: 0L
 
         // 如果有过期时间，检查是否已过期
@@ -42,7 +42,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun checkPremiumStatus(): Boolean {
         return dataStore.data.map { preferences ->
-            val isPremium = preferences[IS_PREMIUM_USER] ?: false
+            val isPremium = preferences[IS_PREMIUM_USER] == true
             val expiryDate = preferences[PREMIUM_EXPIRY_DATE] ?: 0L
 
             // 如果有过期时间，检查是否已过期
@@ -80,7 +80,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun checkUserLoggedIn(): Boolean {
         return dataStore.data.map { preferences ->
-            preferences[IS_LOGGED_IN] ?: false
+            preferences[IS_LOGGED_IN] == true
         }.first()
     }
 

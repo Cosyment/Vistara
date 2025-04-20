@@ -160,7 +160,7 @@ fun MineScreen(
                 PremiumBanner(
                     onClick = {
                         // 调用ViewModel的升级方法
-                        viewModel.upgradeToPremium()
+//                        viewModel.upgradeToPremium()
                         onUpgradeClick()
                     }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
