@@ -150,15 +150,15 @@ fun WallpaperStaggeredGrid(
 
             if (wallpaper.isLive) {
                 // 动态壁纸使用视频预览组件
-                VideoPreviewItem(
-                    wallpaper = wallpaper,
-                    isVisible = isVisible && shouldPlayVideo,
-                    onClick = { onWallpaperClick(wallpaper) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(itemHeight)
-                        .padding(4.dp)
-                )
+//                VideoPreviewItem(
+//                    wallpaper = wallpaper,
+//                    isVisible = isVisible && shouldPlayVideo,
+//                    onClick = { onWallpaperClick(wallpaper) },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(itemHeight)
+//                        .padding(4.dp)
+//                )
             } else {
                 // 静态壁纸使用普通壁纸项
                 WallpaperItem(

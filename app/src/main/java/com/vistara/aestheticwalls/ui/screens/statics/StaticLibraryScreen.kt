@@ -1,10 +1,10 @@
 package com.vistara.aestheticwalls.ui.screens.statics
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -20,27 +20,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import com.vistara.aestheticwalls.ui.theme.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
-import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.ui.components.CategorySelector
 import com.vistara.aestheticwalls.ui.components.ErrorState
 import com.vistara.aestheticwalls.ui.components.LoadingState
 import com.vistara.aestheticwalls.ui.components.WallpaperStaggeredGrid
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 静态壁纸库页面
@@ -49,9 +46,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun StaticLibraryScreen(
-    onWallpaperClick: (Wallpaper) -> Unit,
-    onSearchClick: () -> Unit = {},
-    viewModel: StaticLibraryViewModel = hiltViewModel()
+    onWallpaperClick: (Wallpaper) -> Unit, onSearchClick: () -> Unit = {}, viewModel: StaticLibraryViewModel = hiltViewModel()
 ) {
     // 获取ViewModel中的状态
     val wallpapersState by viewModel.wallpapersState.collectAsState()
@@ -88,82 +83,82 @@ fun StaticLibraryScreen(
             )
             )
         }) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .pullRefresh(pullRefreshState)
-        ) {
-            // 分类选择器 - 使用remember缓存分类选择器
-            CategorySelector(
-                categories = categories,
-                selectedCategory = selectedCategory,
-                onCategorySelected = { category ->
-                    viewModel.filterByCategory(category)
-                })
+        Box {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .pullRefresh(pullRefreshState)
+            ) {
+                // 分类选择器 - 使用remember缓存分类选择器
+                CategorySelector(
+                    categories = categories, selectedCategory = selectedCategory, onCategorySelected = { category ->
+                        viewModel.filterByCategory(category)
+                    })
 
-            // 根据状态显示不同的内容
-            when (wallpapersState) {
-                is UiState.Loading -> {
-                    LoadingState()
-                }
+                // 根据状态显示不同的内容
+                when (wallpapersState) {
+                    is UiState.Loading -> {
+                        LoadingState()
+                    }
 
-                is UiState.Success -> {
-                    val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
-                    if (wallpapers.isEmpty()) {
-                        // 显示空状态
-                        Box(
-                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.no_wallpapers_found),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                            )
-                        }
-                    } else {
-                        // 使用Column包裹LazyRow和WallpaperStaggeredGrid
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            // 显示壁纸网格 (瀑布流布局)
-                            Box(modifier = Modifier.weight(1f)) {
-                                // 创建LazyStaggeredGridState并保持它的状态
-                                val gridState = rememberLazyStaggeredGridState()
-
-                                // 使用remember缓存WallpaperStaggeredGrid组件
-                                val rememberedWallpapers = remember(wallpapers) { wallpapers }
-                                val rememberedIsLoadingMore =
-                                    remember(isLoadingMore) { isLoadingMore }
-                                val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
-
-                                WallpaperStaggeredGrid(
-                                    wallpapers = rememberedWallpapers,
-                                    onWallpaperClick = onWallpaperClick,
-                                    onLoadMore = { viewModel.loadMore() },
-                                    isLoadingMore = rememberedIsLoadingMore,
-                                    canLoadMore = rememberedCanLoadMore,
-                                    showEndMessage = !rememberedCanLoadMore,
-                                    gridState = gridState,
-                                    modifier = Modifier.fillMaxSize()
+                    is UiState.Success -> {
+                        val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
+                        if (wallpapers.isEmpty()) {
+                            // 显示空状态
+                            Box(
+                                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.no_wallpapers_found),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
+                            }
+                        } else {
+                            // 使用Column包裹LazyRow和WallpaperStaggeredGrid
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                // 显示壁纸网格 (瀑布流布局)
+                                Box(modifier = Modifier.weight(1f)) {
+                                    // 创建LazyStaggeredGridState并保持它的状态
+                                    val gridState = rememberLazyStaggeredGridState()
+
+                                    // 使用remember缓存WallpaperStaggeredGrid组件
+                                    val rememberedWallpapers = remember(wallpapers) { wallpapers }
+                                    val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
+                                    val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
+
+                                    WallpaperStaggeredGrid(
+                                        wallpapers = rememberedWallpapers,
+                                        onWallpaperClick = onWallpaperClick,
+                                        onLoadMore = { viewModel.loadMore() },
+                                        isLoadingMore = rememberedIsLoadingMore,
+                                        canLoadMore = rememberedCanLoadMore,
+                                        showEndMessage = !rememberedCanLoadMore,
+                                        gridState = gridState,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                is UiState.Error -> {
-                    ErrorState(
-                        message = (wallpapersState as UiState.Error).message,
-                        onRetry = { viewModel.refresh() })
+                    is UiState.Error -> {
+                        ErrorState(
+                            message = (wallpapersState as UiState.Error).message, onRetry = { viewModel.refresh() })
+                    }
                 }
             }
-
             // 显示下拉刷新指示器
-            PullRefreshIndicator(
-                refreshing = isRefreshing,
-                state = pullRefreshState,
-                backgroundColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.primary
-            )
+//            PullRefreshIndicator(
+//                refreshing = isRefreshing,
+//                state = pullRefreshState,
+//                backgroundColor = MaterialTheme.colorScheme.surface,
+//                contentColor = MaterialTheme.colorScheme.primary,
+//                modifier = Modifier
+//                    .align(Alignment.TopCenter)
+//                    .padding(top = 30.dp)
+//            )
         }
     }
 }
