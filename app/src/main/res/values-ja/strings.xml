@@ -135,7 +135,7 @@
 
     <!-- 共通ボタンとプロンプト -->
     <string name="retry">再試行</string>
-    <string name="loading">読み込み中...</string>
+    <string name="loading">読み込み中…</string>
     <string name="confirm">確認</string>
     <string name="login_required">ログインが必要です</string>
     <string name="login_required_message">この機能を使用するにはログインが必要です。ログインページに移動しますか？</string>
@@ -146,8 +146,8 @@
     <!-- ホーム画面関連 -->
     <string name="home">ホーム</string>
     <string name="search_icon">検索アイコン</string>
-    <string name="search_high_quality_wallpapers">高品質の壁紙、動的エフェクトを検索...</string>
-    <string name="loading_wallpapers">壁紙を読み込み中...</string>
+    <string name="search_high_quality_wallpapers">高品質の壁紙、動的エフェクトを検索…</string>
+    <string name="loading_wallpapers">壁紙を読み込み中…</string>
     <string name="unknown_error">不明なエラー</string>
     <string name="refresh">更新</string>
     <string name="partial_data_loading_failed">一部のデータの読み込みに失敗しました。更新して再試行してください</string>
@@ -180,14 +180,16 @@
     <string name="premium_description">プレミアムにアップグレードして、すべての壁紙と機能をアンロック</string>
     <string name="premium_user_description">ご支援ありがとうございます。すべてのプレミアム機能をご利用いただけます</string>
     <string name="premium_feature_1">無制限の高品質壁紙ダウンロード</string>
-    <string name="premium_feature_2">すべての広告を削除</string>
+    <string name="premium_feature_2">特殊効果付きライブ壁紙</string>
     <string name="premium_feature_3">プレミアム限定の壁紙</string>
     <string name="premium_feature_4">高度な編集機能</string>
     <string name="premium_feature_5">自動壁紙変更</string>
     <string name="select_subscription">サブスクリプションプランを選択</string>
+    <string name="weekly_plan">週間プラン</string>
     <string name="monthly_plan">月額プラン</string>
     <string name="quarterly_plan">四半期プラン</string>
     <string name="yearly_plan">年間プラン</string>
+    <string name="weekly_price">¥480</string>
     <string name="monthly_price">¥1,200</string>
     <string name="quarterly_price">¥3,200</string>
     <string name="yearly_price">¥10,800</string>
@@ -195,13 +197,15 @@
     <string name="yearly_discount">27%お得</string>
     <string name="already_premium_user">あなたはすでにプレミアムユーザーです</string>
     <string name="payment_service_not_connected">決済サービスに接続されていません。後でもう一度お試しください</string>
+    <string name="weekly_plan_description">毎週自動更新、いつでもキャンセル可能</string>
     <string name="monthly_plan_description">毎月自動更新、いつでもキャンセル可能</string>
+    <string name="quarterly_plan_description">3ヶ月ごとに自動更新、いつでもキャンセル可能</string>
     <string name="yearly_plan_description">毎年自動更新、いつでもキャンセル可能</string>
     <string name="save_about">約27%お得</string>
     <string name="lifetime_plan">生液プラン</string>
     <string name="lifetime_plan_description">一回限りのお支払い、生液アクセス</string>
     <string name="upgrade_now">今すぐアップグレード</string>
-    <string name="connecting_payment">決済サービスに接続中...</string>
+    <string name="connecting_payment">決済サービスに接続中…</string>
     <string name="all_premium_features_unlocked">すべてのプレミアム機能がアンロックされました</string>
 
     <!-- 壁紙詳細ページ -->
@@ -225,7 +229,7 @@
     <string name="live_wallpaper">ライブ壁紙</string>
     <string name="tags">タグ:</string>
     <string name="set_as_wallpaper">壁紙に設定</string>
-    <string name="setting_wallpaper">壁紙を設定中...</string>
+    <string name="setting_wallpaper">壁紙を設定中…</string>
     <string name="download">ダウンロード</string>
     <string name="share">共有</string>
     <string name="edit">編集</string>
@@ -281,7 +285,7 @@
     <string name="reset">リセット</string>
     <string name="reset_edits">編集をリセット</string>
     <string name="filter">フィルター</string>
-    <string name="loading_image">画像を読み込み中...</string>
+    <string name="loading_image">画像を読み込み中…</string>
     <string name="free_crop">自由に切り抜く</string>
     <string name="square">正方形</string>
     <string name="circle">円形</string>

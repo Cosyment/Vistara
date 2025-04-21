@@ -132,7 +132,7 @@
 
     <!-- Common buttons and prompts -->
     <string name="retry">Coba Lagi</string>
-    <string name="loading">Memuat...</string>
+    <string name="loading">Memuat…</string>
     <string name="confirm">Konfirmasi</string>
     <string name="login_required">Login Diperlukan</string>
     <string name="login_required_message">Fitur ini memerlukan login untuk digunakan. Apakah Anda ingin pergi ke halaman login?</string>
@@ -143,8 +143,8 @@
     <!-- Home screen related -->
     <string name="home">Beranda</string>
     <string name="search_icon">Ikon pencarian</string>
-    <string name="search_high_quality_wallpapers">Cari kertas dinding...</string>
-    <string name="loading_wallpapers">Memuat wallpaper...</string>
+    <string name="search_high_quality_wallpapers">Cari kertas dinding…</string>
+    <string name="loading_wallpapers">Memuat wallpaper…</string>
     <string name="unknown_error">Kesalahan tidak diketahui</string>
     <string name="refresh">Segarkan</string>
     <string name="partial_data_loading_failed">Beberapa data gagal dimuat, segarkan untuk mencoba lagi</string>
@@ -178,28 +178,32 @@
     <string name="premium_description">Tingkatkan ke premium, buka semua wallpaper dan fitur</string>
     <string name="premium_user_description">Terima kasih atas dukungan Anda, Anda dapat menggunakan semua fitur premium</string>
     <string name="premium_feature_1">Unduh wallpaper berkualitas tinggi tanpa batas</string>
-    <string name="premium_feature_2">Hapus semua iklan</string>
+    <string name="premium_feature_2">Wallpaper hidup dengan efek khusus</string>
     <string name="premium_feature_3">Wallpaper premium eksklusif</string>
     <string name="premium_feature_4">Fitur pengeditan lanjutan</string>
     <string name="premium_feature_5">Perubahan wallpaper otomatis</string>
     <string name="select_subscription">Pilih Paket Langganan</string>
+    <string name="weekly_plan">Rencana Minggu</string>
     <string name="monthly_plan">Paket Bulanan</string>
     <string name="quarterly_plan">Paket Triwulanan</string>
     <string name="yearly_plan">Paket Tahunan</string>
-    <string name="monthly_price">Rp18.990</string>
-    <string name="quarterly_price">Rp49.990</string>
-    <string name="yearly_price">Rp168.990</string>
+    <string name="weekly_price">Rp18.990</string>
+    <string name="monthly_price">Rp49.990</string>
+    <string name="quarterly_price">Rp129.990</string>
+    <string name="yearly_price">Rp449.990</string>
     <string name="quarterly_discount">Hemat 17%</string>
     <string name="yearly_discount">Hemat 27%</string>
     <string name="already_premium_user">Anda sudah menjadi pengguna premium</string>
     <string name="payment_service_not_connected">Layanan pembayaran tidak terhubung, silakan coba lagi nanti</string>
+    <string name="weekly_plan_description">Perpanjangan otomatis mingguan, batalkan kapan saja</string>
     <string name="monthly_plan_description">Perpanjangan otomatis bulanan, batalkan kapan saja</string>
+    <string name="quarterly_plan_description">Perpanjangan otomatis setiap 3 bulan, batalkan kapan saja</string>
     <string name="yearly_plan_description">Perpanjangan otomatis tahunan, batalkan kapan saja</string>
     <string name="save_about">Hemat sekitar 27%</string>
     <string name="lifetime_plan">Paket Seumur Hidup</string>
     <string name="lifetime_plan_description">Pembayaran satu kali, akses seumur hidup</string>
     <string name="upgrade_now">Tingkatkan Sekarang</string>
-    <string name="connecting_payment">Menghubungkan ke layanan pembayaran...</string>
+    <string name="connecting_payment">Menghubungkan ke layanan pembayaran…</string>
     <string name="all_premium_features_unlocked">Semua fitur premium telah dibuka</string>
 
     <!-- Wallpaper detail page -->
@@ -223,7 +227,7 @@
     <string name="live_wallpaper">Wallpaper Hidup</string>
     <string name="tags">Tag:</string>
     <string name="set_as_wallpaper">Atur sebagai Wallpaper</string>
-    <string name="setting_wallpaper">Mengatur wallpaper...</string>
+    <string name="setting_wallpaper">Mengatur wallpaper…</string>
     <string name="download">Unduh</string>
     <string name="share">Bagikan</string>
     <string name="edit">Edit</string>
@@ -279,7 +283,7 @@
     <string name="reset">Reset</string>
     <string name="reset_edits">Reset Editan</string>
     <string name="filter">Penapis</string>
-    <string name="loading_image">Memuat gambar...</string>
+    <string name="loading_image">Memuat gambar…</string>
     <string name="free_crop">Potong Bebas</string>
     <string name="square">Persegi</string>
     <string name="circle">Lingkaran</string>
@@ -302,7 +306,7 @@
     <!-- Feedback related -->
     <string name="direct_feedback">Umpan Balik Langsung</string>
     <string name="your_feedback_or_suggestion">Umpan Balik atau Saran Anda</string>
-    <string name="enter_feedback_placeholder">Silakan masukkan umpan balik atau saran Anda tentang aplikasi...</string>
+    <string name="enter_feedback_placeholder">Silakan masukkan umpan balik atau saran Anda tentang aplikasi…</string>
     <string name="contact_info_optional">Info Kontak (Opsional)</string>
     <string name="email_or_other_contact">Email atau metode kontak lainnya</string>
     <string name="submit_feedback">Kirim Umpan Balik</string>

@@ -134,7 +134,7 @@
 
     <!-- 通用按钮和提示 -->
     <string name="retry">重试</string>
-    <string name="loading">加载中...</string>
+    <string name="loading">加载中…</string>
     <string name="cancel">取消</string>
     <string name="confirm">确认</string>
     <string name="login_required">需要登录</string>
@@ -150,34 +150,44 @@
     <string name="nav_mine">我的</string>
 
     <!-- 高级会员相关 -->
+    <string name="upgrade_to_premium">升级高级会员</string>
+    <string name="restore_purchases">恢复购买</string>
     <string name="premium_title">解锁高级功能</string>
     <string name="premium_user_title">您已是高级会员</string>
     <string name="premium_description">升级到高级版，解锁所有壁纸和功能</string>
     <string name="premium_user_description">感谢您的支持，您可以使用所有高级功能</string>
     <string name="premium_feature_1">无限下载高清壁纸</string>
-    <string name="premium_feature_2">去除所有广告</string>
+    <string name="premium_feature_2">特效动态壁纸</string>
     <string name="premium_feature_3">专属高级壁纸</string>
     <string name="premium_feature_4">高级编辑功能</string>
     <string name="premium_feature_5">自动更换壁纸</string>
     <string name="select_subscription">选择订阅计划</string>
+    <string name="weekly_plan">周会员</string>
     <string name="monthly_plan">月会员</string>
     <string name="quarterly_plan">季度会员</string>
     <string name="yearly_plan">年会员</string>
-    <string name="monthly_price">¥18.99</string>
-    <string name="quarterly_price">¥49.99</string>
-    <string name="yearly_price">¥168.99</string>
+    <string name="weekly_price">¥29.99</string>
+    <string name="monthly_price">¥68.99</string>
+    <string name="quarterly_price">¥168.99</string>
+    <string name="yearly_price">¥598.99</string>
     <string name="quarterly_discount">省17%</string>
     <string name="yearly_discount">省27%</string>
     <string name="already_premium_user">您已经是高级用户</string>
     <string name="payment_service_not_connected">支付服务未连接，请稍后再试</string>
+    <string name="weekly_plan_description">每周自动续费，随时可取消</string>
     <string name="monthly_plan_description">每月自动续费，随时可取消</string>
+    <string name="quarterly_plan_description">每季度自动续费，随时可取消</string>
     <string name="yearly_plan_description">每年自动续费，随时可取消</string>
     <string name="save_about">节省约27%</string>
     <string name="lifetime_plan">终身套餐</string>
     <string name="lifetime_plan_description">一次性付费，永久使用</string>
     <string name="upgrade_now">立即升级</string>
-    <string name="connecting_payment">正在连接支付服务...</string>
+    <string name="connecting_payment">正在连接支付服务…</string>
     <string name="all_premium_features_unlocked">已解锁全部高级功能</string>
+    <string name="payment_success_notice">支付成功后，您将立即获得高级功能。订阅可随时取消。</string>
+    <string name="subscription_terms">订阅即表示您同意我们的服务条款和隐私政策。除非在当前订阅期结束前至少24小时取消，否则订阅将自动续订。您可以在Google Play商店中管理或取消您的订阅。</string>
+    <string name="manage_subscription">管理订阅</string>
+    <string name="cancel_subscription">取消订阅</string>
 
     <!-- 壁纸详情页面 -->
     <string name="start_download_wallpaper">开始下载壁纸</string>
@@ -200,7 +210,7 @@
     <string name="live_wallpaper">动态壁纸</string>
     <string name="tags">标签:</string>
     <string name="set_as_wallpaper">设置为壁纸</string>
-    <string name="setting_wallpaper">正在设置壁纸...</string>
+    <string name="setting_wallpaper">正在设置壁纸…</string>
     <string name="download">下载</string>
     <string name="share">分享</string>
     <string name="edit">编辑</string>
@@ -219,8 +229,8 @@
     <!-- 首页相关 -->
     <string name="home">首页</string>
     <string name="search_icon">搜索图标</string>
-    <string name="search_high_quality_wallpapers">搜索高清壁纸、动态效果...</string>
-    <string name="loading_wallpapers">正在加载壁纸...</string>
+    <string name="search_high_quality_wallpapers">搜索高清壁纸、动态效果…</string>
+    <string name="loading_wallpapers">正在加载壁纸…</string>
     <string name="unknown_error">未知错误</string>
     <string name="refresh">刷新</string>
     <string name="partial_data_loading_failed">部分数据加载失败，请刷新重试</string>
@@ -288,7 +298,7 @@
     <string name="reset">重置</string>
     <string name="reset_edits">重置编辑</string>
     <string name="filter">滤镜</string>
-    <string name="loading_image">正在加载图片...</string>
+    <string name="loading_image">正在加载图片…</string>
     <string name="free_crop">自由裁剪</string>
     <string name="square">正方形</string>
     <string name="circle">圆形</string>
@@ -316,7 +326,7 @@
     <!-- 反馈相关 -->
     <string name="direct_feedback">直接反馈</string>
     <string name="your_feedback_or_suggestion">您的反馈或建议</string>
-    <string name="enter_feedback_placeholder">请输入您对应用的反馈或建议...</string>
+    <string name="enter_feedback_placeholder">请输入您对应用的反馈或建议…</string>
     <string name="contact_info_optional">联系方式（选填）</string>
     <string name="email_or_other_contact">邮箱或其他联系方式</string>
     <string name="submit_feedback">提交反馈</string>
@@ -324,14 +334,6 @@
     <string name="like_our_app_rate_us">喜欢我们的应用吗？请给我们5星好评！</string>
     <string name="send_email_feedback">发送邮件反馈</string>
     <string name="have_questions_email_us">有问题或建议？发送邮件给我们的支持团队</string>
-
-    <!-- 高级会员相关 -->
-    <string name="upgrade_to_premium">升级到高级版</string>
-    <string name="restore_purchases">恢复购买</string>
-    <string name="payment_success_notice">支付成功后，您将立即获得高级功能。订阅可随时取消。</string>
-    <string name="subscription_terms">订阅即表示您同意我们的服务条款和隐私政策。除非在当前订阅期结束前至少24小时取消，否则订阅将自动续订。您可以在Google Play商店中管理或取消您的订阅。</string>
-    <string name="manage_subscription">管理订阅</string>
-    <string name="cancel_subscription">取消订阅</string>
 
     <!-- 测试工具相关 -->
     <string name="api_test_tool">API测试工具</string>

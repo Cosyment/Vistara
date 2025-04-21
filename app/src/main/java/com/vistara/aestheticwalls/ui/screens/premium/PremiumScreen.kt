@@ -143,6 +143,15 @@ fun PremiumScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            PlanCard(
+                plan = PremiumPlan.WEEKLY,
+                isSelected = selectedPlan == PremiumPlan.WEEKLY,
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_WEEKLY]
+                    ?: stringResource(R.string.loading),
+                onClick = { viewModel.selectPlan(PremiumPlan.WEEKLY) })
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // 月度套餐
             PlanCard(
                 plan = PremiumPlan.MONTHLY,
@@ -153,23 +162,33 @@ fun PremiumScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 年度套餐
+            // 季度套餐
             PlanCard(
-                plan = PremiumPlan.YEARLY,
-                isSelected = selectedPlan == PremiumPlan.YEARLY,
-                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY]
+                plan = PremiumPlan.QUARTERLY,
+                isSelected = selectedPlan == PremiumPlan.QUARTERLY,
+                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_QUARTERLY]
                     ?: stringResource(R.string.loading),
-                onClick = { viewModel.selectPlan(PremiumPlan.YEARLY) })
+                onClick = { viewModel.selectPlan(PremiumPlan.QUARTERLY) })
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 终身套餐
-            PlanCard(
-                plan = PremiumPlan.LIFETIME,
-                isSelected = selectedPlan == PremiumPlan.LIFETIME,
-                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME]
-                    ?: stringResource(R.string.loading),
-                onClick = { viewModel.selectPlan(PremiumPlan.LIFETIME) })
+            // 年度套餐
+//            PlanCard(
+//                plan = PremiumPlan.YEARLY,
+//                isSelected = selectedPlan == PremiumPlan.YEARLY,
+//                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_YEARLY]
+//                    ?: stringResource(R.string.loading),
+//                onClick = { viewModel.selectPlan(PremiumPlan.YEARLY) })
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            // 终身套餐
+//            PlanCard(
+//                plan = PremiumPlan.LIFETIME,
+//                isSelected = selectedPlan == PremiumPlan.LIFETIME,
+//                price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.PREMIUM_LIFETIME]
+//                    ?: stringResource(R.string.loading),
+//                onClick = { viewModel.selectPlan(PremiumPlan.LIFETIME) })
 
             Spacer(modifier = Modifier.height(24.dp))
 

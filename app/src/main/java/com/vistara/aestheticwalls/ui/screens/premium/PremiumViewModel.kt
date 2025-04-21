@@ -137,13 +137,16 @@ class PremiumViewModel @Inject constructor(
         val prices = mutableMapOf<String, String>()
 
         // 月度套餐
+        prices[BillingManager.SUBSCRIPTION_WEEKLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_WEEKLY)
+        // 周套餐
         prices[BillingManager.SUBSCRIPTION_MONTHLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_MONTHLY)
-
+        // 季度套餐
+        prices[BillingManager.SUBSCRIPTION_QUARTERLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_QUARTERLY)
         // 年度套餐
-        prices[BillingManager.SUBSCRIPTION_YEARLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_YEARLY)
+//        prices[BillingManager.SUBSCRIPTION_YEARLY] = billingManager.getProductPrice(BillingManager.SUBSCRIPTION_YEARLY)
 
         // 终身套餐
-        prices[BillingManager.PREMIUM_LIFETIME] = billingManager.getProductPrice(BillingManager.PREMIUM_LIFETIME)
+//        prices[BillingManager.PREMIUM_LIFETIME] = billingManager.getProductPrice(BillingManager.PREMIUM_LIFETIME)
 
         _productPrices.value = prices
     }
@@ -171,9 +174,11 @@ class PremiumViewModel @Inject constructor(
 
         // 根据选择的套餐确定商品ID
         val productId = when (_selectedPlan.value) {
+            PremiumPlan.WEEKLY -> BillingManager.SUBSCRIPTION_WEEKLY
             PremiumPlan.MONTHLY -> BillingManager.SUBSCRIPTION_MONTHLY
-            PremiumPlan.YEARLY -> BillingManager.SUBSCRIPTION_YEARLY
-            PremiumPlan.LIFETIME -> BillingManager.PREMIUM_LIFETIME
+            PremiumPlan.QUARTERLY -> BillingManager.SUBSCRIPTION_QUARTERLY
+            PremiumPlan.YEARLY -> TODO()
+            PremiumPlan.LIFETIME -> TODO()
         }
 
         // 启动购买流程
@@ -238,7 +243,10 @@ class PremiumViewModel @Inject constructor(
  * 升级套餐
  */
 enum class PremiumPlan(val titleResId: Int, val descriptionResId: Int, val discountResId: Int? = null) {
+    WEEKLY(R.string.weekly_plan, R.string.weekly_plan_description),
     MONTHLY(R.string.monthly_plan, R.string.monthly_plan_description),
+
+    QUARTERLY(R.string.quarterly_plan, R.string.quarterly_plan_description),
     YEARLY(R.string.yearly_plan, R.string.yearly_plan_description, R.string.save_about),
     LIFETIME(R.string.lifetime_plan, R.string.lifetime_plan_description)
 }

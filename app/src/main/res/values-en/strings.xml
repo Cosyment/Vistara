@@ -139,7 +139,7 @@
 
     <!-- Common buttons and prompts -->
     <string name="retry">Retry</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="confirm">Confirm</string>
     <string name="login_required">Login Required</string>
     <string name="login_required_message">This feature requires login to use. Would you like to go to the login page?</string>
@@ -150,8 +150,8 @@
     <!-- Home screen related -->
     <string name="home">Home</string>
     <string name="search_icon">Search icon</string>
-    <string name="search_high_quality_wallpapers">Search high-quality wallpapers...</string>
-    <string name="loading_wallpapers">Loading wallpapers...</string>
+    <string name="search_high_quality_wallpapers">Search high-quality wallpapers…</string>
+    <string name="loading_wallpapers">Loading wallpapers…</string>
     <string name="unknown_error">Unknown error</string>
     <string name="refresh">Refresh</string>
     <string name="partial_data_loading_failed">Some data failed to load, refresh to try again</string>
@@ -185,28 +185,32 @@
     <string name="premium_description">Upgrade to premium, unlock all wallpapers and features</string>
     <string name="premium_user_description">Thank you for your support, you can use all premium features</string>
     <string name="premium_feature_1">Unlimited high-quality wallpaper downloads</string>
-    <string name="premium_feature_2">Remove all ads</string>
+    <string name="premium_feature_2">Special effect live wallpapers</string>
     <string name="premium_feature_3">Exclusive premium wallpapers</string>
     <string name="premium_feature_4">Advanced editing features</string>
     <string name="premium_feature_5">Auto wallpaper change</string>
     <string name="select_subscription">Select Subscription Plan</string>
+    <string name="weekly_plan">Weekly Plan</string>
     <string name="monthly_plan">Monthly Plan</string>
     <string name="quarterly_plan">Quarterly Plan</string>
     <string name="yearly_plan">Yearly Plan</string>
-    <string name="monthly_price">$18.99</string>
-    <string name="quarterly_price">$49.99</string>
-    <string name="yearly_price">$168.99</string>
+    <string name="weekly_price">$4.99</string>
+    <string name="monthly_price">$9.99</string>
+    <string name="quarterly_price">$24.99</string>
+    <string name="yearly_price">$89.99</string>
     <string name="quarterly_discount">Save 17%</string>
     <string name="yearly_discount">Save 27%</string>
     <string name="already_premium_user">You are already a premium user</string>
     <string name="payment_service_not_connected">Payment service not connected, please try again later</string>
+    <string name="weekly_plan_description">Auto-renews weekly, cancel anytime</string>
     <string name="monthly_plan_description">Auto-renews monthly, cancel anytime</string>
+    <string name="quarterly_plan_description">Auto-renews every 3 months, cancel anytime</string>
     <string name="yearly_plan_description">Auto-renews yearly, cancel anytime</string>
     <string name="save_about">Save about 27%</string>
     <string name="lifetime_plan">Lifetime Plan</string>
     <string name="lifetime_plan_description">One-time payment, lifetime access</string>
     <string name="upgrade_now">Upgrade Now</string>
-    <string name="connecting_payment">Connecting to payment service...</string>
+    <string name="connecting_payment">Connecting to payment service…</string>
     <string name="all_premium_features_unlocked">All premium features unlocked</string>
 
     <!-- Wallpaper detail page -->
@@ -230,7 +234,7 @@
     <string name="live_wallpaper">Live Wallpaper</string>
     <string name="tags">Tags:</string>
     <string name="set_as_wallpaper">Set as Wallpaper</string>
-    <string name="setting_wallpaper">Setting wallpaper...</string>
+    <string name="setting_wallpaper">Setting wallpaper…</string>
     <string name="download">Download</string>
     <string name="share">Share</string>
     <string name="edit">Edit</string>
@@ -286,7 +290,7 @@
     <string name="reset">Reset</string>
     <string name="reset_edits">Reset Edits</string>
     <string name="filter">Filter</string>
-    <string name="loading_image">Loading image...</string>
+    <string name="loading_image">Loading image…</string>
     <string name="free_crop">Free Crop</string>
     <string name="square">Square</string>
     <string name="circle">Circle</string>
@@ -309,7 +313,7 @@
     <!-- Feedback related -->
     <string name="direct_feedback">Direct Feedback</string>
     <string name="your_feedback_or_suggestion">Your Feedback or Suggestion</string>
-    <string name="enter_feedback_placeholder">Please enter your feedback or suggestion about the app...</string>
+    <string name="enter_feedback_placeholder">Please enter your feedback or suggestion about the app…</string>
     <string name="contact_info_optional">Contact Info (Optional)</string>
     <string name="email_or_other_contact">Email or other contact method</string>
     <string name="submit_feedback">Submit Feedback</string>
@@ -349,7 +353,7 @@
     <string name="go_back">Go back</string>
     <string name="add_to_favorites">Add to favorites</string>
     <string name="remove_from_favorites">Remove from favorites</string>
-<string name="loading_failed">Loading failed</string>
+    <string name="loading_failed">Loading failed</string>
     <string name="nav_home">Home</string>
     <string name="nav_static">Static</string>
     <string name="nav_live">Live</string>

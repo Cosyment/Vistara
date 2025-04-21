@@ -3,7 +3,16 @@ package com.vistara.aestheticwalls.billing
 import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.android.billingclient.api.*
+import com.android.billingclient.api.AcknowledgePurchaseParams
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ProductDetails
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.android.billingclient.api.QueryProductDetailsParams
+import com.android.billingclient.api.QueryPurchasesParams
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,7 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,28 +31,25 @@ import javax.inject.Singleton
  */
 @Singleton
 class BillingManager @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val userRepository: UserRepository
+    @ApplicationContext private val context: Context, private val userRepository: UserRepository
 ) : PurchasesUpdatedListener, BillingClientStateListener {
 
     companion object {
         private const val TAG = "BillingManager"
 
         // 订阅SKU
-        const val SUBSCRIPTION_WEEKLY = "vistara_premium_weekly"     // 周订阅
-        const val SUBSCRIPTION_MONTHLY = "vistara_premium_monthly"   // 月订阅
-        const val SUBSCRIPTION_QUARTERLY = "vistara_premium_quarterly" // 季度订阅
-        const val SUBSCRIPTION_YEARLY = "vistara_premium_yearly"     // 年订阅
+        const val SUBSCRIPTION_WEEKLY = "vistara_sub_week"     // 周订阅
+        const val SUBSCRIPTION_MONTHLY = "vistara_sub_month"   // 月订阅
+        const val SUBSCRIPTION_QUARTERLY = "vistara_sub_quarter" // 季度订阅
+//        const val SUBSCRIPTION_YEARLY = "vistara_premium_yearly"     // 年订阅
 
         // 一次性购买SKU
-        const val PREMIUM_LIFETIME = "vistara_premium_lifetime"     // 终身会员
+//        const val PREMIUM_LIFETIME = "vistara_premium_lifetime"     // 终身会员
     }
 
     // 计费客户端
-    private val billingClient: BillingClient = BillingClient.newBuilder(context)
-        .setListener(this)
-        .enablePendingPurchases()
-        .build()
+    private val billingClient: BillingClient =
+        BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
 
     // 连接状态
     private val _connectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
@@ -94,36 +99,27 @@ class BillingManager @Inject constructor(
 
         // 查询订阅商品
         val subscriptionProductList = listOf(
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(SUBSCRIPTION_WEEKLY)
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build(),
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(SUBSCRIPTION_MONTHLY)
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build(),
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(SUBSCRIPTION_QUARTERLY)
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build(),
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(SUBSCRIPTION_YEARLY)
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build()
+            QueryProductDetailsParams.Product.newBuilder().setProductId(SUBSCRIPTION_WEEKLY)
+                .setProductType(BillingClient.ProductType.SUBS).build(),
+            QueryProductDetailsParams.Product.newBuilder().setProductId(SUBSCRIPTION_MONTHLY)
+                .setProductType(BillingClient.ProductType.SUBS).build(),
+            QueryProductDetailsParams.Product.newBuilder().setProductId(SUBSCRIPTION_QUARTERLY)
+                .setProductType(BillingClient.ProductType.SUBS).build(),
+//            QueryProductDetailsParams.Product.newBuilder()
+//                .setProductId(SUBSCRIPTION_YEARLY)
+//                .setProductType(BillingClient.ProductType.SUBS)
+//                .build()
         )
 
         // 查询一次性购买商品
         val inappProductList = listOf(
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(PREMIUM_LIFETIME)
-                .setProductType(BillingClient.ProductType.INAPP)
-                .build()
+            QueryProductDetailsParams.Product.newBuilder().setProductId("PREMIUM_LIFETIME")
+                .setProductType(BillingClient.ProductType.INAPP).build()
         )
 
         // 查询订阅商品详情
-        val subscriptionParams = QueryProductDetailsParams.newBuilder()
-            .setProductList(subscriptionProductList)
-            .build()
+        val subscriptionParams =
+            QueryProductDetailsParams.newBuilder().setProductList(subscriptionProductList).build()
 
         billingClient.queryProductDetailsAsync(subscriptionParams) { billingResult, productDetailsList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -134,14 +130,16 @@ class BillingManager @Inject constructor(
                 _productDetails.value = productDetailsMap
                 Log.d(TAG, "Subscription product details: $productDetailsList")
             } else {
-                Log.e(TAG, "Failed to query subscription product details: ${billingResult.debugMessage}")
+                Log.e(
+                    TAG,
+                    "Failed to query subscription product details: ${billingResult.debugMessage}"
+                )
             }
         }
 
         // 查询一次性购买商品详情
-        val inappParams = QueryProductDetailsParams.newBuilder()
-            .setProductList(inappProductList)
-            .build()
+        val inappParams =
+            QueryProductDetailsParams.newBuilder().setProductList(inappProductList).build()
 
         billingClient.queryProductDetailsAsync(inappParams) { billingResult, productDetailsList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -168,9 +166,7 @@ class BillingManager @Inject constructor(
 
         // 查询订阅购买历史
         billingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder()
-                .setProductType(BillingClient.ProductType.SUBS)
-                .build()
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
         ) { billingResult, purchasesList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 processPurchases(purchasesList)
@@ -181,8 +177,7 @@ class BillingManager @Inject constructor(
 
         // 查询一次性购买历史
         billingClient.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder()
-                .setProductType(BillingClient.ProductType.INAPP)
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP)
                 .build()
         ) { billingResult, purchasesList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -224,9 +219,7 @@ class BillingManager @Inject constructor(
      * 确认购买
      */
     private fun acknowledgePurchase(purchaseToken: String) {
-        val params = AcknowledgePurchaseParams.newBuilder()
-            .setPurchaseToken(purchaseToken)
-            .build()
+        val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchaseToken).build()
 
         billingClient.acknowledgePurchase(params) { billingResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -264,8 +257,8 @@ class BillingManager @Inject constructor(
 
         // 根据商品类型构建购买参数
         val productType = when (productId) {
-            SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY, SUBSCRIPTION_YEARLY -> BillingClient.ProductType.SUBS
-            PREMIUM_LIFETIME -> BillingClient.ProductType.INAPP
+            SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY -> BillingClient.ProductType.SUBS
+//            PREMIUM_LIFETIME -> BillingClient.ProductType.INAPP
             else -> {
                 Log.e(TAG, "Unknown product ID: $productId")
                 _purchaseState.value = PurchaseState.Failed("Unknown product ID")
@@ -288,9 +281,7 @@ class BillingManager @Inject constructor(
             builder.setProductDetailsParamsList(
                 listOf(
                     BillingFlowParams.ProductDetailsParams.newBuilder()
-                        .setProductDetails(productDetails)
-                        .setOfferToken(offerToken)
-                        .build()
+                        .setProductDetails(productDetails).setOfferToken(offerToken).build()
                 )
             )
         } else {
@@ -298,8 +289,7 @@ class BillingManager @Inject constructor(
             builder.setProductDetailsParamsList(
                 listOf(
                     BillingFlowParams.ProductDetailsParams.newBuilder()
-                        .setProductDetails(productDetails)
-                        .build()
+                        .setProductDetails(productDetails).build()
                 )
             )
         }
@@ -359,7 +349,9 @@ class BillingManager @Inject constructor(
     /**
      * 购买更新回调
      */
-    override fun onPurchasesUpdated(billingResult: BillingResult, purchases: MutableList<Purchase>?) {
+    override fun onPurchasesUpdated(
+        billingResult: BillingResult, purchases: MutableList<Purchase>?
+    ) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
             // 处理购买
             processPurchases(purchases)
@@ -379,17 +371,18 @@ class BillingManager @Inject constructor(
      * 获取商品价格
      */
     fun getProductPrice(productId: String): String {
-        val productDetails = _productDetails.value[productId] ?: return context.getString(R.string.price_unknown)
+        val productDetails =
+            _productDetails.value[productId] ?: return context.getString(R.string.price_unknown)
 
         return when (productId) {
-            SUBSCRIPTION_MONTHLY, SUBSCRIPTION_YEARLY -> {
+            SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY -> {
                 val offerDetails = productDetails.subscriptionOfferDetails?.firstOrNull()
                 val pricingPhase = offerDetails?.pricingPhases?.pricingPhaseList?.firstOrNull()
                 pricingPhase?.formattedPrice ?: context.getString(R.string.price_unknown)
             }
-            PREMIUM_LIFETIME -> {
-                productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: context.getString(R.string.price_unknown)
-            }
+//            PREMIUM_LIFETIME -> {
+//                productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: context.getString(R.string.price_unknown)
+//            }
             else -> context.getString(R.string.price_unknown)
         }
     }
@@ -402,8 +395,8 @@ class BillingManager @Inject constructor(
             SUBSCRIPTION_WEEKLY -> context.getString(R.string.subscription_weekly)
             SUBSCRIPTION_MONTHLY -> context.getString(R.string.subscription_monthly)
             SUBSCRIPTION_QUARTERLY -> context.getString(R.string.subscription_quarterly)
-            SUBSCRIPTION_YEARLY -> context.getString(R.string.subscription_yearly)
-            PREMIUM_LIFETIME -> context.getString(R.string.premium_lifetime)
+//            SUBSCRIPTION_YEARLY -> context.getString(R.string.subscription_yearly)
+//            PREMIUM_LIFETIME -> context.getString(R.string.premium_lifetime)
             else -> ""
         }
     }
@@ -413,9 +406,7 @@ class BillingManager @Inject constructor(
  * 计费连接状态
  */
 enum class BillingConnectionState {
-    DISCONNECTED,
-    CONNECTING,
-    CONNECTED
+    DISCONNECTED, CONNECTING, CONNECTED
 }
 
 /**
