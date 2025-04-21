@@ -46,7 +46,9 @@ import com.vistara.aestheticwalls.ui.theme.stringResource
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun StaticLibraryScreen(
-    onWallpaperClick: (Wallpaper) -> Unit, onSearchClick: () -> Unit = {}, viewModel: StaticLibraryViewModel = hiltViewModel()
+    onWallpaperClick: (Wallpaper) -> Unit,
+    onSearchClick: () -> Unit = {},
+    viewModel: StaticLibraryViewModel = hiltViewModel()
 ) {
     // 获取ViewModel中的状态
     val wallpapersState by viewModel.wallpapersState.collectAsState()
@@ -67,14 +69,16 @@ fun StaticLibraryScreen(
             TopAppBar(
                 title = {
                 Text(
-                    stringResource(R.string.category_static), style = MaterialTheme.typography.titleLarge.copy(
+                    stringResource(R.string.category_static),
+                    style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.SemiBold
                     )
                 )
             }, actions = {
                 IconButton(onClick = onSearchClick) {
                     Icon(
-                        imageVector = Icons.Default.Search, contentDescription = stringResource(R.string.search_hint)
+                        imageVector = Icons.Default.Search,
+                        contentDescription = stringResource(R.string.search_hint)
                     )
                 }
             }, colors = TopAppBarDefaults.topAppBarColors(
@@ -83,16 +87,21 @@ fun StaticLibraryScreen(
             )
             )
         }) { paddingValues ->
-        Box {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pullRefresh(pullRefreshState)
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .pullRefresh(pullRefreshState)
             ) {
                 // 分类选择器 - 使用remember缓存分类选择器
                 CategorySelector(
-                    categories = categories, selectedCategory = selectedCategory, onCategorySelected = { category ->
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = { category ->
                         viewModel.filterByCategory(category)
                     })
 
@@ -106,15 +115,10 @@ fun StaticLibraryScreen(
                         val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
                         if (wallpapers.isEmpty()) {
                             // 显示空状态
-                            Box(
-                                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.no_wallpapers_found),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            }
+                            LoadingState(
+                                message = stringResource(R.string.no_wallpapers_found),
+                                modifier = Modifier.fillMaxSize()
+                            ) // Your loading composable
                         } else {
                             // 使用Column包裹LazyRow和WallpaperStaggeredGrid
                             Column(modifier = Modifier.fillMaxSize()) {
@@ -125,8 +129,10 @@ fun StaticLibraryScreen(
 
                                     // 使用remember缓存WallpaperStaggeredGrid组件
                                     val rememberedWallpapers = remember(wallpapers) { wallpapers }
-                                    val rememberedIsLoadingMore = remember(isLoadingMore) { isLoadingMore }
-                                    val rememberedCanLoadMore = remember(canLoadMore) { canLoadMore }
+                                    val rememberedIsLoadingMore =
+                                        remember(isLoadingMore) { isLoadingMore }
+                                    val rememberedCanLoadMore =
+                                        remember(canLoadMore) { canLoadMore }
 
                                     WallpaperStaggeredGrid(
                                         wallpapers = rememberedWallpapers,
@@ -145,20 +151,21 @@ fun StaticLibraryScreen(
 
                     is UiState.Error -> {
                         ErrorState(
-                            message = (wallpapersState as UiState.Error).message, onRetry = { viewModel.refresh() })
+                            message = (wallpapersState as UiState.Error).message,
+                            onRetry = { viewModel.refresh() })
                     }
                 }
             }
             // 显示下拉刷新指示器
-//            PullRefreshIndicator(
-//                refreshing = isRefreshing,
-//                state = pullRefreshState,
-//                backgroundColor = MaterialTheme.colorScheme.surface,
-//                contentColor = MaterialTheme.colorScheme.primary,
-//                modifier = Modifier
-//                    .align(Alignment.TopCenter)
-//                    .padding(top = 30.dp)
-//            )
+            PullRefreshIndicator(
+                refreshing = isRefreshing,
+                state = pullRefreshState,
+                backgroundColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 30.dp)
+            )
         }
     }
 }

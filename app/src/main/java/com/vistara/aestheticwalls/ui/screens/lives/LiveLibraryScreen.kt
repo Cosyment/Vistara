@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,7 +75,9 @@ private const val GRID_COLUMNS = 2
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LiveLibraryScreen(
-    onWallpaperClick: (Wallpaper) -> Unit, onSearchClick: () -> Unit = {}, viewModel: LiveLibraryViewModel = hiltViewModel()
+    onWallpaperClick: (Wallpaper) -> Unit,
+    onSearchClick: () -> Unit = {},
+    viewModel: LiveLibraryViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -100,7 +103,6 @@ fun LiveLibraryScreen(
     val currentWallpapers = remember(wallpapersUiState) {
         when (wallpapersUiState) {
             is UiState.Success -> (wallpapersUiState as UiState.Success<List<Wallpaper>>).data
-//            is UiState.Error -> (wallpapersUiState as UiState.Error<*>).cachedData ?: emptyList() // Use cached data on error if available
             is UiState.Error -> emptyList() // Use cached data on error if available
             is UiState.Loading -> {
                 // If loading, try to show previous success data or cached error data to avoid blank screen
@@ -145,12 +147,17 @@ fun LiveLibraryScreen(
     }
 
     // --- Player Listener for Auto-Play Next and Errors ---
-    DisposableEffect(exoPlayer, currentWallpapers.size, gridState) { // Re-evaluate if these deps change
+    DisposableEffect(
+        exoPlayer, currentWallpapers.size, gridState
+    ) { // Re-evaluate if these deps change
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 // Check if playback ended, not scrolling, and not paused by lifecycle
                 if (playbackState == Player.STATE_ENDED && !gridState.isScrollInProgress && !wasPausedForLifecycle) {
-                    Log.d(TAG, "Playback ended for index $playingIndex. Finding next visible item to play.")
+                    Log.d(
+                        TAG,
+                        "Playback ended for index $playingIndex. Finding next visible item to play."
+                    )
                     val visibleItemsInfo = gridState.layoutInfo.visibleItemsInfo
                     // Ensure we have visible items and something was actually playing
                     if (visibleItemsInfo.isEmpty() || playingIndex == -1) {
@@ -165,9 +172,11 @@ fun LiveLibraryScreen(
 
                     if (currentVisibleListIndex != -1) {
                         // Calculate the next index within the *visible* items list, looping back to the start
-                        val nextVisibleListIndex = (currentVisibleListIndex + 1) % visibleItemsInfo.size
+                        val nextVisibleListIndex =
+                            (currentVisibleListIndex + 1) % visibleItemsInfo.size
                         val nextVisibleItemInfo = visibleItemsInfo[nextVisibleListIndex]
-                        val nextPlayingIndex = nextVisibleItemInfo.index // Get the index in the full data list
+                        val nextPlayingIndex =
+                            nextVisibleItemInfo.index // Get the index in the full data list
 
                         Log.d(TAG, "Next visible item to play is at index: $nextPlayingIndex")
 
@@ -176,14 +185,24 @@ fun LiveLibraryScreen(
                             val nextVideo = currentWallpapers[nextPlayingIndex]
                             // Ensure the next item has a valid video URL
                             if (nextVideo.url != null) {
-                                Log.d(TAG, "Playing next video at index $nextPlayingIndex: ${nextVideo.url}")
-                                playingIndex = nextPlayingIndex // Update state to the new playing index
+                                Log.d(
+                                    TAG,
+                                    "Playing next video at index $nextPlayingIndex: ${nextVideo.url}"
+                                )
+                                playingIndex =
+                                    nextPlayingIndex // Update state to the new playing index
                                 // Set the media item, prepare, and start playback
-                                exoPlayer.setMediaItem(MediaItem.Builder().setUri(Uri.parse(nextVideo.url)).setMediaId(nextVideo.url).build())
+                                exoPlayer.setMediaItem(
+                                    MediaItem.Builder().setUri(Uri.parse(nextVideo.url))
+                                        .setMediaId(nextVideo.url).build()
+                                )
                                 exoPlayer.prepare()
                                 exoPlayer.playWhenReady = true
                             } else {
-                                Log.w(TAG, "Next video item at index $nextPlayingIndex has null URL. Stopping playback.")
+                                Log.w(
+                                    TAG,
+                                    "Next video item at index $nextPlayingIndex has null URL. Stopping playback."
+                                )
                                 playingIndex = -1 // Stop playback if the next item is invalid
                             }
                         } else {
@@ -194,7 +213,10 @@ fun LiveLibraryScreen(
                             playingIndex = -1 // Stop playback if index is invalid
                         }
                     } else {
-                        Log.d(TAG, "The item that finished playback (index $playingIndex) is no longer visible. Stopping playback.")
+                        Log.d(
+                            TAG,
+                            "The item that finished playback (index $playingIndex) is no longer visible. Stopping playback."
+                        )
                         // If the item scrolled out of view just as it finished, stop.
                         playingIndex = -1
                     }
@@ -202,7 +224,10 @@ fun LiveLibraryScreen(
                     Log.d(TAG, "Player is BUFFERING for index $playingIndex")
                     // This state can be used in VideoItem to show a loading indicator
                 } else if (playbackState == Player.STATE_READY) {
-                    Log.d(TAG, "Player is READY for index $playingIndex. PlayWhenReady=${exoPlayer.playWhenReady}")
+                    Log.d(
+                        TAG,
+                        "Player is READY for index $playingIndex. PlayWhenReady=${exoPlayer.playWhenReady}"
+                    )
                     // Player is ready, will play if playWhenReady is true
                 }
             }
@@ -231,7 +256,9 @@ fun LiveLibraryScreen(
                 if (isScrolling) {
                     // If scrolling starts and a video is playing, pause it
                     if (exoPlayer.isPlaying) {
-                        Log.d(TAG, "Scroll detected, pausing player currently at index $playingIndex.")
+                        Log.d(
+                            TAG, "Scroll detected, pausing player currently at index $playingIndex."
+                        )
                         exoPlayer.pause()
                     }
                 } else {
@@ -241,7 +268,10 @@ fun LiveLibraryScreen(
 
                     // Do not resume playback if the player was paused due to a lifecycle event (e.g., app went to background)
                     if (wasPausedForLifecycle) {
-                        Log.d(TAG, "Scroll stopped, but player was paused for lifecycle. Resume will be handled by ON_RESUME.")
+                        Log.d(
+                            TAG,
+                            "Scroll stopped, but player was paused for lifecycle. Resume will be handled by ON_RESUME."
+                        )
                         return@collect // Let the lifecycle observer handle resume
                     }
 
@@ -249,7 +279,8 @@ fun LiveLibraryScreen(
                     val visibleItemsInfo = gridState.layoutInfo.visibleItemsInfo
                     if (visibleItemsInfo.isNotEmpty()) {
                         // Find the index of the item that should be played based on visibility
-                        val bestVisibleIndex = findBestVisibleItemToPlay(visibleItemsInfo, gridState.layoutInfo)
+                        val bestVisibleIndex =
+                            findBestVisibleItemToPlay(visibleItemsInfo, gridState.layoutInfo)
 
                         // Check if a valid item was found and is within bounds
                         if (bestVisibleIndex != -1 && bestVisibleIndex < currentWallpapers.size) {
@@ -258,29 +289,51 @@ fun LiveLibraryScreen(
                             if (bestVisibleIndex != playingIndex || (!exoPlayer.isPlaying && exoPlayer.playbackState == Player.STATE_IDLE)) {
                                 val videoToPlay = currentWallpapers[bestVisibleIndex]
                                 if (videoToPlay.url != null) {
-                                    Log.d(TAG, "Scroll stopped. Playing item at target index $bestVisibleIndex: ${videoToPlay.url}")
-                                    playingIndex = bestVisibleIndex // Update the playing index state
-                                    exoPlayer.setMediaItem(MediaItem.Builder().setUri(Uri.parse(videoToPlay.url)).setMediaId(videoToPlay.url).build())
+                                    Log.d(
+                                        TAG,
+                                        "Scroll stopped. Playing item at target index $bestVisibleIndex: ${videoToPlay.url}"
+                                    )
+                                    playingIndex =
+                                        bestVisibleIndex // Update the playing index state
+                                    exoPlayer.setMediaItem(
+                                        MediaItem.Builder().setUri(Uri.parse(videoToPlay.url))
+                                            .setMediaId(videoToPlay.url).build()
+                                    )
                                     exoPlayer.prepare()
                                     exoPlayer.playWhenReady = true
                                 } else {
-                                    Log.w(TAG, "Scroll stopped. Target video at index $bestVisibleIndex has null URL.")
+                                    Log.w(
+                                        TAG,
+                                        "Scroll stopped. Target video at index $bestVisibleIndex has null URL."
+                                    )
                                     // If this invalid item was somehow marked as playing, reset it
                                     if (playingIndex == bestVisibleIndex) playingIndex = -1
                                 }
                             } else if (bestVisibleIndex == playingIndex && !exoPlayer.isPlaying && exoPlayer.playbackState != Player.STATE_ENDED) {
                                 // If the target is the same as the current index, but it's paused (and not ended), resume it.
-                                Log.d(TAG, "Scroll stopped. Resuming playback for already targeted index $playingIndex.")
+                                Log.d(
+                                    TAG,
+                                    "Scroll stopped. Resuming playback for already targeted index $playingIndex."
+                                )
                                 exoPlayer.playWhenReady = true
                             } else {
-                                Log.d(TAG, "Scroll stopped. Target $bestVisibleIndex is already playing or preparing.")
+                                Log.d(
+                                    TAG,
+                                    "Scroll stopped. Target $bestVisibleIndex is already playing or preparing."
+                                )
                             }
                         } else if (bestVisibleIndex != -1) {
-                            Log.w(TAG, "Scroll stopped. Best visible index $bestVisibleIndex is out of bounds (${currentWallpapers.size}).")
+                            Log.w(
+                                TAG,
+                                "Scroll stopped. Best visible index $bestVisibleIndex is out of bounds (${currentWallpapers.size})."
+                            )
                             playingIndex = -1 // Reset playing index if target is invalid
                             exoPlayer.stop()
                         } else {
-                            Log.d(TAG, "Scroll stopped. No suitable visible item found to play. Stopping playback.")
+                            Log.d(
+                                TAG,
+                                "Scroll stopped. No suitable visible item found to play. Stopping playback."
+                            )
                             playingIndex = -1
                             exoPlayer.stop() // Stop if no item is deemed suitable
                         }
@@ -305,22 +358,38 @@ fun LiveLibraryScreen(
                 // 3. Nothing is currently marked as playing
                 // 4. Not paused due to lifecycle event
                 .filter { it.isNotEmpty() && !gridState.isScrollInProgress && playingIndex == -1 && !wasPausedForLifecycle }
-                .map { findBestVisibleItemToPlay(it, gridState.layoutInfo) } // Find the best item based on current visibility
+                .map {
+                    findBestVisibleItemToPlay(
+                        it, gridState.layoutInfo
+                    )
+                } // Find the best item based on current visibility
                 .distinctUntilChanged() // Only proceed if the best item index changes
                 .collect { bestVisibleIndex ->
                     if (bestVisibleIndex != -1 && bestVisibleIndex < currentWallpapers.size) {
                         val videoToPlay = currentWallpapers[bestVisibleIndex]
                         if (videoToPlay.url != null) {
-                            Log.d(TAG, "Initial Play Triggered. Playing item at index $bestVisibleIndex: ${videoToPlay.url}")
+                            Log.d(
+                                TAG,
+                                "Initial Play Triggered. Playing item at index $bestVisibleIndex: ${videoToPlay.url}"
+                            )
                             playingIndex = bestVisibleIndex // Update state
-                            exoPlayer.setMediaItem(MediaItem.Builder().setUri(Uri.parse(videoToPlay.url)).setMediaId(videoToPlay.url).build())
+                            exoPlayer.setMediaItem(
+                                MediaItem.Builder().setUri(Uri.parse(videoToPlay.url))
+                                    .setMediaId(videoToPlay.url).build()
+                            )
                             exoPlayer.prepare()
                             exoPlayer.playWhenReady = true
                         } else {
-                            Log.w(TAG, "Initial Play. Target video URL is null at index $bestVisibleIndex")
+                            Log.w(
+                                TAG,
+                                "Initial Play. Target video URL is null at index $bestVisibleIndex"
+                            )
                         }
                     } else {
-                        Log.d(TAG, "Initial Play. No suitable item found or index $bestVisibleIndex invalid.")
+                        Log.d(
+                            TAG,
+                            "Initial Play. No suitable item found or index $bestVisibleIndex invalid."
+                        )
                     }
                 }
         }
@@ -331,16 +400,21 @@ fun LiveLibraryScreen(
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, topBar = {
         TopAppBar(
             title = {
-                Text(
-                    stringResource(R.string.category_live), style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
-                )
-            }, actions = {
-                IconButton(onClick = onSearchClick) {
-                    Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search_hint))
-                }
-            }, colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f), titleContentColor = MaterialTheme.colorScheme.onBackground
+            Text(
+                stringResource(R.string.category_live),
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
             )
+        }, actions = {
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = stringResource(R.string.search_hint)
+                )
+            }
+        }, colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+            titleContentColor = MaterialTheme.colorScheme.onBackground
+        )
         )
     }) { paddingValues ->
         val pullRefreshState = rememberPullRefreshState(
@@ -353,7 +427,11 @@ fun LiveLibraryScreen(
                 viewModel.refresh()
             })
 
-        Box(Modifier.pullRefresh(pullRefreshState)) { // Wrap content in Box for PullRefreshIndicator positioning
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pullRefresh(pullRefreshState)
+        ) { // Wrap content in Box for PullRefreshIndicator positioning
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -361,8 +439,13 @@ fun LiveLibraryScreen(
             ) {
                 // Category Selector
                 CategorySelector(
-                    categories = categories, selectedCategory = selectedCategory, onCategorySelected = { category ->
-                        Log.d(TAG, "Category selected: ${category.name}. Stopping player and filtering.")
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = { category ->
+                        Log.d(
+                            TAG,
+                            "Category selected: ${category.name}. Stopping player and filtering."
+                        )
                         // Stop player immediately when changing category
                         playingIndex = -1
                         exoPlayer.stop()
@@ -378,10 +461,16 @@ fun LiveLibraryScreen(
                     is UiState.Loading -> {
                         // Show loading indicator only if there's no previous data to display
                         if (currentWallpapers.isEmpty()) {
-                            LoadingState(modifier = Modifier.fillMaxSize()) // Your loading composable
+                            LoadingState(
+                                message = stringResource(R.string.no_wallpapers_found),
+                                modifier = Modifier.fillMaxSize()
+                            ) // Your loading composable
                         } else {
                             // Show the existing grid data while loading new data in the background
-                            Log.d(TAG, "Loading state, but showing existing ${currentWallpapers.size} items.")
+                            Log.d(
+                                TAG,
+                                "Loading state, but showing existing ${currentWallpapers.size} items."
+                            )
                             LiveVideoGrid(
                                 wallpapers = currentWallpapers,
                                 onWallpaperClick = onWallpaperClick,
@@ -393,40 +482,6 @@ fun LiveLibraryScreen(
                                 onLoadMore = { viewModel.loadMore() },
                                 modifier = Modifier.weight(1f) // Ensure grid takes available space
                             )
-                        }
-                    }
-
-                    is UiState.Error -> {
-                        // Show error message, potentially overlaid or with cached data
-                        Log.e(TAG, "Error state: ${state.message}")
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            // If there's no cached data, show the error message prominently
-                            if (currentWallpapers.isEmpty()) {
-                                Text(
-                                    text = state.message,
-                                    color = MaterialTheme.colorScheme.error,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            } else {
-                                // If there is cached data, show it in the grid and display error via Snackbar
-                                LaunchedEffect(state.message) { // Show snackbar when error message changes
-                                    snackbarHostState.showSnackbar(
-                                        message = state.message, duration = SnackbarDuration.Short
-                                    )
-                                }
-                                LiveVideoGrid(
-                                    wallpapers = currentWallpapers, // Display cached data
-                                    onWallpaperClick = onWallpaperClick,
-                                    gridState = gridState,
-                                    exoPlayer = exoPlayer,
-                                    playingIndex = playingIndex, // Keep player state consistent
-                                    isLoadingMore = false, // Not loading more on error
-                                    canLoadMore = false,   // Cannot load more after error
-                                    onLoadMore = {}, // No-op load more
-//                                    modifier = Modifier.weight(1F)
-                                )
-                            }
                         }
                     }
 
@@ -456,16 +511,54 @@ fun LiveLibraryScreen(
                             )
                         }
                     }
+
+                    is UiState.Error -> {
+                        // Show error message, potentially overlaid or with cached data
+                        Log.e(TAG, "Error state: ${state.message}")
+                        Box(
+                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                        ) {
+                            // If there's no cached data, show the error message prominently
+                            if (currentWallpapers.isEmpty()) {
+                                Text(
+                                    text = state.message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            } else {
+                                // If there is cached data, show it in the grid and display error via Snackbar
+                                LaunchedEffect(state.message) { // Show snackbar when error message changes
+                                    snackbarHostState.showSnackbar(
+                                        message = state.message, duration = SnackbarDuration.Short
+                                    )
+                                }
+                                LiveVideoGrid(
+                                    wallpapers = currentWallpapers, // Display cached data
+                                    onWallpaperClick = onWallpaperClick,
+                                    gridState = gridState,
+                                    exoPlayer = exoPlayer,
+                                    playingIndex = playingIndex, // Keep player state consistent
+                                    isLoadingMore = false, // Not loading more on error
+                                    canLoadMore = false,   // Cannot load more after error
+                                    onLoadMore = {}, // No-op load more
+//                                    modifier = Modifier.weight(1F)
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
-//            PullRefreshIndicator(
-//                refreshing = isRefreshing,
-//                state = pullRefreshState,
-//                backgroundColor = MaterialTheme.colorScheme.surface,
-//                contentColor = MaterialTheme.colorScheme.primary,
-//                modifier = Modifier.align(Alignment.TopCenter).padding(top = 30.dp)
-//            )
+            PullRefreshIndicator(
+                refreshing = isRefreshing,
+                state = pullRefreshState,
+                backgroundColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 30.dp)
+            )
         }
     }
 }
@@ -531,7 +624,10 @@ fun findBestVisibleItemToPlay(
         yDist * 1000 + xDist // Simple heuristic: prioritize top-ness strongly
     }
 
-    Log.d("findBestItem", "Candidate for playback: index=${candidate?.index}, offset=${candidate?.offset}")
+    Log.d(
+        "findBestItem",
+        "Candidate for playback: index=${candidate?.index}, offset=${candidate?.offset}"
+    )
     return candidate?.index ?: -1 // Return the index of the best candidate, or -1 if none found
 }
 
