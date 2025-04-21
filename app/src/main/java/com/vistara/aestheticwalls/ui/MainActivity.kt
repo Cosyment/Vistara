@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.vistara.aestheticwalls.data.model.AppLanguage
 import com.vistara.aestheticwalls.manager.LocaleManager
@@ -47,6 +48,9 @@ class MainActivity : ComponentActivity() {
     private var isReceiverRegistered = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 安装启动画面 - 必须在super.onCreate之前调用
+        val splashScreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -62,7 +66,12 @@ class MainActivity : ComponentActivity() {
         // 注册解锁屏幕广播接收器
         registerUnlockReceiver()
 
+        // 保持启动画面显示，直到内容准备好
+        var contentReady = false
+        splashScreen.setKeepOnScreenCondition { !contentReady }
+
         recreateContent()
+        contentReady = true
     }
 
     private fun recreateContent() {
