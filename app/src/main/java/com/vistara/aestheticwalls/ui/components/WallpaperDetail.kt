@@ -94,7 +94,7 @@ fun WallpaperDetail(
             // 显示编辑后的图片，使用可缩放组件
             ZoomableBitmapImage(
                 bitmap = editedBitmap,
-                contentDescription = wallpaper.title ?: "壁纸",
+                contentDescription = wallpaper.title ?: "",
                 modifier = Modifier.fillMaxSize(),
                 onTap = { showControls = !showControls })
         } else if (wallpaper.isLive) {
@@ -107,7 +107,7 @@ fun WallpaperDetail(
             // 显示原始图片
             ZoomableImage(
                 imageUrl = wallpaper.url ?: "",
-                contentDescription = wallpaper.title ?: "壁纸",
+                contentDescription = wallpaper.title ?: "",
                 modifier = Modifier.fillMaxSize(),
                 onTap = { showControls = !showControls })
         }
@@ -143,7 +143,7 @@ fun WallpaperDetail(
                         .size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack, contentDescription = "返回", tint = Color.White
+                        imageVector = Icons.Default.ArrowBack, contentDescription = "", tint = Color.White
                     )
                 }
 

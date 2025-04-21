@@ -835,6 +835,17 @@ class WallpaperDetailViewModel @Inject constructor(
     }
 
     /**
+     * 加载模糊背景图片
+     * 公开方法，允许从界面触发重新加载
+     */
+    fun loadBlurredBackground() {
+        val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
+        if (!currentWallpaper.isLive) {
+            loadAndBlurBackground(currentWallpaper)
+        }
+    }
+
+    /**
      * 清除升级结果
      */
     fun clearUpgradeResult() {

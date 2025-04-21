@@ -25,25 +25,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.UiState
@@ -148,7 +142,8 @@ fun WallpaperDetailScreen(
             Toast.makeText(context, R.string.start_download_wallpaper, Toast.LENGTH_SHORT).show()
         } else {
             // 权限被拒绝
-            Toast.makeText(context, R.string.download_failed_permission_denied, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.download_failed_permission_denied, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -229,15 +224,6 @@ fun WallpaperDetailScreen(
                     )
                 }
 
-                is UiState.Error -> {
-                    // 显示错误信息
-                    Text(
-                        text = (wallpaperState as UiState.Error).message ?: "加载失败",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-
                 is UiState.Success -> {
                     // 显示壁纸详情
                     val wallpaper = (wallpaperState as UiState.Success).data
@@ -259,24 +245,29 @@ fun WallpaperDetailScreen(
                                 modifier = Modifier.fillMaxSize()
                             )
                         } else {
-                            // 如果没有预先计算好的模糊位图，使用黑色背景并应用AsyncImage加载并模糊
+                            // 如果没有预先计算好的模糊位图，使用黑色背景
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(AppColors.WallpaperDetailBackground)
                             )
 
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(wallpaper.url)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = null,
-                                contentScale = ContentScale.FillBounds,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .blur(radius = 20.dp) // 应用模糊效果
-                            )
+                            // 启动加载模糊背景的过程
+                            LaunchedEffect(wallpaper.id) {
+                                viewModel.loadBlurredBackground()
+                            }
+
+//                            AsyncImage(
+//                                model = ImageRequest.Builder(context)
+//                                    .data(wallpaper.url)
+//                                    .crossfade(true)
+//                                    .build(),
+//                                contentDescription = null,
+//                                contentScale = ContentScale.FillBounds,
+//                                modifier = Modifier
+//                                    .fillMaxSize()
+//                                    .blur(radius = 20.dp) // 应用模糊效果
+//                            )
                         }
                     } else {
                         // 对于视频壁纸，使用纯黑色背景
@@ -309,7 +300,9 @@ fun WallpaperDetailScreen(
                                 viewModel.showPremiumPrompt()
                             } else {
                                 viewModel.downloadWallpaper()
-                                Toast.makeText(context, R.string.start_download_wallpaper, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context, R.string.start_download_wallpaper, Toast.LENGTH_SHORT
+                                ).show()
                             }
                         },
                         onShare = { viewModel.shareWallpaper() },
@@ -346,24 +339,28 @@ fun WallpaperDetailScreen(
                                 usePlatformDefaultWidth = false
                             )
                         ) {
-                            WallpaperSetOptions(
-                                onSetHomeScreen = {
-                                    viewModel.setWallpaper(activity, WallpaperTarget.HOME)
-                                },
-                                onSetLockScreen = {
-                                    viewModel.setWallpaper(activity, WallpaperTarget.LOCK)
-                                },
-                                onSetBoth = {
-                                    viewModel.setWallpaper(activity, WallpaperTarget.BOTH)
-                                },
-                                onDismiss = {
-                                    viewModel.hideSetWallpaperOptions()
-                                }
-                            )
+                            WallpaperSetOptions(onSetHomeScreen = {
+                                viewModel.setWallpaper(activity, WallpaperTarget.HOME)
+                            }, onSetLockScreen = {
+                                viewModel.setWallpaper(activity, WallpaperTarget.LOCK)
+                            }, onSetBoth = {
+                                viewModel.setWallpaper(activity, WallpaperTarget.BOTH)
+                            }, onDismiss = {
+                                viewModel.hideSetWallpaperOptions()
+                            })
                         }
                     }
 
                     // 高级壁纸提示对话框 - 使用半透明背景
+                }
+
+                is UiState.Error -> {
+                    // 显示错误信息
+                    Text(
+                        text = (wallpaperState as UiState.Error).message,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }
@@ -382,7 +379,9 @@ fun WallpaperDetailScreen(
             },
             dismissButton = {
                 Button(onClick = {
-                    Toast.makeText(context, R.string.download_failed_permission_required, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context, R.string.download_failed_permission_required, Toast.LENGTH_SHORT
+                    ).show()
                     viewModel.resetPermissionRequest()
                 }) {
                     Text(stringResource(R.string.cancel))
@@ -400,12 +399,10 @@ fun WallpaperDetailScreen(
         }
 
         LoginPromptDialog(
-            onDismiss = { viewModel.clearNeedLoginAction() },
-            onConfirm = {
-                viewModel.clearNeedLoginAction()
-                onNavigateToLogin()
-            },
-            message = message
+            onDismiss = { viewModel.clearNeedLoginAction() }, onConfirm = {
+            viewModel.clearNeedLoginAction()
+            onNavigateToLogin()
+        }, message = message
         )
     }
 }

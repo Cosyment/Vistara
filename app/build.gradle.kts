@@ -38,7 +38,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             signingConfig = signingConfigs.getByName("release")
             buildConfigField("String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\"")
             buildConfigField("String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\"")
