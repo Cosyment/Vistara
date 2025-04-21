@@ -170,7 +170,7 @@
     <string name="monthly_price">¥68.99</string>
     <string name="quarterly_price">¥168.99</string>
     <string name="yearly_price">¥598.99</string>
-    <string name="quarterly_discount">省17%</string>
+    <string name="quarterly_discount">省18%</string>
     <string name="yearly_discount">省27%</string>
     <string name="already_premium_user">您已经是高级用户</string>
     <string name="payment_service_not_connected">支付服务未连接，请稍后再试</string>

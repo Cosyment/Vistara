@@ -193,7 +193,7 @@
     <string name="monthly_price">¥1,200</string>
     <string name="quarterly_price">¥3,200</string>
     <string name="yearly_price">¥10,800</string>
-    <string name="quarterly_discount">17%お得</string>
+    <string name="quarterly_discount">11%お得</string>
     <string name="yearly_discount">27%お得</string>
     <string name="already_premium_user">あなたはすでにプレミアムユーザーです</string>
     <string name="payment_service_not_connected">決済サービスに接続されていません。後でもう一度お試しください</string>

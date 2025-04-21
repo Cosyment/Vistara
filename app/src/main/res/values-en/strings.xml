@@ -198,7 +198,7 @@
     <string name="monthly_price">$9.99</string>
     <string name="quarterly_price">$24.99</string>
     <string name="yearly_price">$89.99</string>
-    <string name="quarterly_discount">Save 17%</string>
+    <string name="quarterly_discount">Save 16%</string>
     <string name="yearly_discount">Save 27%</string>
     <string name="already_premium_user">You are already a premium user</string>
     <string name="payment_service_not_connected">Payment service not connected, please try again later</string>
