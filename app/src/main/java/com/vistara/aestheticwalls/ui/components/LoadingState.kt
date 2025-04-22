@@ -10,11 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.vistara.aestheticwalls.ui.theme.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 加载状态组件
@@ -25,7 +25,7 @@ import com.vistara.aestheticwalls.ui.theme.VistaraTheme
  */
 @Composable
 fun LoadingState(
-    message: String? = null, modifier: Modifier = Modifier
+    message: String? = stringResource(R.string.loading), modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center

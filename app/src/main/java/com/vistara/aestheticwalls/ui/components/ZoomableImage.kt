@@ -101,6 +101,8 @@ fun ZoomableImage(
             model = ImageRequest.Builder(context)
                 .data(imageUrl)
                 .crossfade(true)
+                .crossfade(400)
+                .diskCacheKey(imageUrl)
                 .diskCachePolicy(CachePolicy.ENABLED)
                 .memoryCachePolicy(CachePolicy.ENABLED)
                 .placeholder(R.drawable.placeholder_image)

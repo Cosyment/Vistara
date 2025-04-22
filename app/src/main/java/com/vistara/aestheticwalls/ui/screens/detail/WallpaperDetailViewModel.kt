@@ -233,7 +233,6 @@ class WallpaperDetailViewModel @Inject constructor(
             try {
                 // 先从本地数据库查询
                 var wallpaper: Wallpaper? = wallpaperRepository.getWallpaperById(wallpaperId)
-                print("---------->>local $wallpaper")
 
                 // 如果本地数据库有这个壁纸，直接显示
                 if (wallpaper != null) {
@@ -244,7 +243,6 @@ class WallpaperDetailViewModel @Inject constructor(
                     // 同时在后台尝试从服务器获取最新数据更新本地缓存
                     try {
                         val updatedWallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
-                        print("---------->>remote $updatedWallpaper")
                         if (updatedWallpaper != null && updatedWallpaper != wallpaper) {
                             _wallpaperState.value = UiState.Success(updatedWallpaper)
                         }

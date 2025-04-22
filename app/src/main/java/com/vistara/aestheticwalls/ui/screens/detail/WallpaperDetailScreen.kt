@@ -231,11 +231,17 @@ fun WallpaperDetailScreen(
                     // 获取编辑后的图片
                     val editedBitmap by viewModel.editedBitmap
 
-                    // 根据壁纸类型设置背景
-                    if (!wallpaper.isLive) {
+                    // 根据壁纸类型设置背景，视频默认黑色背景
+                    if (wallpaper.isLive) {
+                        //视频默认黑色背景
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(AppColors.WallpaperDetailBackground)
+                        )
+                    } else {
                         // 对于图片壁纸，使用模糊背景
                         val blurredBitmap by viewModel.blurredBackgroundBitmap
-
                         if (blurredBitmap != null) {
                             // 如果有预先计算好的模糊位图，直接使用
                             androidx.compose.foundation.Image(
@@ -246,36 +252,12 @@ fun WallpaperDetailScreen(
                             )
                         } else {
                             // 如果没有预先计算好的模糊位图，使用黑色背景
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(AppColors.WallpaperDetailBackground)
-                            )
 
                             // 启动加载模糊背景的过程
                             LaunchedEffect(wallpaper.id) {
                                 viewModel.loadBlurredBackground()
                             }
-
-//                            AsyncImage(
-//                                model = ImageRequest.Builder(context)
-//                                    .data(wallpaper.url)
-//                                    .crossfade(true)
-//                                    .build(),
-//                                contentDescription = null,
-//                                contentScale = ContentScale.FillBounds,
-//                                modifier = Modifier
-//                                    .fillMaxSize()
-//                                    .blur(radius = 20.dp) // 应用模糊效果
-//                            )
                         }
-                    } else {
-                        // 对于视频壁纸，使用纯黑色背景
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(AppColors.WallpaperDetailBackground)
-                        )
                     }
 
                     WallpaperDetail(
