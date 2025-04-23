@@ -1,4 +1,5 @@
 [versions]
+afAndroidSdk = "6.16.2"
 agp = "8.9.1"
 firebaseBom = "33.12.0"
 firebaseFirestore = "25.1.3"
@@ -13,6 +14,7 @@ activityCompose = "1.10.1"
 composeBom = "2025.04.00"
 hilt = "2.56.2"
 materialIconsCore = "1.7.8"
+playServicesAdsIdentifier = "18.2.0"
 room = "2.7.0"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
@@ -39,6 +41,7 @@ androidxCoreTesting = "2.2.0"
 splashscreen = "1.0.1"
 
 [libraries]
+af-android-sdk = { module = "com.appsflyer:af-android-sdk", version.ref = "afAndroidSdk" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -73,6 +76,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-constraint-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraint" }
 
 # Retrofit & OkHttp
+play-services-ads-identifier = { module = "com.google.android.gms:play-services-ads-identifier", version.ref = "playServicesAdsIdentifier" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }

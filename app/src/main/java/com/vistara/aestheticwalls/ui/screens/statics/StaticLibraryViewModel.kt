@@ -11,7 +11,7 @@ import com.vistara.aestheticwalls.data.model.WallpaperCategory
 import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
-import com.vistara.aestheticwalls.utils.RefreshUtils
+import com.vistara.aestheticwalls.utils.RefreshUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -202,7 +202,7 @@ class StaticLibraryViewModel @Inject constructor(
                 // 无论成功失败，都重置加载状态
                 if (isRefresh) {
                     // 使用延迟结束刷新状态，改善用户体验
-                    RefreshUtils.delayedEndRefreshing(_isRefreshing, viewModelScope)
+                    RefreshUtil.delayedEndRefreshing(_isRefreshing, viewModelScope)
                 } else {
                     _isRefreshing.value = false
                 }

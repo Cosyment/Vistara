@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
  * 刷新工具类
  * 提供延迟结束刷新状态的功能，改善用户体验
  */
-object RefreshUtils {
+object RefreshUtil {
     /**
      * 延迟结束刷新状态
      * @param isRefreshing 刷新状态Flow

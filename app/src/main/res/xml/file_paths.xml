@@ -4,4 +4,5 @@
     <cache-path name="videos" path="videos/"/>
     <cache-path name="cache" path="."/>
     <external-path name="external_files" path="."/>
+    <external-files-path name="shared_images" path="shared_images/" />
 </paths>

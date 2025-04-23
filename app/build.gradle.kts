@@ -21,8 +21,8 @@ android {
         applicationId = "com.vistara.aestheticwalls"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -167,6 +167,11 @@ dependencies {
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.hilt.android.testing)
     androidTestImplementation(libs.hilt.android)
+
+    // AppsFlyer SDK
+    implementation(libs.af.android.sdk)
+    // 如果需要广告ID,添加Google Play Services Ads
+    implementation(libs.play.services.ads.identifier)
 }
 
 // 自定义任务：编译、安装并启动应用
