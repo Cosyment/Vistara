@@ -30,3 +30,7 @@
 -keep class com.google.gson.reflect.TypeToken { *; }
 
 -keep class com.vistara.aestheticwalls.data.**{*;}
+
+# Appsflyer
+-keep class com.appsflyer.** { *; }
+-keep class kotlin.jvm.internal.** { *; }
