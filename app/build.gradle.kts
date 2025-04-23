@@ -152,6 +152,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
 
+    // AppsFlyer SDK
+    implementation(libs.af.android.sdk)
+    // 如果需要广告ID,添加Google Play Services Ads
+    implementation(libs.play.services.ads.identifier)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
@@ -167,11 +172,6 @@ dependencies {
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.hilt.android.testing)
     androidTestImplementation(libs.hilt.android)
-
-    // AppsFlyer SDK
-    implementation(libs.af.android.sdk)
-    // 如果需要广告ID,添加Google Play Services Ads
-    implementation(libs.play.services.ads.identifier)
 }
 
 // 自定义任务：编译、安装并启动应用
