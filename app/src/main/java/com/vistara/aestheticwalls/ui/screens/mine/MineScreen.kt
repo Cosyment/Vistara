@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.ui.screens.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import com.vistara.aestheticwalls.ui.icons.AppIcons
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -76,6 +79,7 @@ fun MineScreen(
     onFeedbackClick: () -> Unit = {},
     onAboutClick: () -> Unit = {},
     onUpgradeClick: () -> Unit = {},
+    onDiamondClick: () -> Unit = {},
     onTestToolsClick: () -> Unit = {},
     onLoginClick: () -> Unit = {},
     viewModel: MineViewModel = hiltViewModel()
@@ -84,6 +88,7 @@ fun MineScreen(
     val username by viewModel.username.collectAsState()
     val userPhotoUrl by viewModel.userPhotoUrl.collectAsState()
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val diamondBalance by viewModel.diamondBalance.collectAsState()
     val isDebugMode by viewModel.isDebugMode.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
     val needLoginAction by viewModel.needLoginAction.collectAsState()
@@ -151,8 +156,10 @@ fun MineScreen(
                 username = username,
                 userPhotoUrl = userPhotoUrl,
                 isPremiumUser = isPremiumUser,
+                diamondBalance = diamondBalance,
                 isLoggedIn = isLoggedIn,
-                onLoginClick = onLoginClick
+                onLoginClick = onLoginClick,
+                onDiamondClick = onDiamondClick
             )
 
             // 升级横幅
@@ -250,8 +257,10 @@ private fun MineHeader(
     username: String,
     userPhotoUrl: String?,
     isPremiumUser: Boolean,
+    diamondBalance: Int,
     isLoggedIn: Boolean,
     onLoginClick: () -> Unit = {},
+    onDiamondClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -461,6 +470,38 @@ private fun MineHeader(
             Text(
                 text = username, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
             )
+
+            // 钻石余额
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .clickable(onClick = onDiamondClick),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Diamond,
+                        contentDescription = "Diamond Balance",
+                        tint = Color(0xFF00BCD4),
+                        modifier = Modifier.size(16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Text(
+                        text = diamondBalance.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
 
             // 会员状态
             if (isPremiumUser) {

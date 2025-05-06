@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.vistara.aestheticwalls.data.local.AppDatabase
 import com.vistara.aestheticwalls.data.local.DatabaseMigrations
+import com.vistara.aestheticwalls.data.local.DiamondDao
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import dagger.Module
 import dagger.Provides
@@ -26,9 +27,12 @@ object DatabaseModule {
             AppDatabase::class.java,
             "vistara_db"
         )
-        .addMigrations(DatabaseMigrations.MIGRATION_1_2) // 添加1到2的迁移策略
+        .addMigrations(
+            DatabaseMigrations.MIGRATION_1_2, // 添加1到2的迁移策略
+            DatabaseMigrations.MIGRATION_2_3  // 添加2到3的迁移策略
+        )
         // 如果迁移失败，允许回退到破坏性迁移（会清除数据）
-        .fallbackToDestructiveMigration()
+        .fallbackToDestructiveMigration(true)
         .build()
     }
 
@@ -38,5 +42,13 @@ object DatabaseModule {
         database: AppDatabase
     ): WallpaperDao {
         return database.wallpaperDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDiamondDao(
+        database: AppDatabase
+    ): DiamondDao {
+        return database.diamondDao()
     }
 }

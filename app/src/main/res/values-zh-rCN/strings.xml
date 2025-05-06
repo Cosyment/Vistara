@@ -436,4 +436,30 @@
     <string name="notification_channel_live_wallpaper_desc">关于待处理的动态壁纸设置的通知</string>
     <string name="notification_live_wallpaper_pending_title">视频壁纸已就绪</string>
     <string name="notification_live_wallpaper_pending_text">点击将"%1$s"设置为您的视频壁纸</string>
+
+    <!-- Diamond related -->
+    <string name="diamond_recharge">钻石充值</string>
+    <string name="my_diamond_balance">我的钻石余额</string>
+    <string name="select_diamond_package">选择钻石套餐</string>
+    <string name="diamond">钻石</string>
+    <string name="discount_percent">%d%% 折扣</string>
+    <string name="purchase_now">立即购买</string>
+    <string name="transaction_history">交易记录</string>
+    <string name="current_balance">当前余额</string>
+    <string name="no_transaction_history">暂无交易记录</string>
+    <string name="recharge">充值</string>
+    <string name="purchase">购买</string>
+    <string name="reward">奖励</string>
+    <string name="refund">退款</string>
+    <string name="diamond_insufficient">钻石余额不足</string>
+    <string name="diamond_purchase_success">购买成功</string>
+    <string name="diamond_purchase_failed">购买失败</string>
+    <string name="diamond_recharge_success">充值成功</string>
+    <string name="diamond_recharge_failed">充值失败</string>
+    <string name="diamond_balance">钻石余额</string>
+    <string name="diamond_price">价格：%d钻石</string>
+    <string name="unlock_with_diamonds">使用%d钻石解锁</string>
+    <string name="recharge_diamonds">充值钻石</string>
+    <string name="unlock_premium_content">解锁高级内容</string>
+    <string name="purchase_wallpaper">购买壁纸：%s</string>
 </resources>

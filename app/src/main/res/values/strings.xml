@@ -448,4 +448,30 @@
     <string name="japanese_language">日本語</string>
     <string name="korean_language">한국어</string>
     <string name="indonesian_language">Bahasa Indonesia</string>
+
+    <!-- Diamond related -->
+    <string name="diamond_recharge">Diamond Recharge</string>
+    <string name="my_diamond_balance">My Diamond Balance</string>
+    <string name="select_diamond_package">Select Diamond Package</string>
+    <string name="diamond">Diamonds</string>
+    <string name="discount_percent">%d%% OFF</string>
+    <string name="purchase_now">Purchase Now</string>
+    <string name="transaction_history">Transaction History</string>
+    <string name="current_balance">Current Balance</string>
+    <string name="no_transaction_history">No transaction history</string>
+    <string name="recharge">Recharge</string>
+    <string name="purchase">Purchase</string>
+    <string name="reward">Reward</string>
+    <string name="refund">Refund</string>
+    <string name="diamond_insufficient">Insufficient diamonds</string>
+    <string name="diamond_purchase_success">Purchase successful</string>
+    <string name="diamond_purchase_failed">Purchase failed</string>
+    <string name="diamond_recharge_success">Recharge successful</string>
+    <string name="diamond_recharge_failed">Recharge failed</string>
+    <string name="diamond_balance">Diamond Balance</string>
+    <string name="diamond_price">Price: %d diamonds</string>
+    <string name="unlock_with_diamonds">Unlock with %d diamonds</string>
+    <string name="recharge_diamonds">Recharge Diamonds</string>
+    <string name="unlock_premium_content">Unlock Premium Content</string>
+    <string name="purchase_wallpaper">Purchase wallpaper: %s</string>
 </resources>

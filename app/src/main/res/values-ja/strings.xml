@@ -438,4 +438,30 @@
     <string name="notification_channel_live_wallpaper_desc">保留中のライブ壁紙設定に関する通知</string>
     <string name="notification_live_wallpaper_pending_title">ビデオ壁紙の準備が完了しました</string>
     <string name="notification_live_wallpaper_pending_text">タップして「%1$s」をビデオ壁紙として設定します</string>
+
+    <!-- Diamond related -->
+    <string name="diamond_recharge">ダイヤモンドチャージ</string>
+    <string name="my_diamond_balance">マイダイヤモンド残高</string>
+    <string name="select_diamond_package">ダイヤモンドパッケージを選択</string>
+    <string name="diamond">ダイヤモンド</string>
+    <string name="discount_percent">%d%% オフ</string>
+    <string name="purchase_now">今すぐ購入</string>
+    <string name="transaction_history">取引履歴</string>
+    <string name="current_balance">現在の残高</string>
+    <string name="no_transaction_history">取引履歴がありません</string>
+    <string name="recharge">チャージ</string>
+    <string name="purchase">購入</string>
+    <string name="reward">報酬</string>
+    <string name="refund">返金</string>
+    <string name="diamond_insufficient">ダイヤモンドが不足しています</string>
+    <string name="diamond_purchase_success">購入成功</string>
+    <string name="diamond_purchase_failed">購入失敗</string>
+    <string name="diamond_recharge_success">チャージ成功</string>
+    <string name="diamond_recharge_failed">チャージ失敗</string>
+    <string name="diamond_balance">ダイヤモンド残高</string>
+    <string name="diamond_price">価格: %d ダイヤモンド</string>
+    <string name="unlock_with_diamonds">%d ダイヤモンドでアンロック</string>
+    <string name="recharge_diamonds">ダイヤモンドをチャージ</string>
+    <string name="unlock_premium_content">プレミアムコンテンツをアンロック</string>
+    <string name="purchase_wallpaper">壁紙を購入: %s</string>
 </resources>

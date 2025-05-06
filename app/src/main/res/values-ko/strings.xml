@@ -438,4 +438,30 @@
     <string name="notification_channel_live_wallpaper_desc">보류 중인 라이브 배경화면 설정에 대한 알림</string>
     <string name="notification_live_wallpaper_pending_title">비디오 배경화면 준비 완료</string>
     <string name="notification_live_wallpaper_pending_text">터치하여 "%1$s"를 비디오 배경화면으로 설정하세요</string>
+
+    <!-- Diamond related -->
+    <string name="diamond_recharge">다이아몬드 충전</string>
+    <string name="my_diamond_balance">내 다이아몬드 잔액</string>
+    <string name="select_diamond_package">다이아몬드 패키지 선택</string>
+    <string name="diamond">다이아몬드</string>
+    <string name="discount_percent">%d%% 할인</string>
+    <string name="purchase_now">지금 구매</string>
+    <string name="transaction_history">거래 내역</string>
+    <string name="current_balance">현재 잔액</string>
+    <string name="no_transaction_history">거래 내역 없음</string>
+    <string name="recharge">충전</string>
+    <string name="purchase">구매</string>
+    <string name="reward">보상</string>
+    <string name="refund">환불</string>
+    <string name="diamond_insufficient">다이아몬드 부족</string>
+    <string name="diamond_purchase_success">구매 성공</string>
+    <string name="diamond_purchase_failed">구매 실패</string>
+    <string name="diamond_recharge_success">충전 성공</string>
+    <string name="diamond_recharge_failed">충전 실패</string>
+    <string name="diamond_balance">다이아몬드 잔액</string>
+    <string name="diamond_price">가격: %d 다이아몬드</string>
+    <string name="unlock_with_diamonds">%d 다이아몬드로 잠금 해제</string>
+    <string name="recharge_diamonds">다이아몬드 충전</string>
+    <string name="unlock_premium_content">프리미엄 콘텐츠 잠금 해제</string>
+    <string name="purchase_wallpaper">배경화면 구매: %s</string>
 </resources>

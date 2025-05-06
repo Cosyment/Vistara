@@ -440,4 +440,30 @@
     <string name="notification_channel_live_wallpaper_desc">Notifikasi tentang pengaturan wallpaper hidup yang tertunda</string>
     <string name="notification_live_wallpaper_pending_title">Wallpaper Video Siap</string>
     <string name="notification_live_wallpaper_pending_text">Ketuk untuk mengatur "%1$s" sebagai wallpaper video Anda</string>
+
+    <!-- Diamond related -->
+    <string name="diamond_recharge">Isi Ulang Berlian</string>
+    <string name="my_diamond_balance">Saldo Berlian Saya</string>
+    <string name="select_diamond_package">Pilih Paket Berlian</string>
+    <string name="diamond">Berlian</string>
+    <string name="discount_percent">%d%% DISKON</string>
+    <string name="purchase_now">Beli Sekarang</string>
+    <string name="transaction_history">Riwayat Transaksi</string>
+    <string name="current_balance">Saldo Saat Ini</string>
+    <string name="no_transaction_history">Tidak ada riwayat transaksi</string>
+    <string name="recharge">Isi Ulang</string>
+    <string name="purchase">Pembelian</string>
+    <string name="reward">Hadiah</string>
+    <string name="refund">Pengembalian Dana</string>
+    <string name="diamond_insufficient">Berlian tidak mencukupi</string>
+    <string name="diamond_purchase_success">Pembelian berhasil</string>
+    <string name="diamond_purchase_failed">Pembelian gagal</string>
+    <string name="diamond_recharge_success">Isi ulang berhasil</string>
+    <string name="diamond_recharge_failed">Isi ulang gagal</string>
+    <string name="diamond_balance">Saldo Berlian</string>
+    <string name="diamond_price">Harga: %d berlian</string>
+    <string name="unlock_with_diamonds">Buka dengan %d berlian</string>
+    <string name="recharge_diamonds">Isi Ulang Berlian</string>
+    <string name="unlock_premium_content">Buka Konten Premium</string>
+    <string name="purchase_wallpaper">Beli wallpaper: %s</string>
 </resources>

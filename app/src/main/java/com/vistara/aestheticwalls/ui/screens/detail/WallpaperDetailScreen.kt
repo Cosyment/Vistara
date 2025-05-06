@@ -45,6 +45,8 @@ import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
+import com.vistara.aestheticwalls.ui.screens.diamond.DiamondPurchaseDialog
+import com.vistara.aestheticwalls.ui.screens.diamond.DiamondPurchaseResult
 import com.vistara.aestheticwalls.ui.theme.AppColors
 import com.vistara.aestheticwalls.ui.theme.stringResource
 import kotlinx.coroutines.launch
@@ -60,6 +62,7 @@ fun WallpaperDetailScreen(
     onNavigateToEdit: (String) -> Unit,
     onNavigateToUpgrade: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
+    onNavigateToDiamondRecharge: () -> Unit = {},
     viewModel: WallpaperDetailViewModel = hiltViewModel()
 ) {
     val wallpaperState by viewModel.wallpaperState.collectAsState()
@@ -74,6 +77,11 @@ fun WallpaperDetailScreen(
     val upgradeResult by viewModel.upgradeResult.collectAsState()
     val isProcessingWallpaper by viewModel.isProcessingWallpaper
     val wallpaperSetSuccess by viewModel.wallpaperSetSuccess.collectAsState()
+
+    // 钻石相关状态
+    val diamondBalance by viewModel.diamondBalance.collectAsState()
+    val showDiamondPurchaseDialog by viewModel.showDiamondPurchaseDialog
+    val diamondPurchaseResult by viewModel.diamondPurchaseResult.collectAsState()
 
     // 登录相关状态
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
@@ -107,6 +115,27 @@ fun WallpaperDetailScreen(
             }
             // 清除升级结果，避免重复显示
             viewModel.clearUpgradeResult()
+        }
+    }
+
+    // 处理钻石购买结果
+    LaunchedEffect(diamondPurchaseResult) {
+        diamondPurchaseResult?.let { result ->
+            when (result) {
+                is DiamondPurchaseResult.Success -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+
+                is DiamondPurchaseResult.Error -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(result.message)
+                    }
+                }
+            }
+            // 清除钻石购买结果，避免重复显示
+            viewModel.clearDiamondPurchaseResult()
         }
     }
 
@@ -333,7 +362,18 @@ fun WallpaperDetailScreen(
                         }
                     }
 
-                    // 高级壁纸提示对话框 - 使用半透明背景
+                    // 钻石购买对话框
+                    if (showDiamondPurchaseDialog) {
+                        val currentWallpaper = (wallpaperState as UiState.Success).data
+                        DiamondPurchaseDialog(
+                            wallpaper = currentWallpaper,
+                            diamondBalance = diamondBalance,
+                            onDismiss = { viewModel.hideDiamondPurchaseDialog() },
+                            onPurchase = { viewModel.purchaseWithDiamonds() },
+                            onNavigateToRecharge = { onNavigateToDiamondRecharge() },
+                            isProcessing = isProcessingWallpaper
+                        )
+                    }
                 }
 
                 is UiState.Error -> {

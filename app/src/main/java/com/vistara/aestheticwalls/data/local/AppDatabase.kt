@@ -6,6 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.vistara.aestheticwalls.data.model.AutoChangeHistory
+import com.vistara.aestheticwalls.data.model.DiamondAccount
+import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.local.DatabaseMigrations
 
@@ -15,14 +17,17 @@ import com.vistara.aestheticwalls.data.local.DatabaseMigrations
 @Database(
     entities = [
         Wallpaper::class,
-        AutoChangeHistory::class
+        AutoChangeHistory::class,
+        DiamondAccount::class,
+        DiamondTransaction::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun wallpaperDao(): WallpaperDao
+    abstract fun diamondDao(): DiamondDao
 
     companion object {
         private const val DATABASE_NAME = "vistara_db"
@@ -42,9 +47,12 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-            .addMigrations(DatabaseMigrations.MIGRATION_1_2) // 添加1到2的迁移策略
+            .addMigrations(
+                DatabaseMigrations.MIGRATION_1_2, // 添加1到2的迁移策略
+                DatabaseMigrations.MIGRATION_2_3  // 添加2到3的迁移策略
+            )
             // 如果迁移失败，允许回退到破坏性迁移（会清除数据）
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(true)
             .build()
         }
     }

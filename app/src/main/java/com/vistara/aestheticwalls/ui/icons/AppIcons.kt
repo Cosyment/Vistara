@@ -1106,6 +1106,102 @@ object AppIcons {
         }
 
     /**
+     * 历史记录图标
+     */
+    val History: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "history",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 外圈
+                    moveTo(13.0f, 3.0f)
+                    arcTo(9.0f, 9.0f, 0.0f, false, false, 4.0f, 12.0f)
+                    horizontalLineTo(1.0f)
+                    lineTo(4.89f, 15.89f)
+                    lineTo(4.96f, 16.03f)
+                    lineTo(9.0f, 12.0f)
+                    horizontalLineTo(6.0f)
+                    arcTo(7.0f, 7.0f, 0.0f, false, true, 13.0f, 5.0f)
+                    arcTo(7.0f, 7.0f, 0.0f, false, true, 20.0f, 12.0f)
+                    arcTo(7.0f, 7.0f, 0.0f, false, true, 13.0f, 19.0f)
+                    arcTo(7.0f, 7.0f, 0.0f, false, true, 7.21f, 15.5f)
+                    lineTo(5.79f, 16.92f)
+                    arcTo(9.0f, 9.0f, 0.0f, false, false, 13.0f, 21.0f)
+                    arcTo(9.0f, 9.0f, 0.0f, false, false, 22.0f, 12.0f)
+                    arcTo(9.0f, 9.0f, 0.0f, false, false, 13.0f, 3.0f)
+                    close()
+
+                    // 时钟指针
+                    moveTo(12.5f, 8.0f)
+                    horizontalLineTo(11.0f)
+                    verticalLineTo(14.0f)
+                    lineTo(15.75f, 16.85f)
+                    lineTo(16.5f, 15.62f)
+                    lineTo(12.5f, 13.25f)
+                    verticalLineTo(8.0f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
+     * 钻石图标 - 更现代的钻石设计
+     */
+    val Diamond: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "diamond",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 钻石主体
+                    moveTo(12.0f, 3.0f)
+                    lineTo(2.0f, 9.0f)
+                    lineTo(12.0f, 21.0f)
+                    lineTo(22.0f, 9.0f)
+                    lineTo(12.0f, 3.0f)
+                    close()
+
+                    // 钻石内部切面
+                    moveTo(12.0f, 7.0f)
+                    lineTo(6.0f, 9.0f)
+                    lineTo(12.0f, 17.0f)
+                    lineTo(18.0f, 9.0f)
+                    lineTo(12.0f, 7.0f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
      * 壁纸预览图标 - 更现代的壁纸预览设计
      */
     val WallpaperPreview: ImageVector

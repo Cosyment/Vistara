@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.BuildConfig
 import com.vistara.aestheticwalls.data.repository.AuthRepository
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +24,8 @@ import javax.inject.Inject
 class MineViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val userPrefsRepository: UserPrefsRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val diamondRepository: DiamondRepository
 ) : ViewModel() {
 
     companion object {
@@ -41,6 +43,10 @@ class MineViewModel @Inject constructor(
     // 高级用户状态
     private val _isPremiumUser = MutableStateFlow(false)
     val isPremiumUser: StateFlow<Boolean> = _isPremiumUser.asStateFlow()
+
+    // 钻石余额
+    private val _diamondBalance = MutableStateFlow(0)
+    val diamondBalance: StateFlow<Int> = _diamondBalance.asStateFlow()
 
     // 调试模式状态
     private val _isDebugMode = MutableStateFlow(false)
@@ -81,6 +87,11 @@ class MineViewModel @Inject constructor(
                 val isPremium = userRepository.isPremiumUser.first()
                 _isPremiumUser.value = isPremium
                 Log.d(TAG, "Premium status: $isPremium")
+
+                // 获取钻石余额
+                val balance = diamondRepository.getDiamondBalance().first()
+                _diamondBalance.value = balance
+                Log.d(TAG, "Diamond balance: $balance")
 
                 // 获取用户设置
                 val userSettings = userPrefsRepository.getUserSettings()

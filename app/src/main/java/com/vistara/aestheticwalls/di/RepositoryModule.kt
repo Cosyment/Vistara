@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.vistara.aestheticwalls.data.local.DiamondDao
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
 import com.vistara.aestheticwalls.data.mapper.PixabayMapper
@@ -17,8 +18,11 @@ import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
 import com.vistara.aestheticwalls.utils.NetworkMonitor
+import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.BannerRepository
 import com.vistara.aestheticwalls.data.repository.BannerRepositoryImpl
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
+import com.vistara.aestheticwalls.data.repository.DiamondRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.UserRepository
@@ -111,5 +115,14 @@ object RepositoryModule {
         userPrefsRepository: UserPrefsRepository
     ): ThemeManager {
         return ThemeManager(userPrefsRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDiamondRepository(
+        diamondDao: DiamondDao,
+        authRepository: AuthRepository
+    ): DiamondRepository {
+        return DiamondRepositoryImpl(diamondDao, authRepository)
     }
 }

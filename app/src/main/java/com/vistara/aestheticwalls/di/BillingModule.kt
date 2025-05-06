@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.di
 
 import android.content.Context
 import com.vistara.aestheticwalls.billing.BillingManager
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -17,7 +18,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object BillingModule {
-    
+
     /**
      * 提供BillingManager单例
      */
@@ -25,8 +26,9 @@ object BillingModule {
     @Singleton
     fun provideBillingManager(
         @ApplicationContext context: Context,
-        userRepository: UserRepository
+        userRepository: UserRepository,
+        diamondRepository: DiamondRepository
     ): BillingManager {
-        return BillingManager(context, userRepository)
+        return BillingManager(context, userRepository, diamondRepository)
     }
 }

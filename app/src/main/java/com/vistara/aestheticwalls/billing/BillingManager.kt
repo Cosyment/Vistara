@@ -14,6 +14,8 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.data.model.DiamondTransactionType
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -31,7 +33,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class BillingManager @Inject constructor(
-    @ApplicationContext private val context: Context, private val userRepository: UserRepository
+    @ApplicationContext private val context: Context,
+    private val userRepository: UserRepository,
+    private val diamondRepository: DiamondRepository
 ) : PurchasesUpdatedListener, BillingClientStateListener {
 
     companion object {
@@ -45,11 +49,43 @@ class BillingManager @Inject constructor(
 
         // 一次性购买SKU
 //        const val PREMIUM_LIFETIME = "vistara_premium_lifetime"     // 终身会员
+
+        // 钻石商品SKU常量，方便引用
+        const val DIAMOND_80 = "dm99"
+        const val DIAMOND_140 = "dm249"
+        const val DIAMOND_199 = "dm1999"
+        const val DIAMOND_352 = "dm499"
+        const val DIAMOND_500 = "dm499off"
+        const val DIAMOND_705 = "dm999"
+        const val DIAMOND_799 = "dm999off"
+        const val DIAMOND_1411 = "dm1999"
+        const val DIAMOND_3528 = "dm4999"
+        const val DIAMOND_7058 = "dm9999"
+
+        // 钻石商品映射表，包含SKU和对应的钻石数量
+        val DIAMOND_PRODUCTS = mapOf(
+            DIAMOND_80 to 80,
+            DIAMOND_140 to 140,
+            DIAMOND_199 to 199,
+            DIAMOND_352 to 352,
+            DIAMOND_500 to 500,
+            DIAMOND_705 to 705,
+            DIAMOND_799 to 799,
+            DIAMOND_1411 to 1411,
+            DIAMOND_3528 to 3528,
+            DIAMOND_7058 to 7058
+        )
+
+        // 所有钻石商品SKU列表
+        val DIAMOND_SKUS = DIAMOND_PRODUCTS.keys.toList()
     }
 
     // 计费客户端
     private val billingClient: BillingClient =
-        BillingClient.newBuilder(context).setListener(this).enablePendingPurchases().build()
+        BillingClient.newBuilder(context)
+            .setListener(this)
+            .enablePendingPurchases() // 启用待处理购买支持
+            .build()
 
     // 连接状态
     private val _connectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
@@ -112,10 +148,12 @@ class BillingManager @Inject constructor(
         )
 
         // 查询一次性购买商品
-        val inappProductList = listOf(
-            QueryProductDetailsParams.Product.newBuilder().setProductId("PREMIUM_LIFETIME")
-                .setProductType(BillingClient.ProductType.INAPP).build()
-        )
+        val inappProductList = DIAMOND_SKUS.map { productId ->
+            QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(productId)
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        }
 
         // 查询订阅商品详情
         val subscriptionParams =
@@ -201,15 +239,65 @@ class BillingManager @Inject constructor(
 
         // 处理每个购买
         for (purchase in purchases) {
-            if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                // 如果购买已完成但尚未确认，则确认购买
-                if (!purchase.isAcknowledged) {
-                    acknowledgePurchase(purchase.purchaseToken)
+            when (purchase.purchaseState) {
+                Purchase.PurchaseState.PURCHASED -> {
+                    // 如果购买已完成但尚未确认，则确认购买
+                    if (!purchase.isAcknowledged) {
+                        acknowledgePurchase(purchase.purchaseToken)
+                    }
+
+                    // 处理购买的商品
+                    val productIds = purchase.products
+                    for (productId in productIds) {
+                        when {
+                            // 处理订阅商品
+                            productId in listOf(
+                                SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY
+                            ) -> {
+                                // 更新用户的Premium状态
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    userRepository.updatePremiumStatus(true)
+                                }
+                            }
+                            // 处理钻石商品
+                            productId.startsWith("dm") -> {
+                                processDiamondPurchase(productId)
+                            }
+                        }
+                    }
                 }
 
-                // 更新用户的Premium状态
-                CoroutineScope(Dispatchers.IO).launch {
-                    userRepository.updatePremiumStatus(true)
+                Purchase.PurchaseState.PENDING -> {
+                    // 处理待处理的购买
+                    Log.d(TAG, "Purchase is pending: ${purchase.products}")
+                    // 对于待处理的购买，我们只需记录它们，实际处理会在购买完成后进行
+                }
+
+                Purchase.PurchaseState.UNSPECIFIED_STATE -> {
+                    Log.d(TAG, "Purchase state is unspecified: ${purchase.products}")
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理钻石购买
+     */
+    private fun processDiamondPurchase(productId: String) {
+        val diamondAmount = DIAMOND_PRODUCTS[productId] ?: 0
+
+        if (diamondAmount > 0) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val success = diamondRepository.updateDiamondBalance(
+                    amount = diamondAmount,
+                    type = DiamondTransactionType.RECHARGE,
+                    description = "购买${diamondAmount}钻石"
+                )
+
+                if (success) {
+                    Log.d(TAG, "钻石充值成功: $diamondAmount")
+                } else {
+                    Log.e(TAG, "钻石充值失败: $diamondAmount")
                 }
             }
         }
@@ -256,9 +344,9 @@ class BillingManager @Inject constructor(
         _purchaseState.value = PurchaseState.Pending
 
         // 根据商品类型构建购买参数
-        val productType = when (productId) {
-            SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY -> BillingClient.ProductType.SUBS
-//            PREMIUM_LIFETIME -> BillingClient.ProductType.INAPP
+        val productType = when {
+            productId in listOf(SUBSCRIPTION_WEEKLY, SUBSCRIPTION_MONTHLY, SUBSCRIPTION_QUARTERLY) -> BillingClient.ProductType.SUBS
+            productId in DIAMOND_SKUS -> BillingClient.ProductType.INAPP
             else -> {
                 Log.e(TAG, "Unknown product ID: $productId")
                 _purchaseState.value = PurchaseState.Failed("Unknown product ID")
@@ -329,6 +417,9 @@ class BillingManager @Inject constructor(
             // 连接成功后查询商品详情和购买历史
             queryProductDetails()
             queryPurchases()
+
+            // 查询并处理待处理的购买
+            handlePendingPurchases()
         } else {
             _connectionState.value = BillingConnectionState.DISCONNECTED
             Log.e(TAG, "Billing client setup failed: ${billingResult.debugMessage}")
@@ -353,13 +444,33 @@ class BillingManager @Inject constructor(
         billingResult: BillingResult, purchases: MutableList<Purchase>?
     ) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
+            // 检查是否有待处理的购买
+            var hasPendingPurchases = false
+            for (purchase in purchases) {
+                if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+                    hasPendingPurchases = true
+                    Log.d(TAG, "Purchase is pending: ${purchase.products}")
+                }
+            }
+
             // 处理购买
             processPurchases(purchases)
-            _purchaseState.value = PurchaseState.Completed
+
+            if (hasPendingPurchases) {
+                _purchaseState.value = PurchaseState.Pending
+                Log.d(TAG, "Purchase is pending, waiting for completion")
+            } else {
+                _purchaseState.value = PurchaseState.Completed
+            }
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             // 用户取消
             _purchaseState.value = PurchaseState.Cancelled
             Log.d(TAG, "Purchase cancelled")
+        } else if (billingResult.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            // 商品已拥有，查询购买历史
+            Log.d(TAG, "Item already owned, querying purchases")
+            queryPurchases()
+            _purchaseState.value = PurchaseState.Completed
         } else {
             // 购买失败
             _purchaseState.value = PurchaseState.Failed(billingResult.debugMessage)
@@ -380,11 +491,21 @@ class BillingManager @Inject constructor(
                 val pricingPhase = offerDetails?.pricingPhases?.pricingPhaseList?.firstOrNull()
                 pricingPhase?.formattedPrice ?: context.getString(R.string.price_unknown)
             }
-//            PREMIUM_LIFETIME -> {
-//                productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: context.getString(R.string.price_unknown)
-//            }
+
+            in DIAMOND_SKUS -> {
+                productDetails.oneTimePurchaseOfferDetails?.formattedPrice
+                    ?: context.getString(R.string.price_unknown)
+            }
+
             else -> context.getString(R.string.price_unknown)
         }
+    }
+
+    /**
+     * 获取钻石商品的钻石数量
+     */
+    fun getDiamondAmount(productId: String): Int {
+        return DIAMOND_PRODUCTS[productId] ?: 0
     }
 
     /**
@@ -398,6 +519,36 @@ class BillingManager @Inject constructor(
 //            SUBSCRIPTION_YEARLY -> context.getString(R.string.subscription_yearly)
 //            PREMIUM_LIFETIME -> context.getString(R.string.premium_lifetime)
             else -> ""
+        }
+    }
+
+    /**
+     * 处理待处理的购买
+     * 这是为了解决"Pending purchases for one-time products must be supported"错误
+     */
+    private fun handlePendingPurchases() {
+        if (_connectionState.value != BillingConnectionState.CONNECTED) {
+            Log.e(TAG, "Billing client is not connected")
+            return
+        }
+
+        // 查询一次性购买的待处理购买
+        billingClient.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        ) { billingResult, purchasesList ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                // 处理待处理的购买
+                for (purchase in purchasesList) {
+                    if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+                        Log.d(TAG, "Found pending purchase: ${purchase.products}")
+                        // 对于待处理的购买，我们只需记录它们，实际处理会在购买完成后进行
+                        // 这里不需要确认购买，因为它们还处于待处理状态
+                    }
+                }
+            } else {
+                Log.e(TAG, "Failed to query pending purchases: ${billingResult.debugMessage}")
+            }
         }
     }
 }

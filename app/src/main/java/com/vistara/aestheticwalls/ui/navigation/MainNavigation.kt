@@ -44,6 +44,7 @@ import com.vistara.aestheticwalls.ui.screens.feedback.FeedbackScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
+import com.vistara.aestheticwalls.ui.screens.diamond.DiamondScreen
 import com.vistara.aestheticwalls.ui.screens.premium.PremiumScreen
 import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
@@ -134,6 +135,7 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     onAboutClick = { navController.navigate("about") },
                     onUpgradeClick = { navController.navigate("premium") },
                     onLoginClick = { navController.navigate("auth") },
+                    onDiamondClick = { navController.navigate("diamond") },
                     onTestToolsClick = {
                         // 导航到测试工具页面
                         navController.navigate("test")
@@ -155,6 +157,9 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     },
                     onNavigateToLogin = {
                         navController.navigate("auth")
+                    },
+                    onNavigateToDiamondRecharge = {
+                        navController.navigate("diamond")
                     })
             }
 
@@ -271,6 +276,13 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
             // API测试页面
             composable("test/api") {
                 ApiTestScreen(
+                    onBackPressed = { navController.navigateUp() }
+                )
+            }
+
+            // 钻石充值页面
+            composable("diamond") {
+                DiamondScreen(
                     onBackPressed = { navController.navigateUp() }
                 )
             }

@@ -27,10 +27,12 @@ import com.vistara.aestheticwalls.data.EditedImageCache
 import com.vistara.aestheticwalls.data.model.UiState
 import com.vistara.aestheticwalls.data.model.Wallpaper
 import com.vistara.aestheticwalls.data.model.WallpaperTarget
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.manager.AppWallpaperManager
+import com.vistara.aestheticwalls.ui.screens.diamond.DiamondPurchaseResult
 import com.vistara.aestheticwalls.utils.ImageUtil
 import com.vistara.aestheticwalls.utils.NotificationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -57,6 +59,7 @@ class WallpaperDetailViewModel @Inject constructor(
     private val wallpaperRepository: WallpaperRepository,
     private val userPrefsRepository: UserPrefsRepository,
     private val userRepository: UserRepository,
+    private val diamondRepository: DiamondRepository,
     private val billingManager: BillingManager,
     private val wallpaperManager: AppWallpaperManager,
     private val notificationUtil: NotificationUtil,
@@ -99,11 +102,23 @@ class WallpaperDetailViewModel @Inject constructor(
 
     // 是否为高级用户
     private val _isPremiumUser = mutableStateOf(false)
+    val isPremiumUser: State<Boolean> = _isPremiumUser
+
+    // 钻石余额
+    private val _diamondBalance = MutableStateFlow(0)
+    val diamondBalance: StateFlow<Int> = _diamondBalance.asStateFlow()
+
+    // 是否显示钻石购买对话框
+    private val _showDiamondPurchaseDialog = mutableStateOf(false)
+    val showDiamondPurchaseDialog: State<Boolean> = _showDiamondPurchaseDialog
+
+    // 钻石购买结果
+    private val _diamondPurchaseResult = MutableStateFlow<DiamondPurchaseResult?>(null)
+    val diamondPurchaseResult: StateFlow<DiamondPurchaseResult?> = _diamondPurchaseResult.asStateFlow()
 
     // 是否需要请求存储权限
     private val _needStoragePermission = mutableStateOf(false)
     val needStoragePermission: State<Boolean> = _needStoragePermission
-    val isPremiumUser: State<Boolean> = _isPremiumUser
 
     // 设置壁纸选项对话框状态
     private val _showSetWallpaperOptions = mutableStateOf(false)
@@ -155,8 +170,24 @@ class WallpaperDetailViewModel @Inject constructor(
         }
         checkPremiumStatus()
         checkLoginStatus()
+        loadDiamondBalance()
         observeBillingState()
         observePurchaseState()
+    }
+
+    /**
+     * 加载钻石余额
+     */
+    private fun loadDiamondBalance() {
+        viewModelScope.launch {
+            try {
+                diamondRepository.getDiamondBalance().collectLatest { balance ->
+                    _diamondBalance.value = balance
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading diamond balance", e)
+            }
+        }
     }
 
     /**
@@ -380,8 +411,8 @@ class WallpaperDetailViewModel @Inject constructor(
 
         // 检查是否为高级壁纸且用户不是高级用户
         if (currentWallpaper.isPremium && !_isPremiumUser.value) {
-            // 如果是高级壁纸且用户不是高级用户，触发导航到升级页面
-            _navigateToUpgrade.value = true
+            // 如果是高级壁纸且用户不是高级用户，显示钻石购买选项
+            _showDiamondPurchaseDialog.value = true
             return
         }
 
@@ -390,8 +421,8 @@ class WallpaperDetailViewModel @Inject constructor(
             Log.d("WallpaperDetailViewModel", "Checking premium status for live wallpaper")
             // 检查是否为高级用户
             if (!_isPremiumUser.value) {
-                // 如果不是高级用户，触发导航到升级页面
-                _navigateToUpgrade.value = true
+                // 如果不是高级用户，显示钻石购买选项
+                _showDiamondPurchaseDialog.value = true
                 return
             }
 
@@ -438,6 +469,84 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     fun resetNavigateToUpgrade() {
         _navigateToUpgrade.value = false
+    }
+
+    /**
+     * 显示钻石购买对话框
+     */
+    fun showDiamondPurchaseDialog() {
+        _showDiamondPurchaseDialog.value = true
+    }
+
+    /**
+     * 隐藏钻石购买对话框
+     */
+    fun hideDiamondPurchaseDialog() {
+        _showDiamondPurchaseDialog.value = false
+    }
+
+    /**
+     * 使用钻石购买壁纸
+     */
+    fun purchaseWithDiamonds() {
+        viewModelScope.launch {
+            // 检查登录状态
+            if (!_isLoggedIn.value) {
+                _needLoginAction.value = LoginAction.SET_WALLPAPER
+                return@launch
+            }
+
+            val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+
+            // 计算钻石价格（这里简单示例，实际应用中可能需要从服务器获取或根据壁纸属性计算）
+            val diamondPrice = if (currentWallpaper.isLive) 100 else 50
+
+            // 检查钻石余额是否足够
+            if (!diamondRepository.hasSufficientDiamonds(diamondPrice)) {
+                _diamondPurchaseResult.value = DiamondPurchaseResult.Error(
+                    context.getString(R.string.diamond_insufficient)
+                )
+                return@launch
+            }
+
+            // 消费钻石
+            val success = diamondRepository.consumeDiamonds(
+                amount = diamondPrice,
+                description = context.getString(R.string.purchase_wallpaper, currentWallpaper.title),
+                itemId = currentWallpaper.id
+            )
+
+            if (success) {
+                // 购买成功，更新壁纸状态（例如标记为已购买）
+                // 这里可能需要调用wallpaperRepository的方法来更新壁纸状态
+
+                // 更新结果状态
+                _diamondPurchaseResult.value = DiamondPurchaseResult.Success(
+                    context.getString(R.string.diamond_purchase_success)
+                )
+
+                // 隐藏对话框
+                _showDiamondPurchaseDialog.value = false
+
+                // 如果是高级壁纸，标记用户可以使用此壁纸
+                if (currentWallpaper.isPremium) {
+                    // 这里可能需要调用wallpaperRepository的方法来更新壁纸状态
+                    // 或者在本地记录用户已购买的壁纸ID
+                }
+            } else {
+                // 购买失败
+                _diamondPurchaseResult.value = DiamondPurchaseResult.Error(
+                    context.getString(R.string.diamond_purchase_failed)
+                )
+            }
+        }
+    }
+
+    /**
+     * 清除钻石购买结果
+     */
+    fun clearDiamondPurchaseResult() {
+        _diamondPurchaseResult.value = null
     }
 
     /**
