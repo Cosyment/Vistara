@@ -245,12 +245,6 @@ fun DiamondProductCard(
         Color.Transparent
     }
 
-    val backgroundColor = if (isSelected) {
-        Color(0xFF201831) // 浅紫色背景
-    } else {
-        Color(0xFF201831)
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()

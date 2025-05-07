@@ -162,7 +162,7 @@ fun PremiumScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.onBackground
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
@@ -428,19 +428,13 @@ private fun PlanCard(
         Color.Transparent
     }
 
-    val backgroundColor = if (isSelected) {
-        Color(0xFFF5EEFF) // 浅紫色背景
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
-
     Card(
         onClick = onClick, modifier = Modifier
             .fillMaxWidth()
             .border(
                 width = 2.dp, color = borderColor, shape = RoundedCornerShape(16.dp)
             ), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(
-            containerColor = backgroundColor
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ), elevation = CardDefaults.cardElevation(
             defaultElevation = if (isSelected) 4.dp else 1.dp
         )
