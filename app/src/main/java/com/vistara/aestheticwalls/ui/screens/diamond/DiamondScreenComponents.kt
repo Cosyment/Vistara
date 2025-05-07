@@ -352,89 +352,16 @@ fun TransactionHistoryContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            ),
-            elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(R.string.my_diamond_balance),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = AppIcons.Diamond,
-                        contentDescription = null,
-                        tint = Color(0xFF00BCD4),
-                        modifier = Modifier.size(32.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = diamondBalance.toString(),
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-            }
-            // 余额显示
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .background(MaterialTheme.colorScheme.primaryContainer)
-//                    .padding(16.dp),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                Column(
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//                    Text(
-//                        text = stringResource(R.string.current_balance),
-//                        style = MaterialTheme.typography.titleMedium,
-//                        color = MaterialTheme.colorScheme.onPrimaryContainer
-//                    )
-//
-//                    Row(
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        modifier = Modifier.padding(top = 4.dp)
-//                    ) {
-//                        Icon(
-//                            imageVector = AppIcons.Diamond,
-//                            contentDescription = null,
-//                            tint = Color(0xFF00BCD4),
-//                            modifier = Modifier.size(24.dp)
-//                        )
-//
-//                        Spacer(modifier = Modifier.width(4.dp))
-//
-//                        Text(
-//                            text = diamondBalance.toString(),
-//                            style = MaterialTheme.typography.headlineMedium,
-//                            fontWeight = FontWeight.Bold,
-//                            color = MaterialTheme.colorScheme.onPrimaryContainer
-//                        )
-//                    }
-//                }
-//            }
-        }
+//        Card(
+//            modifier = Modifier.fillMaxWidth(),
+//            shape = RoundedCornerShape(16.dp),
+//            colors = CardDefaults.cardColors(
+//                containerColor = MaterialTheme.colorScheme.primaryContainer
+//            ),
+//            elevation = CardDefaults.cardElevation(4.dp)
+//        ) {
+            DiamondBalanceCard(diamondBalance)
+//        }
 
         // 交易记录列表
         if (transactions.isEmpty()) {

@@ -84,7 +84,7 @@ class DiamondViewModel @Inject constructor(
 
             // 默认选中第一个商品
             if (products.isNotEmpty() && _selectedProduct.value == null) {
-                _selectedProduct.value = products[0]
+//                _selectedProduct.value = products[0]
             }
         }
 

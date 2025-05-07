@@ -458,7 +458,7 @@
     <!-- Diamond related -->
     <string name="diamond_recharge">Recharge</string>
     <string name="my_diamond_balance">My Diamond Balance</string>
-    <string name="select_diamond_package">Select Diamond Package</string>
+    <string name="select_diamond_package">Please select the recharge amount</string>
     <string name="diamond">Diamonds</string>
     <string name="discount_percent">%d%% OFF</string>
     <string name="purchase_now">Purchase Now</string>
