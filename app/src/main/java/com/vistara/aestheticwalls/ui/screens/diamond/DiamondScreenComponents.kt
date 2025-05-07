@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,6 +39,7 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
 import com.vistara.aestheticwalls.ui.icons.AppIcons
+import com.vistara.aestheticwalls.ui.theme.stringResource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -158,7 +158,7 @@ fun DiamondProductCard(
 
                 Column {
                     Text(
-                        text = "${product.diamondAmount}${stringResource(R.string.diamond)}",
+                        text = stringResource(R.string.diamond_purchase_description, product.diamondAmount),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
