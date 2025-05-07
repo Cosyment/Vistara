@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.data.model.DiamondTransactionType
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,6 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TestViewModel @Inject constructor(
     private val userRepository: UserRepository,
+    private val diamondRepository: DiamondRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -37,6 +40,14 @@ class TestViewModel @Inject constructor(
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
+    // 钻石测试开关状态
+    private val _isDiamondTestEnabled = MutableStateFlow(false)
+    val isDiamondTestEnabled: StateFlow<Boolean> = _isDiamondTestEnabled.asStateFlow()
+
+    // 当前钻石余额
+    private val _currentDiamondBalance = MutableStateFlow(0)
+    val currentDiamondBalance: StateFlow<Int> = _currentDiamondBalance.asStateFlow()
+
     // 操作结果
     private val _operationResult = MutableStateFlow<String?>(null)
     val operationResult: StateFlow<String?> = _operationResult.asStateFlow()
@@ -44,6 +55,7 @@ class TestViewModel @Inject constructor(
     init {
         checkPremiumStatus()
         checkLoginStatus()
+        checkDiamondBalance()
     }
 
     /**
@@ -144,6 +156,70 @@ class TestViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e(TAG, "Error simulating logout: ${e.message}")
                 _operationResult.value = context.getString(R.string.simulate_logout_failed, e.message)
+            }
+        }
+    }
+
+    /**
+     * 检查钻石余额
+     */
+    private fun checkDiamondBalance() {
+        viewModelScope.launch {
+            try {
+                val balance = diamondRepository.getDiamondBalanceValue()
+                _currentDiamondBalance.value = balance
+                Log.d(TAG, "Diamond balance: $balance")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking diamond balance: ${e.message}")
+                _operationResult.value = "检查钻石余额失败: ${e.message}"
+            }
+        }
+    }
+
+    /**
+     * 切换钻石测试开关
+     */
+    fun toggleDiamondTest() {
+        val newState = !_isDiamondTestEnabled.value
+        _isDiamondTestEnabled.value = newState
+
+        viewModelScope.launch {
+            try {
+                if (newState) {
+                    // 开启测试模式，增加200钻石
+                    val success = diamondRepository.updateDiamondBalance(
+                        amount = 200,
+                        type = DiamondTransactionType.REWARD,
+                        description = "测试模式奖励"
+                    )
+                    if (success) {
+                        _operationResult.value = "测试模式已开启，已增加200钻石"
+                        checkDiamondBalance()
+                    } else {
+                        _operationResult.value = "增加钻石失败"
+                    }
+                } else {
+                    // 关闭测试模式，清空钻石
+                    val currentBalance = diamondRepository.getDiamondBalanceValue()
+                    if (currentBalance > 0) {
+                        val success = diamondRepository.updateDiamondBalance(
+                            amount = -currentBalance,
+                            type = DiamondTransactionType.PURCHASE,
+                            description = "测试模式关闭，清空钻石"
+                        )
+                        if (success) {
+                            _operationResult.value = "测试模式已关闭，钻石已清空"
+                            checkDiamondBalance()
+                        } else {
+                            _operationResult.value = "清空钻石失败"
+                        }
+                    } else {
+                        _operationResult.value = "测试模式已关闭"
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error toggling diamond test: ${e.message}")
+                _operationResult.value = "切换钻石测试模式失败: ${e.message}"
             }
         }
     }

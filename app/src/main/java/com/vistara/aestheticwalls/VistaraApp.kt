@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
-import com.appsflyer.deeplink.DeepLinkResult
 import com.vistara.aestheticwalls.manager.LocaleManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject

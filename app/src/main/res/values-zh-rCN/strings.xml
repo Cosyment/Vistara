@@ -305,6 +305,7 @@
     <string name="apply">应用</string>
     <string name="crop_applied">裁剪已应用</string>
     <string name="recrop">重新裁剪</string>
+    <string name="live_wallpaper_edit_not_supported">动态壁纸不支持编辑</string>
     <string name="original">原始</string>
     <string name="grayscale">灰度</string>
     <string name="sepia">复古</string>
@@ -361,6 +362,11 @@
     <string name="simulate_login_failed">模拟登录失败: %1$s</string>
     <string name="simulate_logout_success">模拟退出登录成功</string>
     <string name="simulate_logout_failed">模拟退出登录失败: %1$s</string>
+    <string name="diamond_test">钻石测试</string>
+    <string name="diamond_test_mode">钻石测试模式</string>
+    <string name="current_diamond_balance">当前钻石余额: %d</string>
+    <string name="test_mode_enabled">测试模式已开启，开启时增加200钻石，关闭时清空钻石</string>
+    <string name="test_mode_disabled">测试模式已关闭</string>
 
     <!-- 壁纸管理相关 -->
     <string name="set_wallpaper_failed">设置壁纸失败</string>
@@ -462,13 +468,5 @@
     <string name="recharge_diamonds">充值钻石</string>
     <string name="unlock_premium_content">解锁高级内容</string>
     <string name="purchase_wallpaper">购买壁纸：%s</string>
-
-    <!-- Diamond purchase related -->
-    <string name="diamond_purchase_description">购买%d钻石</string>
-    <string name="diamond_recharge_success_log">钻石充值成功：%d</string>
-    <string name="diamond_recharge_failed_log">钻石充值失败：%d</string>
-    <string name="insufficient_diamond_balance" formatted="false">钻石余额不足：当前余额%d，尝试消费%d</string>
-    <string name="diamond_amount_must_be_positive">钻石数量必须为正数：%d</string>
-    <string name="user_diamond_data_cleared">用户钻石数据已清除：%s</string>
-    <string name="price_parsing_failed">价格解析失败：%s</string>
+    <string name="diamond_purchase_description">%d钻石</string>
 </resources>

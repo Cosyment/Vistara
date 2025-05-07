@@ -85,7 +85,7 @@ class DiamondRepositoryImpl @Inject constructor(
 
             // 如果是消费，检查余额是否足够
             if (amount < 0 && newBalance < 0) {
-                Log.e(TAG, stringProvider.getString(R.string.insufficient_diamond_balance, currentAccount.balance, -amount))
+                Log.e(TAG, "Insufficient diamond balance: current balance ${currentAccount.balance}, trying to consume ${amount}")
                 return false
             }
 
@@ -109,7 +109,7 @@ class DiamondRepositoryImpl @Inject constructor(
             diamondDao.updateBalanceAndAddTransaction(updatedAccount, transaction)
             // 使用字符串资源记录日志
             if (amount > 0) {
-                Log.d(TAG, stringProvider.getString(R.string.diamond_recharge_success_log, amount))
+                Log.d(TAG, "Diamond recharge successful: $amount")
             } else {
                 Log.d(TAG, "Diamond balance updated: $amount, new balance: $newBalance")
             }
@@ -155,7 +155,7 @@ class DiamondRepositoryImpl @Inject constructor(
             val priceValue = try {
                 formattedPrice.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
             } catch (e: Exception) {
-                Log.e(TAG, stringProvider.getString(R.string.price_parsing_failed, formattedPrice), e)
+                Log.e(TAG, "Price parsing failed: $formattedPrice", e)
                 0.0
             }
 
@@ -190,7 +190,7 @@ class DiamondRepositoryImpl @Inject constructor(
         val userId = getCurrentUserId()
         diamondDao.deleteAccount(userId)
         diamondDao.deleteAllTransactions(userId)
-        Log.d(TAG, stringProvider.getString(R.string.user_diamond_data_cleared, userId))
+        Log.d(TAG, "User diamond data cleared: ${userId}")
     }
 
     /**
@@ -206,13 +206,13 @@ class DiamondRepositoryImpl @Inject constructor(
      */
     override suspend fun consumeDiamonds(amount: Int, description: String, itemId: String?): Boolean {
         if (amount <= 0) {
-            Log.e(TAG, stringProvider.getString(R.string.diamond_amount_must_be_positive, amount))
+            Log.e(TAG, "Diamond amount must be positive: $amount")
             return false
         }
 
         // 检查余额是否足够
         if (!hasSufficientDiamonds(amount)) {
-            Log.e(TAG, stringProvider.getString(R.string.insufficient_diamond_balance, getDiamondBalanceValue(), amount))
+            Log.e(TAG, "Insufficient diamond balance: current balance ${getDiamondBalanceValue()}, trying to consume $amount")
             return false
         }
 

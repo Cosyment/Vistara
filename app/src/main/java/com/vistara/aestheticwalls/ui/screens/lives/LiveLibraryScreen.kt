@@ -400,21 +400,21 @@ fun LiveLibraryScreen(
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, topBar = {
         TopAppBar(
             title = {
-            Text(
-                stringResource(R.string.category_live),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
-            )
-        }, actions = {
-            IconButton(onClick = onSearchClick) {
-                Icon(
-                    Icons.Default.Search,
-                    contentDescription = stringResource(R.string.search_hint)
+                Text(
+                    stringResource(R.string.category_live),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
                 )
-            }
-        }, colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-            titleContentColor = MaterialTheme.colorScheme.onBackground
-        )
+            }, actions = {
+                IconButton(onClick = onSearchClick) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = stringResource(R.string.search_hint)
+                    )
+                }
+            }, colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+                titleContentColor = MaterialTheme.colorScheme.onBackground
+            )
         )
     }) { paddingValues ->
         val pullRefreshState = rememberPullRefreshState(
@@ -460,29 +460,7 @@ fun LiveLibraryScreen(
                 when (val state = wallpapersUiState) { // Use 'state' for easier access
                     is UiState.Loading -> {
                         // Show loading indicator only if there's no previous data to display
-                        if (currentWallpapers.isEmpty()) {
-                            LoadingState(
-                                message = stringResource(R.string.no_wallpapers_found),
-                                modifier = Modifier.fillMaxSize()
-                            ) // Your loading composable
-                        } else {
-                            // Show the existing grid data while loading new data in the background
-                            Log.d(
-                                TAG,
-                                "Loading state, but showing existing ${currentWallpapers.size} items."
-                            )
-                            LiveVideoGrid(
-                                wallpapers = currentWallpapers,
-                                onWallpaperClick = onWallpaperClick,
-                                gridState = gridState,
-                                exoPlayer = exoPlayer,
-                                playingIndex = playingIndex,
-                                isLoadingMore = true, // Indicate loading at the bottom potentially
-                                canLoadMore = canLoadMore,
-                                onLoadMore = { viewModel.loadMore() },
-                                modifier = Modifier.weight(1f) // Ensure grid takes available space
-                            )
-                        }
+                        LoadingState() // Your loading composable
                     }
 
                     is UiState.Success -> {

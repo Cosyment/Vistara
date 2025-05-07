@@ -1038,4 +1038,71 @@ class WallpaperRepositoryImpl @Inject constructor(
         val trending = getTrendingWallpapers(1, 10)
         return trending.randomOrNull()
     }
+
+    /**
+     * 标记壁纸为已购买状态
+     * 将壁纸的isPremium属性设置为false，表示用户已购买此壁纸，不再需要高级权限
+     */
+    override suspend fun markWallpaperAsPurchased(wallpaperId: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            // 检查壁纸是否存在于数据库中
+            val existingWallpaper = wallpaperDao.getWallpaperById(wallpaperId)
+
+            if (existingWallpaper != null) {
+                // 如果壁纸已存在，直接标记为已购买（将isPremium设置为false）
+                wallpaperDao.markWallpaperAsPurchased(wallpaperId)
+                Log.d(TAG, "标记壁纸为已购买状态: $wallpaperId")
+                return@withContext true
+            } else {
+                // 如果壁纸不存在，需要先获取壁纸详情并插入到数据库
+                try {
+                    // 获取壁纸详情
+                    val wallpaper = getWallpaperById(wallpaperId)
+
+                    if (wallpaper != null) {
+                        // 创建一个新的壁纸对象，将isPremium设置为false
+                        val purchasedWallpaper = wallpaper.copy(isPremium = false)
+                        // 插入到数据库
+                        wallpaperDao.insertFavorite(purchasedWallpaper)
+                        Log.d(TAG, "插入新壁纸并标记为已购买: $wallpaperId")
+                        return@withContext true
+                    } else {
+                        Log.e(TAG, "无法获取壁纸详情，无法标记为已购买: $wallpaperId")
+                        return@withContext false
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "插入新壁纸并标记为已购买失败", e)
+                    return@withContext false
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "标记壁纸为已购买状态失败", e)
+            return@withContext false
+        }
+    }
+
+    /**
+     * 检查壁纸是否已购买
+     * 通过查询数据库中的壁纸记录，检查isPremium属性是否为false
+     */
+    override suspend fun isWallpaperPurchased(wallpaperId: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            // 检查壁纸是否存在于数据库中
+            val existingWallpaper = wallpaperDao.getWallpaperById(wallpaperId)
+
+            if (existingWallpaper != null) {
+                // 如果壁纸存在且isPremium为false，表示已购买
+                val isPurchased = !existingWallpaper.isPremium
+                Log.d(TAG, "检查壁纸是否已购买: $wallpaperId, 结果: $isPurchased")
+                return@withContext isPurchased
+            } else {
+                // 如果壁纸不存在于数据库中，表示未购买
+                Log.d(TAG, "壁纸不存在于数据库中，未购买: $wallpaperId")
+                return@withContext false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "检查壁纸是否已购买失败", e)
+            return@withContext false
+        }
+    }
 }

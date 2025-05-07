@@ -292,6 +292,7 @@
     <string name="apply">適用</string>
     <string name="crop_applied">切り抜きが適用されました</string>
     <string name="recrop">再切り抜き</string>
+    <string name="live_wallpaper_edit_not_supported">ライブ壁紙は編集できません</string>
     <string name="original">オリジナル</string>
     <string name="grayscale">グレースケール</string>
     <string name="sepia">セピア</string>
@@ -462,15 +463,7 @@
     <string name="diamond_price">価格: %d ダイヤモンド</string>
     <string name="unlock_with_diamonds">%d ダイヤモンドでアンロック</string>
     <string name="recharge_diamonds">ダイヤモンドをチャージ</string>
-    <string name="unlock_premium_content">プレミアムコンテンツをアンロック</string>
+    <string name="unlock_premium_content">プレミアムを開く</string>
     <string name="purchase_wallpaper">壁紙を購入: %s</string>
-
-    <!-- Diamond purchase related -->
-    <string name="diamond_purchase_description">%d ダイヤモンドを購入</string>
-    <string name="diamond_recharge_success_log">ダイヤモンドチャージ成功: %d</string>
-    <string name="diamond_recharge_failed_log">ダイヤモンドチャージ失敗: %d</string>
-    <string name="insufficient_diamond_balance" formatted="false">ダイヤモンド残高不足: 現在の残高 %d、消費しようとしている量 %d</string>
-    <string name="diamond_amount_must_be_positive">ダイヤモンド量は正の数でなければなりません: %d</string>
-    <string name="user_diamond_data_cleared">ユーザーのダイヤモンドデータがクリアされました: %s</string>
-    <string name="price_parsing_failed">価格の解析に失敗しました: %s</string>
+    <string name="diamond_purchase_description">%d ダイヤモン</string>
 </resources>

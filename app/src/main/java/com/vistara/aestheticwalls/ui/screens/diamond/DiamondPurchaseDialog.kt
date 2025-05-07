@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,6 +37,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.Wallpaper
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 钻石购买对话框
@@ -101,12 +101,12 @@ fun DiamondPurchaseDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 壁纸信息
-                Text(
-                    text = wallpaper.title ?: "",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center
-                )
+//                Text(
+//                    text = wallpaper.title ?: "",
+//                    style = MaterialTheme.typography.titleMedium,
+//                    fontWeight = FontWeight.SemiBold,
+//                    textAlign = TextAlign.Center
+//                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 

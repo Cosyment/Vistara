@@ -307,14 +307,8 @@ fun WallpaperDetailScreen(
                             viewModel.showSetWallpaperOptions(activity)
                         },
                         onDownload = {
-                            if (wallpaper.isPremium && !isPremiumUser) {
-                                viewModel.showPremiumPrompt()
-                            } else {
-                                viewModel.downloadWallpaper()
-                                Toast.makeText(
-                                    context, R.string.start_download_wallpaper, Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            // 直接调用downloadWallpaper方法，内部会处理各种情况
+                            viewModel.downloadWallpaper()
                         },
                         onShare = { viewModel.shareWallpaper() },
                         onEdit = {
@@ -324,12 +318,26 @@ fun WallpaperDetailScreen(
                                 return@WallpaperDetail
                             }
 
-                            if (wallpaper.isPremium && !isPremiumUser) {
-                                viewModel.showPremiumPrompt()
-                            } else {
-                                val wallpaperId = wallpaper.id
-                                onNavigateToEdit(wallpaperId)
+                            // 动态壁纸不支持编辑
+                            if (wallpaper.isLive) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.live_wallpaper_edit_not_supported,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@WallpaperDetail
                             }
+
+                            // 高级静态壁纸必须升级会员才能编辑
+                            if (wallpaper.isPremium && !isPremiumUser) {
+                                // 导航到升级页面
+                                viewModel.showPremiumPrompt()
+                                return@WallpaperDetail
+                            }
+
+                            // 普通静态壁纸可以直接编辑
+                            val wallpaperId = wallpaper.id
+                            onNavigateToEdit(wallpaperId)
                         },
                         onPreview = {
                             // 直接调用系统壁纸预览

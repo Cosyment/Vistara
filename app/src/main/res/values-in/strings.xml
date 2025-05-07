@@ -290,6 +290,7 @@
     <string name="apply">Terapkan</string>
     <string name="crop_applied">Pemotongan Diterapkan</string>
     <string name="recrop">Potong Ulang</string>
+    <string name="live_wallpaper_edit_not_supported">Wallpaper hidup tidak dapat diedit</string>
     <string name="original">Asli</string>
     <string name="grayscale">Skala Abu-abu</string>
     <string name="sepia">Sepia</string>
@@ -466,13 +467,5 @@
     <string name="recharge_diamonds">Isi Ulang Berlian</string>
     <string name="unlock_premium_content">Buka Konten Premium</string>
     <string name="purchase_wallpaper">Beli wallpaper: %s</string>
-
-    <!-- Diamond purchase related -->
-    <string name="diamond_purchase_description">Beli %d berlian</string>
-    <string name="diamond_recharge_success_log">Isi ulang berlian berhasil: %d</string>
-    <string name="diamond_recharge_failed_log">Isi ulang berlian gagal: %d</string>
-    <string name="insufficient_diamond_balance" formatted="false">Saldo berlian tidak mencukupi: saldo saat ini %d, mencoba menggunakan %d</string>
-    <string name="diamond_amount_must_be_positive">Jumlah berlian harus positif: %d</string>
-    <string name="user_diamond_data_cleared">Data berlian pengguna telah dihapus: %s</string>
-    <string name="price_parsing_failed">Gagal mengurai harga: %s</string>
+    <string name="diamond_purchase_description">%d berlian</string>
 </resources>

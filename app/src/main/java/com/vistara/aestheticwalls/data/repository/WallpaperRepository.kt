@@ -130,4 +130,14 @@ interface WallpaperRepository {
      * 获取相关壁纸推荐
      */
     suspend fun getRelatedWallpapers(wallpaperId: String, limit: Int): List<Wallpaper>
+
+    /**
+     * 标记壁纸为已购买状态
+     */
+    suspend fun markWallpaperAsPurchased(wallpaperId: String): Boolean
+
+    /**
+     * 检查壁纸是否已购买
+     */
+    suspend fun isWallpaperPurchased(wallpaperId: String): Boolean
 }

@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.ui.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,18 +31,20 @@ fun LoadingState(
     Box(
         modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(48.dp), color = MaterialTheme.colorScheme.primary
-        )
 
-        // 如果提供了消息，在进度指示器下方显示
-        message?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.align(Alignment.BottomCenter)
+        Column(modifier = Modifier.align(Alignment.Center)) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp), color = MaterialTheme.colorScheme.primary
             )
+
+            // 如果提供了消息，在进度指示器下方显示
+            message?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
         }
     }
 }

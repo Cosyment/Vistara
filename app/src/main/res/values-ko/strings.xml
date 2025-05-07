@@ -292,6 +292,7 @@
     <string name="apply">적용</string>
     <string name="crop_applied">자르기 적용됨</string>
     <string name="recrop">다시 자르기</string>
+    <string name="live_wallpaper_edit_not_supported">Live wallpapers cannot be edited</string>
     <string name="original">원본</string>
     <string name="grayscale">흑백</string>
     <string name="sepia">세피아</string>
@@ -462,15 +463,7 @@
     <string name="diamond_price">가격: %d 다이아몬드</string>
     <string name="unlock_with_diamonds">%d 다이아몬드로 잠금 해제</string>
     <string name="recharge_diamonds">다이아몬드 충전</string>
-    <string name="unlock_premium_content">프리미엄 콘텐츠 잠금 해제</string>
+    <string name="unlock_premium_content">프리미엄 열기</string>
     <string name="purchase_wallpaper">배경화면 구매: %s</string>
-
-    <!-- Diamond purchase related -->
-    <string name="diamond_purchase_description">%d 다이아몬드 구매</string>
-    <string name="diamond_recharge_success_log">다이아몬드 충전 성공: %d</string>
-    <string name="diamond_recharge_failed_log">다이아몬드 충전 실패: %d</string>
-    <string name="insufficient_diamond_balance" formatted="false">다이아몬드 잔액 부족: 현재 잔액 %d, 소비하려는 양 %d</string>
-    <string name="diamond_amount_must_be_positive">다이아몬드 양은 양수여야 합니다: %d</string>
-    <string name="user_diamond_data_cleared">사용자 다이아몬드 데이터가 지워졌습니다: %s</string>
-    <string name="price_parsing_failed">가격 구문 분석 실패: %s</string>
+    <string name="diamond_purchase_description">%d 다이아몬드</string>
 </resources>

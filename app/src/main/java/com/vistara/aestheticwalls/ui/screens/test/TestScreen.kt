@@ -57,6 +57,8 @@ fun TestScreen(
     // 获取用户状态
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val isDiamondTestEnabled by viewModel.isDiamondTestEnabled.collectAsState()
+    val currentDiamondBalance by viewModel.currentDiamondBalance.collectAsState()
     val operationResult by viewModel.operationResult.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -110,6 +112,63 @@ fun TestScreen(
                 thickness = DividerDefaults.Thickness,
                 color = DividerDefaults.color
             )
+
+            // 登录状态测试
+            Text(
+                text = stringResource(R.string.login_status_test),
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(R.string.login_status),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+
+                        Switch(
+                            checked = isLoggedIn,
+                            onCheckedChange = { isChecked ->
+                                if (isChecked) {
+                                    viewModel.simulateLogin()
+                                } else {
+                                    viewModel.simulateLogout()
+                                }
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = if (isLoggedIn) stringResource(R.string.current_status_logged_in) else stringResource(R.string.current_status_logged_out),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
+
 
             // 用户状态测试
             Text(
@@ -167,9 +226,9 @@ fun TestScreen(
                 color = DividerDefaults.color
             )
 
-            // 登录状态测试
+            // 钻石测试
             Text(
-                text = stringResource(R.string.login_status_test),
+                text = stringResource(R.string.diamond_test),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -191,18 +250,14 @@ fun TestScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = stringResource(R.string.login_status),
+                            text = stringResource(R.string.diamond_test_mode),
                             style = MaterialTheme.typography.bodyLarge
                         )
 
                         Switch(
-                            checked = isLoggedIn,
-                            onCheckedChange = { isChecked ->
-                                if (isChecked) {
-                                    viewModel.simulateLogin()
-                                } else {
-                                    viewModel.simulateLogout()
-                                }
+                            checked = isDiamondTestEnabled,
+                            onCheckedChange = { _ ->
+                                viewModel.toggleDiamondTest()
                             }
                         )
                     }
@@ -210,9 +265,20 @@ fun TestScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = if (isLoggedIn) stringResource(R.string.current_status_logged_in) else stringResource(R.string.current_status_logged_out),
+                        text = stringResource(R.string.current_diamond_balance, currentDiamondBalance),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = if (isDiamondTestEnabled)
+                            stringResource(R.string.test_mode_enabled)
+                        else
+                            stringResource(R.string.test_mode_disabled),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
             }

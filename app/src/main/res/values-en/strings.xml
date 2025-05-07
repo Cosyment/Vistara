@@ -297,6 +297,7 @@
     <string name="apply">Apply</string>
     <string name="crop_applied">Crop Applied</string>
     <string name="recrop">Recrop</string>
+    <string name="live_wallpaper_edit_not_supported">Live wallpapers cannot be edited</string>
     <string name="original">Original</string>
     <string name="grayscale">Grayscale</string>
     <string name="sepia">Sepia</string>
@@ -464,4 +465,5 @@
     <string name="recharge_diamonds">Recharge Diamonds</string>
     <string name="unlock_premium_content">Unlock Premium Content</string>
     <string name="purchase_wallpaper">Purchase wallpaper: %s</string>
+    <string name="diamond_purchase_description">%d Diamonds</string>
 </resources>

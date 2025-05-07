@@ -52,4 +52,8 @@ interface WallpaperDao {
 
     @Query("SELECT * FROM auto_change_history ORDER BY timestamp DESC")
     fun getAutoChangeHistory(): Flow<List<AutoChangeHistory>>
+
+    // 已购买壁纸相关操作
+    @Query("UPDATE wallpapers SET isPremium = 0 WHERE id = :wallpaperId")
+    suspend fun markWallpaperAsPurchased(wallpaperId: String)
 }

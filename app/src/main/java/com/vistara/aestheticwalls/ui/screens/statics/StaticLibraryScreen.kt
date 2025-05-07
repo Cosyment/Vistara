@@ -114,11 +114,13 @@ fun StaticLibraryScreen(
                     is UiState.Success -> {
                         val wallpapers = (wallpapersState as UiState.Success<List<Wallpaper>>).data
                         if (wallpapers.isEmpty()) {
-                            // 显示空状态
-                            LoadingState(
-                                message = stringResource(R.string.no_wallpapers_found),
-                                modifier = Modifier.fillMaxSize()
-                            ) // Your loading composable
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    stringResource(R.string.no_wallpapers_found),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }// Your loading composable
                         } else {
                             // 使用Column包裹LazyRow和WallpaperStaggeredGrid
                             Column(modifier = Modifier.fillMaxSize()) {

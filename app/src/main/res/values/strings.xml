@@ -305,6 +305,7 @@
     <string name="apply">Apply</string>
     <string name="crop_applied">Crop Applied</string>
     <string name="recrop">Recrop</string>
+    <string name="live_wallpaper_edit_not_supported">Live wallpapers cannot be edited</string>
     <string name="original">Original</string>
     <string name="grayscale">Grayscale</string>
     <string name="sepia">Sepia</string>
@@ -383,6 +384,11 @@
     <string name="simulate_login_failed">Simulated login failed: %1$s</string>
     <string name="simulate_logout_success">Simulated logout successful</string>
     <string name="simulate_logout_failed">Simulated logout failed: %1$s</string>
+    <string name="diamond_test" translatable="false">Diamond Test</string>
+    <string name="diamond_test_mode" translatable="false">Diamond Test Mode</string>
+    <string name="current_diamond_balance" translatable="false">Current diamond balance: %d</string>
+    <string name="test_mode_enabled" translatable="false">Test mode enabled, 200 diamonds added when enabled, cleared when disabled</string>
+    <string name="test_mode_disabled" translatable="false">Test mode disabled</string>
 
     <!-- Wallpaper management related -->
     <string name="set_wallpaper_failed">Failed to set wallpaper</string>
@@ -474,13 +480,5 @@
     <string name="recharge_diamonds">Recharge Diamonds</string>
     <string name="unlock_premium_content">Unlock Premium Content</string>
     <string name="purchase_wallpaper">Purchase wallpaper: %s</string>
-
-    <!-- Diamond purchase related -->
-    <string name="diamond_purchase_description">Purchase %d diamonds</string>
-    <string name="diamond_recharge_success_log">Diamond recharge successful: %d</string>
-    <string name="diamond_recharge_failed_log">Diamond recharge failed: %d</string>
-    <string name="insufficient_diamond_balance" formatted="false">Insufficient diamond balance: current balance %d, trying to consume %d</string>
-    <string name="diamond_amount_must_be_positive">Diamond amount must be positive: %d</string>
-    <string name="user_diamond_data_cleared">User diamond data cleared: %s</string>
-    <string name="price_parsing_failed">Price parsing failed: %s</string>
+    <string name="diamond_purchase_description">%d Diamonds</string>
 </resources>

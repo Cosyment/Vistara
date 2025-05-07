@@ -337,14 +337,14 @@ class BillingManager @Inject constructor(
                 )
 
                 if (success) {
-                    Log.d(TAG, context.getString(R.string.diamond_recharge_success_log, diamondAmount))
+                    Log.d(TAG, "diamond recharge successful $diamondAmount")
 
                     // 如果提供了购买令牌，消耗这个购买，以便用户可以再次购买
                     if (purchaseToken != null) {
                         consumePurchase(purchaseToken)
                     }
                 } else {
-                    Log.e(TAG, context.getString(R.string.diamond_recharge_failed_log, diamondAmount))
+                    Log.e(TAG, "diamond recharge failure $diamondAmount")
                 }
             }
         }
