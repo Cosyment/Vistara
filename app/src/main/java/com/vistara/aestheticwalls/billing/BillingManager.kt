@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ConsumeParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -99,9 +100,33 @@ class BillingManager @Inject constructor(
     private val _purchaseState = MutableStateFlow<PurchaseState>(PurchaseState.Idle)
     val purchaseState: StateFlow<PurchaseState> = _purchaseState.asStateFlow()
 
+    // 已处理的购买记录，用于避免重复处理
+    private val processedPurchases = mutableSetOf<String>()
+
     // 初始化
     init {
+        // 从SharedPreferences加载已处理的购买记录
+        loadProcessedPurchases()
         connectToPlayBilling()
+    }
+
+    /**
+     * 从SharedPreferences加载已处理的购买记录
+     */
+    private fun loadProcessedPurchases() {
+        val sharedPrefs = context.getSharedPreferences("billing_prefs", Context.MODE_PRIVATE)
+        val processedPurchasesSet = sharedPrefs.getStringSet("processed_purchases", emptySet()) ?: emptySet()
+        processedPurchases.addAll(processedPurchasesSet)
+        Log.d(TAG, "Loaded ${processedPurchases.size} processed purchases from SharedPreferences")
+    }
+
+    /**
+     * 保存已处理的购买记录到SharedPreferences
+     */
+    private fun saveProcessedPurchases() {
+        val sharedPrefs = context.getSharedPreferences("billing_prefs", Context.MODE_PRIVATE)
+        sharedPrefs.edit().putStringSet("processed_purchases", processedPurchases).apply()
+        Log.d(TAG, "Saved ${processedPurchases.size} processed purchases to SharedPreferences")
     }
 
     /**
@@ -120,6 +145,8 @@ class BillingManager @Inject constructor(
      * 断开与Google Play Billing的连接
      */
     fun disconnectFromPlayBilling() {
+        // 保存已处理的购买记录
+        saveProcessedPurchases()
         billingClient.endConnection()
         _connectionState.value = BillingConnectionState.DISCONNECTED
     }
@@ -239,6 +266,15 @@ class BillingManager @Inject constructor(
 
         // 处理每个购买
         for (purchase in purchases) {
+            // 生成唯一的购买标识符，用于检查是否已处理过
+            val purchaseKey = "${purchase.orderId}_${purchase.purchaseToken}"
+
+            // 如果这个购买已经处理过，跳过
+            if (processedPurchases.contains(purchaseKey)) {
+                Log.d(TAG, "Purchase already processed: $purchaseKey")
+                continue
+            }
+
             when (purchase.purchaseState) {
                 Purchase.PurchaseState.PURCHASED -> {
                     // 如果购买已完成但尚未确认，则确认购买
@@ -261,10 +297,16 @@ class BillingManager @Inject constructor(
                             }
                             // 处理钻石商品
                             productId.startsWith("dm") -> {
-                                processDiamondPurchase(productId)
+                                processDiamondPurchase(productId, purchase.purchaseToken)
                             }
                         }
                     }
+
+                    // 将此购买标记为已处理
+                    processedPurchases.add(purchaseKey)
+                    // 保存已处理的购买记录
+                    saveProcessedPurchases()
+                    Log.d(TAG, "Marked purchase as processed: $purchaseKey")
                 }
 
                 Purchase.PurchaseState.PENDING -> {
@@ -283,7 +325,7 @@ class BillingManager @Inject constructor(
     /**
      * 处理钻石购买
      */
-    private fun processDiamondPurchase(productId: String) {
+    private fun processDiamondPurchase(productId: String, purchaseToken: String? = null) {
         val diamondAmount = DIAMOND_PRODUCTS[productId] ?: 0
 
         if (diamondAmount > 0) {
@@ -296,9 +338,32 @@ class BillingManager @Inject constructor(
 
                 if (success) {
                     Log.d(TAG, "钻石充值成功: $diamondAmount")
+
+                    // 如果提供了购买令牌，消耗这个购买，以便用户可以再次购买
+                    if (purchaseToken != null) {
+                        consumePurchase(purchaseToken)
+                    }
                 } else {
                     Log.e(TAG, "钻石充值失败: $diamondAmount")
                 }
+            }
+        }
+    }
+
+    /**
+     * 消耗购买
+     * 对于一次性购买的商品（如钻石包），需要消耗购买，以便用户可以再次购买
+     */
+    private fun consumePurchase(purchaseToken: String) {
+        val params = ConsumeParams.newBuilder()
+            .setPurchaseToken(purchaseToken)
+            .build()
+
+        billingClient.consumeAsync(params) { billingResult, outToken ->
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                Log.d(TAG, "Purchase consumed successfully: $outToken")
+            } else {
+                Log.e(TAG, "Failed to consume purchase: ${billingResult.debugMessage}")
             }
         }
     }
@@ -452,6 +517,10 @@ class BillingManager @Inject constructor(
                     Log.d(TAG, "Purchase is pending: ${purchase.products}")
                 }
             }
+
+            // 对于新的购买，我们需要清除已处理的购买记录集合，确保它们能被处理
+            // 这是因为这个回调是用户刚刚完成的新购买
+            Log.d(TAG, "New purchase detected, clearing processed purchases set for these new purchases")
 
             // 处理购买
             processPurchases(purchases)
