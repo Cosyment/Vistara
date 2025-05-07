@@ -474,4 +474,13 @@
     <string name="recharge_diamonds">Recharge Diamonds</string>
     <string name="unlock_premium_content">Unlock Premium Content</string>
     <string name="purchase_wallpaper">Purchase wallpaper: %s</string>
+
+    <!-- Diamond purchase related -->
+    <string name="diamond_purchase_description">Purchase %d diamonds</string>
+    <string name="diamond_recharge_success_log">Diamond recharge successful: %d</string>
+    <string name="diamond_recharge_failed_log">Diamond recharge failed: %d</string>
+    <string name="insufficient_diamond_balance" formatted="false">Insufficient diamond balance: current balance %d, trying to consume %d</string>
+    <string name="diamond_amount_must_be_positive">Diamond amount must be positive: %d</string>
+    <string name="user_diamond_data_cleared">User diamond data cleared: %s</string>
+    <string name="price_parsing_failed">Price parsing failed: %s</string>
 </resources>

@@ -464,4 +464,13 @@
     <string name="recharge_diamonds">다이아몬드 충전</string>
     <string name="unlock_premium_content">프리미엄 콘텐츠 잠금 해제</string>
     <string name="purchase_wallpaper">배경화면 구매: %s</string>
+
+    <!-- Diamond purchase related -->
+    <string name="diamond_purchase_description">%d 다이아몬드 구매</string>
+    <string name="diamond_recharge_success_log">다이아몬드 충전 성공: %d</string>
+    <string name="diamond_recharge_failed_log">다이아몬드 충전 실패: %d</string>
+    <string name="insufficient_diamond_balance" formatted="false">다이아몬드 잔액 부족: 현재 잔액 %d, 소비하려는 양 %d</string>
+    <string name="diamond_amount_must_be_positive">다이아몬드 양은 양수여야 합니다: %d</string>
+    <string name="user_diamond_data_cleared">사용자 다이아몬드 데이터가 지워졌습니다: %s</string>
+    <string name="price_parsing_failed">가격 구문 분석 실패: %s</string>
 </resources>

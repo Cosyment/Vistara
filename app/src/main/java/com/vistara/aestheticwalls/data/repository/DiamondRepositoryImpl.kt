@@ -1,12 +1,14 @@
 package com.vistara.aestheticwalls.data.repository
 
 import android.util.Log
+import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.data.local.DiamondDao
 import com.vistara.aestheticwalls.data.model.DiamondAccount
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
+import com.vistara.aestheticwalls.utils.StringProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -22,7 +24,8 @@ import javax.inject.Singleton
 class DiamondRepositoryImpl @Inject constructor(
     private val diamondDao: DiamondDao,
     private val authRepository: AuthRepository,
-    private val billingManagerProvider: Provider<BillingManager>
+    private val billingManagerProvider: Provider<BillingManager>,
+    private val stringProvider: StringProvider
 ) : DiamondRepository {
 
     // 延迟获取BillingManager实例
@@ -82,7 +85,7 @@ class DiamondRepositoryImpl @Inject constructor(
 
             // 如果是消费，检查余额是否足够
             if (amount < 0 && newBalance < 0) {
-                Log.e(TAG, "钻石余额不足: 当前余额 ${currentAccount.balance}, 尝试消费 ${-amount}")
+                Log.e(TAG, stringProvider.getString(R.string.insufficient_diamond_balance, currentAccount.balance, -amount))
                 return false
             }
 
@@ -104,10 +107,15 @@ class DiamondRepositoryImpl @Inject constructor(
 
             // 更新数据库
             diamondDao.updateBalanceAndAddTransaction(updatedAccount, transaction)
-            Log.d(TAG, "钻石余额更新成功: $amount, 新余额: $newBalance")
+            // 使用字符串资源记录日志
+            if (amount > 0) {
+                Log.d(TAG, stringProvider.getString(R.string.diamond_recharge_success_log, amount))
+            } else {
+                Log.d(TAG, "Diamond balance updated: $amount, new balance: $newBalance")
+            }
             return true
         } catch (e: Exception) {
-            Log.e(TAG, "更新钻石余额失败", e)
+            Log.e(TAG, "Failed to update diamond balance", e)
             return false
         }
     }
@@ -147,14 +155,14 @@ class DiamondRepositoryImpl @Inject constructor(
             val priceValue = try {
                 formattedPrice.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
             } catch (e: Exception) {
-                Log.e(TAG, "解析价格失败: $formattedPrice", e)
+                Log.e(TAG, stringProvider.getString(R.string.price_parsing_failed, formattedPrice), e)
                 0.0
             }
 
             // 创建钻石商品对象
             val product = DiamondProduct(
                 id = "diamond_$diamondAmount",
-                name = "${diamondAmount}钻石",
+                name = stringProvider.getString(R.string.diamond_purchase_description, diamondAmount),
                 diamondAmount = diamondAmount,
                 price = priceValue,
                 // 根据商品ID设置折扣
@@ -182,7 +190,7 @@ class DiamondRepositoryImpl @Inject constructor(
         val userId = getCurrentUserId()
         diamondDao.deleteAccount(userId)
         diamondDao.deleteAllTransactions(userId)
-        Log.d(TAG, "用户钻石数据已清除: $userId")
+        Log.d(TAG, stringProvider.getString(R.string.user_diamond_data_cleared, userId))
     }
 
     /**
@@ -198,13 +206,13 @@ class DiamondRepositoryImpl @Inject constructor(
      */
     override suspend fun consumeDiamonds(amount: Int, description: String, itemId: String?): Boolean {
         if (amount <= 0) {
-            Log.e(TAG, "消费金额必须为正数: $amount")
+            Log.e(TAG, stringProvider.getString(R.string.diamond_amount_must_be_positive, amount))
             return false
         }
 
         // 检查余额是否足够
         if (!hasSufficientDiamonds(amount)) {
-            Log.e(TAG, "钻石余额不足: 当前余额 ${getDiamondBalanceValue()}, 尝试消费 $amount")
+            Log.e(TAG, stringProvider.getString(R.string.insufficient_diamond_balance, getDiamondBalanceValue(), amount))
             return false
         }
 

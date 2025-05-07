@@ -464,4 +464,13 @@
     <string name="recharge_diamonds">ダイヤモンドをチャージ</string>
     <string name="unlock_premium_content">プレミアムコンテンツをアンロック</string>
     <string name="purchase_wallpaper">壁紙を購入: %s</string>
+
+    <!-- Diamond purchase related -->
+    <string name="diamond_purchase_description">%d ダイヤモンドを購入</string>
+    <string name="diamond_recharge_success_log">ダイヤモンドチャージ成功: %d</string>
+    <string name="diamond_recharge_failed_log">ダイヤモンドチャージ失敗: %d</string>
+    <string name="insufficient_diamond_balance" formatted="false">ダイヤモンド残高不足: 現在の残高 %d、消費しようとしている量 %d</string>
+    <string name="diamond_amount_must_be_positive">ダイヤモンド量は正の数でなければなりません: %d</string>
+    <string name="user_diamond_data_cleared">ユーザーのダイヤモンドデータがクリアされました: %s</string>
+    <string name="price_parsing_failed">価格の解析に失敗しました: %s</string>
 </resources>

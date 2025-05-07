@@ -333,18 +333,18 @@ class BillingManager @Inject constructor(
                 val success = diamondRepository.updateDiamondBalance(
                     amount = diamondAmount,
                     type = DiamondTransactionType.RECHARGE,
-                    description = "购买${diamondAmount}钻石"
+                    description = context.getString(R.string.diamond_purchase_description, diamondAmount)
                 )
 
                 if (success) {
-                    Log.d(TAG, "钻石充值成功: $diamondAmount")
+                    Log.d(TAG, context.getString(R.string.diamond_recharge_success_log, diamondAmount))
 
                     // 如果提供了购买令牌，消耗这个购买，以便用户可以再次购买
                     if (purchaseToken != null) {
                         consumePurchase(purchaseToken)
                     }
                 } else {
-                    Log.e(TAG, "钻石充值失败: $diamondAmount")
+                    Log.e(TAG, context.getString(R.string.diamond_recharge_failed_log, diamondAmount))
                 }
             }
         }

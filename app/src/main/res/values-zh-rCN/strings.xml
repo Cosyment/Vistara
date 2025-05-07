@@ -462,4 +462,13 @@
     <string name="recharge_diamonds">充值钻石</string>
     <string name="unlock_premium_content">解锁高级内容</string>
     <string name="purchase_wallpaper">购买壁纸：%s</string>
+
+    <!-- Diamond purchase related -->
+    <string name="diamond_purchase_description">购买%d钻石</string>
+    <string name="diamond_recharge_success_log">钻石充值成功：%d</string>
+    <string name="diamond_recharge_failed_log">钻石充值失败：%d</string>
+    <string name="insufficient_diamond_balance" formatted="false">钻石余额不足：当前余额%d，尝试消费%d</string>
+    <string name="diamond_amount_must_be_positive">钻石数量必须为正数：%d</string>
+    <string name="user_diamond_data_cleared">用户钻石数据已清除：%s</string>
+    <string name="price_parsing_failed">价格解析失败：%s</string>
 </resources>
