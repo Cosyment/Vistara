@@ -190,6 +190,7 @@ fun VideoPreviewItem(
             // --- Overlays (Keep original placement and visibility logic) ---
             // These likely overlay everything else, so keep them outside the if/else
             if (wallpaper.isPremium) {
+                // 高级壁纸显示皇冠图标
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -198,6 +199,19 @@ fun VideoPreviewItem(
                 ) {
                     Text(
                         text = "👑", // Keep premium indicator
+                        style = MaterialTheme.typography.labelSmall, color = Color.White
+                    )
+                }
+            } else if (wallpaper.isLive) {
+                // 普通动态壁纸显示钻石图标
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "💎", // 钻石图标表示需要钻石购买
                         style = MaterialTheme.typography.labelSmall, color = Color.White
                     )
                 }

@@ -170,22 +170,41 @@ class WallpaperDetailViewModel @Inject constructor(
         }
         checkPremiumStatus()
         checkLoginStatus()
-        loadDiamondBalance()
+        observeDiamondBalance() // 使用observeDiamondBalance代替loadDiamondBalance
+        loadDiamondBalance() // 立即加载一次当前余额
         observeBillingState()
         observePurchaseState()
     }
 
     /**
      * 加载钻石余额
+     * 公开方法，允许在购买成功后刷新钻石余额
      */
-    private fun loadDiamondBalance() {
+    fun loadDiamondBalance() {
+        viewModelScope.launch {
+            try {
+                // 直接获取当前钻石余额值，而不是使用Flow
+                val balance = diamondRepository.getDiamondBalanceValue()
+                _diamondBalance.value = balance
+                Log.d(TAG, "Diamond balance updated: $balance")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading diamond balance", e)
+            }
+        }
+    }
+
+    /**
+     * 监听钻石余额变化
+     * 私有方法，用于初始化时监听钻石余额变化
+     */
+    private fun observeDiamondBalance() {
         viewModelScope.launch {
             try {
                 diamondRepository.getDiamondBalance().collectLatest { balance ->
                     _diamondBalance.value = balance
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading diamond balance", e)
+                Log.e(TAG, "Error observing diamond balance", e)
             }
         }
     }
@@ -221,23 +240,30 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     private fun observePurchaseState() {
         viewModelScope.launch {
+            // 获取当前状态，避免重复处理
+            val initialState = billingManager.purchaseState.value
+
+            // 只处理新的购买状态变化
             billingManager.purchaseState.collectLatest { state ->
-                when (state) {
-                    is PurchaseState.Completed -> {
-                        _isPremiumUser.value = true
-                        _upgradeResult.value = UpgradeResult.Success(context.getString(R.string.upgrade_success))
-                    }
+                // 忽略初始状态，只处理新的状态变化
+                if (state != initialState && state != PurchaseState.Idle) {
+                    when (state) {
+                        is PurchaseState.Completed -> {
+                            _isPremiumUser.value = true
+                            _upgradeResult.value = UpgradeResult.Success(context.getString(R.string.upgrade_success))
+                        }
 
-                    is PurchaseState.Failed -> {
-                        _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.upgrade_failed, state.message))
-                    }
+                        is PurchaseState.Failed -> {
+                            _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.upgrade_failed, state.message))
+                        }
 
-                    is PurchaseState.Cancelled -> {
-                        _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.upgrade_cancelled))
-                    }
+                        is PurchaseState.Cancelled -> {
+                            _upgradeResult.value = UpgradeResult.Error(context.getString(R.string.upgrade_cancelled))
+                        }
 
-                    else -> {
-                        // 其他状态不处理
+                        else -> {
+                            // 其他状态不处理
+                        }
                     }
                 }
             }
@@ -268,6 +294,18 @@ class WallpaperDetailViewModel @Inject constructor(
                 // 如果本地数据库有这个壁纸，直接显示
                 if (wallpaper != null) {
                     Log.d(TAG, "从本地数据库找到壁纸: $wallpaperId")
+
+                    // 检查是否是动态壁纸，如果是动态壁纸，确保isPremium属性正确设置
+                    if (wallpaper.isLive) {
+                        // 检查该壁纸是否已经被购买过
+                        val isPurchased = wallpaperRepository.isWallpaperPurchased(wallpaper.id)
+                        if (isPurchased) {
+                            // 如果已购买，确保isPremium为false
+                            wallpaper = wallpaper.copy(isPremium = false)
+                            Log.d(TAG, "动态壁纸已购买，设置isPremium=false: ${wallpaper.id}")
+                        }
+                    }
+
                     _wallpaperState.value = UiState.Success(wallpaper)
                     checkFavoriteStatus()
 
@@ -275,7 +313,18 @@ class WallpaperDetailViewModel @Inject constructor(
                     try {
                         val updatedWallpaper = wallpaperRepository.getWallpaperById(wallpaperId)
                         if (updatedWallpaper != null && updatedWallpaper != wallpaper) {
-                            _wallpaperState.value = UiState.Success(updatedWallpaper)
+                            // 检查是否是动态壁纸，如果是动态壁纸，确保isPremium属性正确设置
+                            var finalUpdatedWallpaper = updatedWallpaper
+                            if (updatedWallpaper.isLive) {
+                                // 检查该壁纸是否已经被购买过
+                                val isPurchased = wallpaperRepository.isWallpaperPurchased(updatedWallpaper.id)
+                                if (isPurchased) {
+                                    // 如果已购买，确保isPremium为false
+                                    finalUpdatedWallpaper = updatedWallpaper.copy(isPremium = false)
+                                    Log.d(TAG, "动态壁纸已购买，设置isPremium=false: ${updatedWallpaper.id}")
+                                }
+                            }
+                            _wallpaperState.value = UiState.Success(finalUpdatedWallpaper)
                         }
                     } catch (e: Exception) {
                         // 忽略后台更新错误，不影响用户体验
@@ -311,6 +360,17 @@ class WallpaperDetailViewModel @Inject constructor(
                 }
 
                 if (wallpaper != null) {
+                    // 检查是否是动态壁纸，如果是动态壁纸，确保isPremium属性正确设置
+                    if (wallpaper.isLive) {
+                        // 检查该壁纸是否已经被购买过
+                        val isPurchased = wallpaperRepository.isWallpaperPurchased(wallpaper.id)
+                        if (isPurchased) {
+                            // 如果已购买，确保isPremium为false
+                            wallpaper = wallpaper.copy(isPremium = false)
+                            Log.d(TAG, "动态壁纸已购买，设置isPremium=false: ${wallpaper.id}")
+                        }
+                    }
+
                     _wallpaperState.value = UiState.Success(wallpaper)
                     checkFavoriteStatus()
 
@@ -409,36 +469,56 @@ class WallpaperDetailViewModel @Inject constructor(
     fun showSetWallpaperOptions(activity: Activity? = null) {
         val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
 
-        // 检查是否为高级壁纸且用户不是高级用户
-        if (currentWallpaper.isPremium && !_isPremiumUser.value) {
-            // 如果是高级壁纸且用户不是高级用户，显示钻石购买选项
-            _showDiamondPurchaseDialog.value = true
-            return
-        }
+        // 1. 普通静态壁纸：任何用户可下载和设置编辑
+        // 2. 高级静态壁纸：必须高级用户方可下载和设置
+        // 3. 普通动态壁纸：必须钻石付费或高级用户方可下载和设置
+        // 4. 高级动态壁纸：必须高级用户方可下载和设置
 
-        // 对于动态壁纸，需要高级用户才能设置
         if (currentWallpaper.isLive) {
+            // 动态壁纸
             Log.d("WallpaperDetailViewModel", "Checking premium status for live wallpaper")
-            // 检查是否为高级用户
-            if (!_isPremiumUser.value) {
-                // 如果不是高级用户，显示钻石购买选项
-                _showDiamondPurchaseDialog.value = true
-                return
-            }
 
-            // 是高级用户，可以设置动态壁纸
-            if (activity != null) {
-                // 直接设置为两者（系统会显示选择界面）
-                setWallpaper(activity, WallpaperTarget.BOTH)
+            if (currentWallpaper.isPremium) {
+                // 高级动态壁纸：必须高级用户方可下载和设置
+                if (!_isPremiumUser.value) {
+                    // 非高级用户，导航到升级页面
+                    _navigateToUpgrade.value = true
+                    return
+                }
             } else {
-                Log.e("WallpaperDetailViewModel", "Cannot set live wallpaper: activity is null")
-                // 如果没有Activity，也显示选项弹框，让用户选择
-                _showSetWallpaperOptions.value = true
+                // 普通动态壁纸：必须钻石付费或高级用户方可下载和设置
+                if (!_isPremiumUser.value) {
+                    // 检查是否已购买
+                    viewModelScope.launch {
+                        val isPurchased = wallpaperRepository.isWallpaperPurchased(currentWallpaper.id)
+                        if (!isPurchased) {
+                            // 未购买，显示钻石购买选项
+                            _showDiamondPurchaseDialog.value = true
+                        } else {
+                            // 已购买，可以直接使用
+                            Log.d(TAG, "动态壁纸已购买，可以直接设置")
+                            // 显示设置壁纸选项
+                            _showSetWallpaperOptions.value = true
+                        }
+                    }
+                    return
+                }
             }
         } else {
-            // 静态壁纸显示设置壁纸选项
-            _showSetWallpaperOptions.value = true
+            // 静态壁纸
+            if (currentWallpaper.isPremium) {
+                // 高级静态壁纸：必须高级用户方可下载和设置
+                if (!_isPremiumUser.value) {
+                    // 非高级用户，导航到升级页面
+                    _navigateToUpgrade.value = true
+                    return
+                }
+            }
+                // 普通静态壁纸：任何用户可下载和设置编辑
         }
+
+        // 显示设置壁纸选项
+        _showSetWallpaperOptions.value = true
     }
 
     /**
@@ -517,8 +597,9 @@ class WallpaperDetailViewModel @Inject constructor(
             )
 
             if (success) {
-                // 购买成功，更新壁纸状态（例如标记为已购买）
-                // 这里可能需要调用wallpaperRepository的方法来更新壁纸状态
+                // 购买成功，更新壁纸状态（标记为已购买）
+                val markSuccess = wallpaperRepository.markWallpaperAsPurchased(currentWallpaper.id)
+                Log.d(TAG, "标记壁纸为已购买状态: ${currentWallpaper.id}, 结果: $markSuccess")
 
                 // 更新结果状态
                 _diamondPurchaseResult.value = DiamondPurchaseResult.Success(
@@ -528,11 +609,17 @@ class WallpaperDetailViewModel @Inject constructor(
                 // 隐藏对话框
                 _showDiamondPurchaseDialog.value = false
 
-                // 如果是高级壁纸，标记用户可以使用此壁纸
-                if (currentWallpaper.isPremium) {
-                    // 这里可能需要调用wallpaperRepository的方法来更新壁纸状态
-                    // 或者在本地记录用户已购买的壁纸ID
-                }
+                // 更新当前壁纸状态
+                // 将isPremium设置为false，表示已购买
+                // 注意：动态壁纸的isLive属性不变，因为这是壁纸的固有属性
+
+                // 更新当前显示的壁纸对象
+                val updatedWallpaper = currentWallpaper.copy(isPremium = false)
+                _wallpaperState.value = UiState.Success(updatedWallpaper)
+                Log.d(TAG, "更新壁纸状态为已购买: ${currentWallpaper.id}, isLive=${currentWallpaper.isLive}, isPremium=false")
+
+                // 更新钻石余额
+                loadDiamondBalance()
             } else {
                 // 购买失败
                 _diamondPurchaseResult.value = DiamondPurchaseResult.Error(
@@ -569,6 +656,51 @@ class WallpaperDetailViewModel @Inject constructor(
         viewModelScope.launch {
             Log.d("WallpaperDetailViewModel", "Setting wallpaper for target: $target")
             val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return@launch
+
+            // 1. 普通静态壁纸：任何用户可下载和设置编辑
+            // 2. 高级静态壁纸：必须高级用户方可下载和设置
+            // 3. 普通动态壁纸：必须钻石付费或高级用户方可下载和设置
+            // 4. 高级动态壁纸：必须高级用户方可下载和设置
+
+            if (currentWallpaper.isLive) {
+                // 动态壁纸
+                if (currentWallpaper.isPremium) {
+                    // 高级动态壁纸：必须高级用户方可下载和设置
+                    if (!_isPremiumUser.value) {
+                        // 非高级用户，导航到升级页面
+                        _navigateToUpgrade.value = true
+                        return@launch
+                    }
+                } else {
+                    // 普通动态壁纸：必须钻石付费或高级用户方可下载和设置
+                    if (!_isPremiumUser.value) {
+                        // 检查是否已购买
+                        val isPurchased = suspendRunCatching {
+                            wallpaperRepository.isWallpaperPurchased(currentWallpaper.id)
+                        }.getOrDefault(false)
+
+                        if (!isPurchased) {
+                            // 未购买，显示钻石购买选项
+                            _showDiamondPurchaseDialog.value = true
+                            return@launch
+                        } else {
+                            // 已购买，可以直接使用
+                            Log.d(TAG, "动态壁纸已购买，可以直接使用")
+                        }
+                    }
+                }
+            } else {
+                // 静态壁纸
+                if (currentWallpaper.isPremium) {
+                    // 高级静态壁纸：必须高级用户方可下载和设置
+                    if (!_isPremiumUser.value) {
+                        // 非高级用户，导航到升级页面
+                        _navigateToUpgrade.value = true
+                        return@launch
+                    }
+                }
+                // 普通静态壁纸：任何用户可下载和设置编辑
+            }
 
             // 立即隐藏选项对话框，提供即时反馈
             _showSetWallpaperOptions.value = false
@@ -634,11 +766,50 @@ class WallpaperDetailViewModel @Inject constructor(
 
         val currentWallpaper = (_wallpaperState.value as? UiState.Success)?.data ?: return
 
-        // 检查是否为高级壁纸或动态壁纸，且用户不是高级用户
-        if ((currentWallpaper.isPremium || currentWallpaper.isLive) && !_isPremiumUser.value) {
-            // 如果是高级壁纸或动态壁纸且用户不是高级用户，触发导航到升级页面
-            _navigateToUpgrade.value = true
-            return
+        // 1. 普通静态壁纸：任何用户可下载和设置编辑
+        // 2. 高级静态壁纸：必须高级用户方可下载和设置
+        // 3. 普通动态壁纸：必须钻石付费或高级用户方可下载和设置
+        // 4. 高级动态壁纸：必须高级用户方可下载和设置
+
+        if (currentWallpaper.isLive) {
+            // 动态壁纸
+            if (currentWallpaper.isPremium) {
+                // 高级动态壁纸：必须高级用户方可下载和设置
+                if (!_isPremiumUser.value) {
+                    // 非高级用户，导航到升级页面
+                    _navigateToUpgrade.value = true
+                    return
+                }
+            } else {
+                // 普通动态壁纸：必须钻石付费或高级用户方可下载和设置
+                if (!_isPremiumUser.value) {
+                    // 检查是否已购买
+                    viewModelScope.launch {
+                        val isPurchased = wallpaperRepository.isWallpaperPurchased(currentWallpaper.id)
+                        if (!isPurchased) {
+                            // 未购买，显示钻石购买选项
+                            _showDiamondPurchaseDialog.value = true
+                        } else {
+                            // 已购买，可以直接使用
+                            Log.d(TAG, "动态壁纸已购买，可以直接下载")
+                            // 开始下载
+                            startDownload(currentWallpaper)
+                        }
+                    }
+                    return
+                }
+            }
+        } else {
+            // 静态壁纸
+            if (currentWallpaper.isPremium) {
+                // 高级静态壁纸：必须高级用户方可下载和设置
+                if (!_isPremiumUser.value) {
+                    // 非高级用户，导航到升级页面
+                    _navigateToUpgrade.value = true
+                    return
+                }
+            }
+            // 普通静态壁纸：任何用户可下载和设置编辑
         }
 
         // 检查存储权限
@@ -979,5 +1150,16 @@ class WallpaperDetailViewModel @Inject constructor(
      */
     enum class LoginAction {
         FAVORITE, DOWNLOAD, SET_WALLPAPER, EDIT
+    }
+
+    /**
+     * 挂起函数版本的runCatching
+     */
+    private suspend fun <T> suspendRunCatching(block: suspend () -> T): Result<T> {
+        return try {
+            Result.success(block())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

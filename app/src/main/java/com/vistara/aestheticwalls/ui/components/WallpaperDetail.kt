@@ -306,7 +306,8 @@ fun WallpaperDetail(
 
                     // 编辑按钮 - 仅对静态壁纸显示且不是动态壁纸时
                     if (!wallpaper.isLive) {
-                        val canEdit = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
+                        // 如果壁纸不是高级壁纸，或者用户是高级用户，或者壁纸已经购买（isPremium为false），则可以编辑
+                        val canEdit = !wallpaper.isPremium || isPremiumUser
                         IconButton(
                             onClick = onEdit,
                             enabled = canEdit,
@@ -324,7 +325,8 @@ fun WallpaperDetail(
                     }
 
                     // 下载按钮
-                    val canDownload = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
+                    // 如果壁纸不是高级壁纸，或者用户是高级用户，或者壁纸已经购买（isPremium为false），则可以下载
+                    val canDownload = !wallpaper.isPremium || isPremiumUser
                     Box(
                         contentAlignment = Alignment.Center, modifier = Modifier.size(40.dp)
                     ) {
@@ -360,10 +362,20 @@ fun WallpaperDetail(
                             }
                         }
 
-                        // 添加皇冠图标
-                        if (!canDownload) {
+                        // 添加标识图标
+                        if (wallpaper.isPremium && !isPremiumUser) {
+                            // 高级壁纸显示皇冠图标
                             Text(
                                 text = "👑",
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 1.dp, y = (-5).dp)
+                            )
+                        } else if (wallpaper.isLive && !isPremiumUser) {
+                            // 普通动态壁纸显示钻石图标
+                            Text(
+                                text = "💎",
                                 style = MaterialTheme.typography.labelSmall,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -400,7 +412,8 @@ fun WallpaperDetail(
                 }
 
                 // 设置壁纸按钮 - 主要操作
-                val canSetWallpaper = (!wallpaper.isPremium && !wallpaper.isLive) || isPremiumUser
+                // 如果壁纸不是高级壁纸，或者用户是高级用户，或者壁纸已经购买（isPremium为false），则可以设置壁纸
+                val canSetWallpaper = !wallpaper.isPremium || isPremiumUser
                 Button(
                     onClick = onSetWallpaper,
                     // 当正在处理壁纸时禁用按钮，防止重复点击
@@ -431,10 +444,17 @@ fun WallpaperDetail(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                        } else if (!canSetWallpaper) {
+                        } else if (wallpaper.isPremium) {
                             // 对于高级壁纸和非高级用户，显示皇冠图标
                             Text(
                                 text = "👑", // 皇冠emoji
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                        } else if (wallpaper.isLive && !isPremiumUser) {
+                            // 对于普通动态壁纸和非高级用户，显示钻石图标
+                            Text(
+                                text = "💎", // 钻石emoji
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(end = 4.dp)
                             )

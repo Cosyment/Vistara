@@ -78,8 +78,8 @@ fun LiveVideoGrid(
     ) {
         itemsIndexed(
             items = wallpapers,
-            // Ensure wallpaper.id is unique and stable
-            key = { _, wallpaper -> wallpaper.id }
+            // 使用索引和ID组合作为key，确保唯一性
+            key = { index, wallpaper -> "${index}_${wallpaper.id}" }
         ) { index, wallpaper ->
 
             // Determine if this specific item should be playing

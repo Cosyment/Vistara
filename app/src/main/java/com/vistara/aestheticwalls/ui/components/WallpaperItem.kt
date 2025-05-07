@@ -74,6 +74,20 @@ fun WallpaperItem(
                         color = Color.White
                     )
                 }
+            } else if (wallpaper.isLive) {
+                // 普通动态壁纸显示钻石图标
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "💎",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White
+                    )
+                }
             }
 
             // 动态壁纸标记
