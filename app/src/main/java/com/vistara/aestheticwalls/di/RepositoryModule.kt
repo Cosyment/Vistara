@@ -121,8 +121,9 @@ object RepositoryModule {
     @Singleton
     fun provideDiamondRepository(
         diamondDao: DiamondDao,
-        authRepository: AuthRepository
+        authRepository: AuthRepository,
+        billingManagerProvider: javax.inject.Provider<com.vistara.aestheticwalls.billing.BillingManager>
     ): DiamondRepository {
-        return DiamondRepositoryImpl(diamondDao, authRepository)
+        return DiamondRepositoryImpl(diamondDao, authRepository, billingManagerProvider)
     }
 }

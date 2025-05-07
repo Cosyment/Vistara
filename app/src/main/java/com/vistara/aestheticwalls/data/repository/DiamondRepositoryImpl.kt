@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.data.repository
 
 import android.util.Log
+import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.data.local.DiamondDao
 import com.vistara.aestheticwalls.data.model.DiamondAccount
 import com.vistara.aestheticwalls.data.model.DiamondProduct
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 
 /**
@@ -19,8 +21,13 @@ import javax.inject.Singleton
 @Singleton
 class DiamondRepositoryImpl @Inject constructor(
     private val diamondDao: DiamondDao,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val billingManagerProvider: Provider<BillingManager>
 ) : DiamondRepository {
+
+    // 延迟获取BillingManager实例
+    private val billingManager: BillingManager
+        get() = billingManagerProvider.get()
 
     companion object {
         private const val TAG = "DiamondRepository"
@@ -125,50 +132,47 @@ class DiamondRepositoryImpl @Inject constructor(
 
     /**
      * 获取钻石商品列表
-     * 这里返回预定义的商品列表，实际应用中可能从服务器获取
+     * 直接从Google Play获取钻石商品信息
      */
     override suspend fun getDiamondProducts(): List<DiamondProduct> {
-        return listOf(
-            DiamondProduct(
-                id = "diamond_60",
-                name = "60钻石",
-                diamondAmount = 60,
-                price = 6.0,
-                googlePlayProductId = "vistara_diamond_60"
-            ),
-            DiamondProduct(
-                id = "diamond_300",
-                name = "300钻石",
-                diamondAmount = 300,
-                price = 30.0,
-                discount = 0,
-                googlePlayProductId = "vistara_diamond_300"
-            ),
-            DiamondProduct(
-                id = "diamond_980",
-                name = "980钻石",
-                diamondAmount = 980,
-                price = 98.0,
-                discount = 5,
-                googlePlayProductId = "vistara_diamond_980"
-            ),
-            DiamondProduct(
-                id = "diamond_1980",
-                name = "1980钻石",
-                diamondAmount = 1980,
-                price = 198.0,
-                discount = 10,
-                googlePlayProductId = "vistara_diamond_1980"
-            ),
-            DiamondProduct(
-                id = "diamond_3280",
-                name = "3280钻石",
-                diamondAmount = 3280,
-                price = 328.0,
-                discount = 15,
-                googlePlayProductId = "vistara_diamond_3280"
+        val products = mutableListOf<DiamondProduct>()
+
+        // 从BillingManager获取所有钻石商品SKU和对应的钻石数量
+        BillingManager.DIAMOND_PRODUCTS.forEach { (productId, diamondAmount) ->
+            // 获取商品价格
+            val formattedPrice = billingManager.getProductPrice(productId)
+
+            // 解析价格字符串，提取数值部分（移除货币符号等）
+            // 注意：这里简化处理，实际应用中可能需要更复杂的解析逻辑
+            val priceValue = try {
+                formattedPrice.replace(Regex("[^0-9.]"), "").toDoubleOrNull() ?: 0.0
+            } catch (e: Exception) {
+                Log.e(TAG, "解析价格失败: $formattedPrice", e)
+                0.0
+            }
+
+            // 创建钻石商品对象
+            val product = DiamondProduct(
+                id = "diamond_$diamondAmount",
+                name = "${diamondAmount}钻石",
+                diamondAmount = diamondAmount,
+                price = priceValue,
+                // 根据商品ID设置折扣
+                discount = when {
+                    productId.endsWith("off") -> 10 // 假设带"off"后缀的商品有10%折扣
+                    diamondAmount >= 3000 -> 15     // 大额钻石包有15%折扣
+                    diamondAmount >= 1000 -> 10     // 中额钻石包有10%折扣
+                    diamondAmount >= 500 -> 5       // 小额钻石包有5%折扣
+                    else -> 0
+                },
+                googlePlayProductId = productId
             )
-        )
+
+            products.add(product)
+        }
+
+        // 按钻石数量排序
+        return products.sortedBy { it.diamondAmount }
     }
 
     /**

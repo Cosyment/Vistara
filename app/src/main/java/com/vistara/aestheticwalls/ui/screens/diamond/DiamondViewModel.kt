@@ -11,6 +11,7 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,28 +69,45 @@ class DiamondViewModel @Inject constructor(
      * 加载数据
      */
     private fun loadData() {
+        // 获取钻石余额（使用单独的协程以避免被其他协程取消）
         viewModelScope.launch {
-            // 获取钻石余额
             diamondRepository.getDiamondBalance().collectLatest { balance ->
                 _diamondBalance.value = balance
+                Log.d(TAG, "Diamond balance updated: $balance")
             }
         }
 
+        // 获取钻石商品列表
         viewModelScope.launch {
-            // 获取钻石商品列表
             val products = diamondRepository.getDiamondProducts()
             _diamondProducts.value = products
 
             // 默认选中第一个商品
-            if (products.isNotEmpty()) {
+            if (products.isNotEmpty() && _selectedProduct.value == null) {
                 _selectedProduct.value = products[0]
             }
         }
 
+        // 获取交易记录
         viewModelScope.launch {
-            // 获取交易记录
             diamondRepository.getTransactions().collectLatest { transactions ->
                 _transactions.value = transactions
+            }
+        }
+    }
+
+    /**
+     * 刷新钻石余额
+     * 在购买完成后调用此方法以立即获取最新余额
+     */
+    private fun refreshDiamondBalance() {
+        viewModelScope.launch {
+            try {
+                val balance = diamondRepository.getDiamondBalanceValue()
+                _diamondBalance.value = balance
+                Log.d(TAG, "Diamond balance refreshed: $balance")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to refresh diamond balance", e)
             }
         }
     }
@@ -113,9 +131,12 @@ class DiamondViewModel @Inject constructor(
             billingManager.purchaseState.collectLatest { state ->
                 _purchaseState.value = state
 
-                // 如果购买完成，刷新数据
+                // 如果购买完成，立即刷新钻石余额
                 if (state == PurchaseState.Completed) {
-                    loadData()
+                    refreshDiamondBalance()
+                    // 延迟一点时间后再次刷新，确保数据库更新完成
+                    delay(500)
+                    refreshDiamondBalance()
                 }
             }
         }
@@ -128,18 +149,24 @@ class DiamondViewModel @Inject constructor(
         val priceMap = mutableMapOf<String, String>()
 
         // 获取所有钻石商品的价格
-        priceMap[BillingManager.DIAMOND_80] = billingManager.getProductPrice(BillingManager.DIAMOND_80)
-        priceMap[BillingManager.DIAMOND_140] = billingManager.getProductPrice(BillingManager.DIAMOND_140)
-        priceMap[BillingManager.DIAMOND_199] = billingManager.getProductPrice(BillingManager.DIAMOND_199)
-        priceMap[BillingManager.DIAMOND_352] = billingManager.getProductPrice(BillingManager.DIAMOND_352)
-        priceMap[BillingManager.DIAMOND_500] = billingManager.getProductPrice(BillingManager.DIAMOND_500)
-        priceMap[BillingManager.DIAMOND_705] = billingManager.getProductPrice(BillingManager.DIAMOND_705)
-        priceMap[BillingManager.DIAMOND_799] = billingManager.getProductPrice(BillingManager.DIAMOND_799)
-        priceMap[BillingManager.DIAMOND_1411] = billingManager.getProductPrice(BillingManager.DIAMOND_1411)
-        priceMap[BillingManager.DIAMOND_3528] = billingManager.getProductPrice(BillingManager.DIAMOND_3528)
-        priceMap[BillingManager.DIAMOND_7058] = billingManager.getProductPrice(BillingManager.DIAMOND_7058)
+        BillingManager.DIAMOND_SKUS.forEach { productId ->
+            priceMap[productId] = billingManager.getProductPrice(productId)
+        }
 
         _productPrices.value = priceMap
+
+        // 重新加载钻石商品列表，以获取最新的价格信息
+        viewModelScope.launch {
+            val products = diamondRepository.getDiamondProducts()
+            _diamondProducts.value = products
+
+            // 如果当前没有选中的商品，或者选中的商品不在列表中，则选择第一个商品
+            if (_selectedProduct.value == null || !products.contains(_selectedProduct.value)) {
+                if (products.isNotEmpty()) {
+                    _selectedProduct.value = products[0]
+                }
+            }
+        }
     }
 
     /**

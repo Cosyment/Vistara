@@ -88,8 +88,8 @@ class MineViewModel @Inject constructor(
                 _isPremiumUser.value = isPremium
                 Log.d(TAG, "Premium status: $isPremium")
 
-                // 获取钻石余额
-                val balance = diamondRepository.getDiamondBalance().first()
+                // 获取钻石余额（使用非Flow方法避免累加问题）
+                val balance = diamondRepository.getDiamondBalanceValue()
                 _diamondBalance.value = balance
                 Log.d(TAG, "Diamond balance: $balance")
 

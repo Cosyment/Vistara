@@ -36,7 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import com.vistara.aestheticwalls.utils.NetworkUtil
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,6 +45,7 @@ import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.ui.icons.AppIcons
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 钻石充值页面
@@ -167,7 +168,7 @@ fun DiamondRechargeContent(
             DiamondProductCard(
                 product = product,
                 isSelected = product == selectedProduct,
-                price = productPrices[product.googlePlayProductId]
+                price = product.googlePlayProductId?.let { productPrices[it] }
                     ?: stringResource(R.string.loading),
                 onClick = { onProductSelected(product) })
         }
