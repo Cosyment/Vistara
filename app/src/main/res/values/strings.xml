@@ -456,7 +456,7 @@
     <string name="indonesian_language">Bahasa Indonesia</string>
 
     <!-- Diamond related -->
-    <string name="diamond_recharge">Diamond Recharge</string>
+    <string name="diamond_recharge">Recharge</string>
     <string name="my_diamond_balance">My Diamond Balance</string>
     <string name="select_diamond_package">Select Diamond Package</string>
     <string name="diamond">Diamonds</string>
@@ -481,4 +481,7 @@
     <string name="unlock_premium_content">Unlock Premium Content</string>
     <string name="purchase_wallpaper">Purchase wallpaper: %s</string>
     <string name="diamond_purchase_description">%d Diamonds</string>
+    <string name="diamond_icon">Diamond Icon</string>
+    <string name="available_diamonds">Available Diamonds</string>
+    <string name="first_recharge_bonus">First recharge bonus: Get extra 20% diamonds!</string>
 </resources>

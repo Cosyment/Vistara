@@ -25,6 +25,8 @@ constraint = "1.1.1"
 datastore = "1.1.4"
 lifecycleViewmodel = "2.8.7"
 ksp = "2.1.20-1.0.31"
+uiTooling = "1.8.0"
+uiToolingPreview = "1.8.0"
 workRuntimeKtx = "2.10.0"
 media3 = "1.6.1"
 glideCompose = "1.0.0-beta01"
@@ -136,6 +138,8 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 androidx-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "androidxCoreTesting" }
+ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "uiTooling" }
+ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

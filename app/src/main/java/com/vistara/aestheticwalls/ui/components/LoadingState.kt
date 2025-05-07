@@ -2,7 +2,9 @@ package com.vistara.aestheticwalls.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ fun LoadingState(
 
             // 如果提供了消息，在进度指示器下方显示
             message?.let {
+                Spacer(Modifier.height(10.dp))
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodyMedium,

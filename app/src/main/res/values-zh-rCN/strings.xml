@@ -444,7 +444,7 @@
     <string name="notification_live_wallpaper_pending_text">点击将"%1$s"设置为您的视频壁纸</string>
 
     <!-- Diamond related -->
-    <string name="diamond_recharge">钻石充值</string>
+    <string name="diamond_recharge">充值</string>
     <string name="my_diamond_balance">我的钻石余额</string>
     <string name="select_diamond_package">选择钻石套餐</string>
     <string name="diamond">钻石</string>
@@ -469,4 +469,7 @@
     <string name="unlock_premium_content">解锁高级内容</string>
     <string name="purchase_wallpaper">购买壁纸：%s</string>
     <string name="diamond_purchase_description">%d钻石</string>
+    <string name="diamond_icon">钻石图标</string>
+    <string name="available_diamonds">可用钻石</string>
+    <string name="first_recharge_bonus">首充奖励：额外赠送20%钻石！</string>
 </resources>

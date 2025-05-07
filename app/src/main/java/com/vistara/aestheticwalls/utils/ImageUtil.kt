@@ -6,6 +6,7 @@ import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
+import com.vistara.aestheticwalls.R
 
 /**
  * 图像处理工具类
@@ -55,5 +56,16 @@ object ImageUtil {
         rs.destroy()
         
         return outputBitmap
+    }
+
+
+    fun getDrawableByName(resourceName: String): Int? {
+        return try {
+            val res = R.mipmap::class.java.getField(resourceName).getInt(null)
+            res
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

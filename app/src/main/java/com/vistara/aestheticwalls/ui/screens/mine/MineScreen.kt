@@ -1,5 +1,13 @@
 package com.vistara.aestheticwalls.ui.screens.mine
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,18 +18,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import com.vistara.aestheticwalls.ui.icons.AppIcons
-import com.vistara.aestheticwalls.ui.theme.stringResource
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,15 +37,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.animation.core.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,15 +58,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.vistara.aestheticwalls.ui.theme.stringResource
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
+import com.vistara.aestheticwalls.ui.icons.AppIcons
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
+import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
  * 个人中心页面
@@ -136,14 +140,15 @@ fun MineScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { }, colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
-        }) { paddingValues ->
+//        topBar = {
+//            TopAppBar(
+//                title = { }, colors = TopAppBarDefaults.topAppBarColors(
+//                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
+//                    titleContentColor = MaterialTheme.colorScheme.onBackground
+//                )
+//            )
+//        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -207,7 +212,8 @@ fun MineScreen(
                 })
 
             HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
 
             FeatureItem(
@@ -264,95 +270,81 @@ private fun MineHeader(
     modifier: Modifier = Modifier
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
             .fillMaxWidth()
             .padding(top = 32.dp, bottom = 16.dp)
     ) {
         // 用户头像
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(if (isPremiumUser) 84.dp else 80.dp)
+            modifier = Modifier.size(if (isPremiumUser) 84.dp else 80.dp)
         ) {
             // 高级用户外层光晕效果
             if (isPremiumUser) {
                 // 流光动画效果
-                val infiniteTransition = rememberInfiniteTransition(label = "premium_avatar_animation")
+                val infiniteTransition =
+                    rememberInfiniteTransition(label = "premium_avatar_animation")
 
                 // 旋转动画 - 更快的旋转速度
                 val rotation by infiniteTransition.animateFloat(
-                    initialValue = 0f,
-                    targetValue = 360f,
-                    animationSpec = infiniteRepeatable(
+                    initialValue = 0f, targetValue = 360f, animationSpec = infiniteRepeatable(
                         animation = tween(8000, easing = LinearEasing),
                         repeatMode = RepeatMode.Restart
-                    ),
-                    label = "rotation_animation"
+                    ), label = "rotation_animation"
                 )
 
                 // 闪光动画 - 更明显的透明度变化
                 val shimmerAlpha by infiniteTransition.animateFloat(
-                    initialValue = 0.4f,
-                    targetValue = 1.0f,
-                    animationSpec = infiniteRepeatable(
+                    initialValue = 0.4f, targetValue = 1.0f, animationSpec = infiniteRepeatable(
                         animation = tween(1200, easing = LinearOutSlowInEasing),
                         repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "shimmer_animation"
+                    ), label = "shimmer_animation"
                 )
 
                 // 流光位置动画 - 限制在头像区域内
                 val shimmerOffset by infiniteTransition.animateFloat(
-                    initialValue = -80f,
-                    targetValue = 80f,
-                    animationSpec = infiniteRepeatable(
+                    initialValue = -80f, targetValue = 80f, animationSpec = infiniteRepeatable(
                         animation = tween(1500, easing = LinearEasing),
                         repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "shimmer_offset_animation"
+                    ), label = "shimmer_offset_animation"
                 )
 //                FxkOtt
                 // 外层光晕
-                Box(
-                    modifier = Modifier
-                        .size(84.dp)
-                        .graphicsLayer {
-                            this.rotationZ = rotation
-                        }
-                        .background(
-                            brush = Brush.sweepGradient(
-                                listOf(
-                                    Color(0xFFFFD700).copy(alpha = shimmerAlpha), // 金色
-                                    Color(0xFFFFA500).copy(alpha = 0.3f), // 橙色
-                                    Color(0xFFFFD700).copy(alpha = shimmerAlpha), // 金色
-                                    Color(0xFFFFC107).copy(alpha = 0.3f), // 浅金色
-                                    Color(0xFFFFD700).copy(alpha = shimmerAlpha)  // 金色
-                                )
-                            ),
-                            shape = CircleShape
-                        )
-                )
+                Box(modifier = Modifier
+                    .size(84.dp)
+                    .graphicsLayer {
+                        this.rotationZ = rotation
+                    }
+                    .background(
+                        brush = Brush.sweepGradient(
+                            listOf(
+                                Color(0xFFFFD700).copy(alpha = shimmerAlpha), // 金色
+                                Color(0xFFFFA500).copy(alpha = 0.3f), // 橙色
+                                Color(0xFFFFD700).copy(alpha = shimmerAlpha), // 金色
+                                Color(0xFFFFC107).copy(alpha = 0.3f), // 浅金色
+                                Color(0xFFFFD700).copy(alpha = shimmerAlpha)  // 金色
+                            )
+                        ), shape = CircleShape
+                    ))
 
                 // 流光效果 - 限制在头像区域内
                 Box(
                     modifier = Modifier
                         .size(84.dp)
                         .clip(CircleShape)  // 先裁剪成圆形
-                        .graphicsLayer {
-                            translationX = shimmerOffset
-                        }
+                    .graphicsLayer {
+                        translationX = shimmerOffset
+                    }
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(
                                     Color.White.copy(alpha = 0.0f),
                                     Color.White.copy(alpha = 0.4f),
                                     Color.White.copy(alpha = 0.0f)
-                                ),
-                                startX = -40f,
-                                endX = 40f
+                                ), startX = -40f, endX = 40f
                             )
-                        )
-                )
+                        ))
             }
 
             // 头像主体
@@ -363,8 +355,7 @@ private fun MineHeader(
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(
-                        width = if (isPremiumUser) 1.5.dp else 2.dp,
-                        brush = if (isPremiumUser) {
+                        width = if (isPremiumUser) 1.5.dp else 2.dp, brush = if (isPremiumUser) {
                             Brush.linearGradient(
                                 colors = listOf(
                                     Color(0xFFFFD700), // 金色
@@ -374,17 +365,14 @@ private fun MineHeader(
                             )
                         } else {
                             SolidColor(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
-                        },
-                        shape = CircleShape
+                        }, shape = CircleShape
                     )
             ) {
                 if (isLoggedIn && !userPhotoUrl.isNullOrEmpty()) {
                     // 使用 AsyncImage 加载用户头像
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(userPhotoUrl)
-                            .crossfade(true)
-                            .build(),
+                        model = ImageRequest.Builder(LocalContext.current).data(userPhotoUrl)
+                            .crossfade(true).build(),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -405,49 +393,38 @@ private fun MineHeader(
                 // 微妙的缩放动画
                 val infiniteTransition = rememberInfiniteTransition(label = "crown_animation")
                 val scale by infiniteTransition.animateFloat(
-                    initialValue = 1.0f,
-                    targetValue = 1.1f,
-                    animationSpec = infiniteRepeatable(
+                    initialValue = 1.0f, targetValue = 1.1f, animationSpec = infiniteRepeatable(
                         animation = tween(1000, easing = FastOutSlowInEasing),
                         repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "crown_scale_animation"
+                    ), label = "crown_scale_animation"
                 )
 
                 // 微妙的旋转动画
                 val crownRotation by infiniteTransition.animateFloat(
-                    initialValue = -5f,
-                    targetValue = 5f,
-                    animationSpec = infiniteRepeatable(
+                    initialValue = -5f, targetValue = 5f, animationSpec = infiniteRepeatable(
                         animation = tween(1500, easing = FastOutSlowInEasing),
                         repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "crown_rotation_animation"
+                    ), label = "crown_rotation_animation"
                 )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(28.dp)
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                        }
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Color(0xFFFFD700), // 金色
-                                    Color(0xFFFFA500)  // 橙色
-                                )
-                            ),
-                            shape = CircleShape
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = Color.White,
-                            shape = CircleShape
-                        )
-                ) {
+                Box(modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(28.dp)
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFFD700), // 金色
+                                Color(0xFFFFA500)  // 橙色
+                            )
+                        ), shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp, color = Color.White, shape = CircleShape
+                    )) {
                     Icon(
                         imageVector = AppIcons.Crown,
                         contentDescription = stringResource(R.string.premium_user),
@@ -457,8 +434,7 @@ private fun MineHeader(
                             .align(Alignment.Center)
                             .graphicsLayer {
                                 rotationZ = crownRotation
-                            }
-                    )
+                            })
                 }
             }
         }
@@ -468,7 +444,9 @@ private fun MineHeader(
         if (isLoggedIn) {
             // 用户名
             Text(
-                text = username, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
+                text = username,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
 
             // 钻石余额
@@ -524,14 +502,12 @@ private fun MineHeader(
                                 )
                             )
                             .border(
-                                width = 1.dp,
-                                brush = Brush.horizontalGradient(
+                                width = 1.dp, brush = Brush.horizontalGradient(
                                     colors = listOf(
                                         Color.White.copy(alpha = 0.7f),
                                         Color.White.copy(alpha = 0.2f)
                                     )
-                                ),
-                                shape = RoundedCornerShape(16.dp)
+                                ), shape = RoundedCornerShape(16.dp)
                             )
                     ) {
                         Row(
@@ -559,7 +535,9 @@ private fun MineHeader(
         } else {
             // 未登录状态
             Text(
-                text = stringResource(R.string.not_logged_in), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold
+                text = stringResource(R.string.not_logged_in),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -591,9 +569,11 @@ private fun PremiumBanner(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp)), colors = CardDefaults.cardColors(
+            .clip(RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
-        ), onClick = onClick
+        ),
+        onClick = onClick
     ) {
         Box(
             modifier = Modifier
@@ -622,7 +602,11 @@ private fun PremiumBanner(
  */
 @Composable
 private fun FeatureItem(
-    icon: ImageVector, title: String, subtitle: String? = null, onClick: () -> Unit, modifier: Modifier = Modifier
+    icon: ImageVector,
+    title: String,
+    subtitle: String? = null,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         onClick = onClick, color = Color.Transparent, modifier = modifier.fillMaxWidth()
@@ -646,7 +630,9 @@ private fun FeatureItem(
 
                 Column {
                     Text(
-                        text = title, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     if (subtitle != null) {

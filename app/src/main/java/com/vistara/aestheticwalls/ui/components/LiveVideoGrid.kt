@@ -114,7 +114,8 @@ fun LiveVideoGrid(
                 onClick = { onWallpaperClick(wallpaper) }, // Handle item clicks
                 modifier = Modifier
                     .aspectRatio(8f / 12f) // Maintain aspect ratio (adjust if needed)
-                    .animateItemPlacement() // Animate item position changes
+                    .animateItem()
+//                    .animateItemPlacement() // Animate item position changes
             )
         }
 

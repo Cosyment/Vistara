@@ -40,9 +40,17 @@ android {
         release {
             isMinifyEnabled = true
             signingConfig = signingConfigs.getByName("release")
-            buildConfigField("String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\"")
-            buildConfigField("String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\"")
-            buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
+            buildConfigField(
+                "String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\""
+            )
+            buildConfigField(
+                "String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\""
+            )
+            buildConfigField(
+                "String",
+                "PEXELS_API_KEY",
+                "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\""
+            )
             buildConfigField("String", "PIXABAY_API_KEY", "\"49629695-35e6ee8fb0f82cc4b4ed4b6a2\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"QMbjLhJGSPHVIPQ91HCFUL4UOJtRjTk8\"")
             buildConfigField("boolean", "IS_DEV_MODE", "false")
@@ -52,12 +60,20 @@ android {
         }
         debug {
             isDebuggable = true
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             versionNameSuffix = ".test"
             signingConfig = signingConfigs.getByName("release")
-            buildConfigField("String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\"")
-            buildConfigField("String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\"")
-            buildConfigField("String", "PEXELS_API_KEY", "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\"")
+            buildConfigField(
+                "String", "UNSPLASH_API_KEY", "\"WnVAinP7jaof1NjifR_hULHSod66MMdr2bspQxyeyhw\""
+            )
+            buildConfigField(
+                "String", "UNSPLASH_SECRET_KEY", "\"-IBwR1mET4I7C4fp9XMgozKmRw7Fu7Oyttdt5iQ2Ca4\""
+            )
+            buildConfigField(
+                "String",
+                "PEXELS_API_KEY",
+                "\"3Hu4ltF8QgCdrqZTxZPbC7M6LipoqYF41dCaRH7iYvgchtCRBpGPH4D0\""
+            )
             buildConfigField("String", "PIXABAY_API_KEY", "\"49629695-35e6ee8fb0f82cc4b4ed4b6a2\"")
             buildConfigField("String", "WALLHAVEN_API_KEY", "\"QMbjLhJGSPHVIPQ91HCFUL4UOJtRjTk8\"")
             buildConfigField("boolean", "IS_DEV_MODE", "true")
@@ -91,6 +107,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material) // 添加 Material 依赖，用于 PullRefresh
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -157,6 +174,8 @@ dependencies {
     // 如果需要广告ID,添加Google Play Services Ads
     implementation(libs.play.services.ads.identifier)
 
+    debugImplementation(libs.ui.tooling)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
@@ -181,7 +200,14 @@ tasks.register("buildInstallAndRun") {
         // 启动应用
         try {
             providers.exec {
-                commandLine("adb", "shell", "am", "start", "-n", "com.vistara.aestheticwalls/.ui.MainActivity")
+                commandLine(
+                    "adb",
+                    "shell",
+                    "am",
+                    "start",
+                    "-n",
+                    "com.vistara.aestheticwalls/.ui.MainActivity"
+                )
                 isIgnoreExitValue = true // 忽略退出代码
             }
             println("\n\n应用已成功编译、安装并启动\n\n")

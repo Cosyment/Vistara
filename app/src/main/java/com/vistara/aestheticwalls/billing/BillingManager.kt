@@ -65,10 +65,10 @@ class BillingManager @Inject constructor(
 
         // 钻石商品映射表，包含SKU和对应的钻石数量
         val DIAMOND_PRODUCTS = mapOf(
-            DIAMOND_80 to 80,
-            DIAMOND_140 to 140,
-            DIAMOND_199 to 199,
-            DIAMOND_352 to 352,
+//            DIAMOND_80 to 80,
+//            DIAMOND_140 to 140,
+//            DIAMOND_199 to 199,
+//            DIAMOND_352 to 352,
             DIAMOND_500 to 500,
             DIAMOND_705 to 705,
             DIAMOND_799 to 799,

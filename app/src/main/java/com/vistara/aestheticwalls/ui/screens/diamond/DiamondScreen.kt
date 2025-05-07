@@ -1,10 +1,12 @@
 package com.vistara.aestheticwalls.ui.screens.diamond
 
 import android.app.Activity
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,10 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,10 +38,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.vistara.aestheticwalls.utils.NetworkUtil
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
@@ -45,6 +52,7 @@ import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.ui.icons.AppIcons
+import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import com.vistara.aestheticwalls.ui.theme.stringResource
 
 /**
@@ -153,55 +161,106 @@ fun DiamondRechargeContent(
             DiamondBalanceCard(diamondBalance)
         }
 
+        // 首充奖励卡片
+        item {
+            FirstRechargeCard()
+        }
+
         // 钻石商品列表
         item {
             Text(
                 text = stringResource(R.string.select_diamond_package),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
         }
 
-        items(diamondProducts) { product ->
+        itemsIndexed(diamondProducts) { index, product ->
             DiamondProductCard(
+                index = index,
                 product = product,
                 isSelected = product == selectedProduct,
                 price = product.googlePlayProductId?.let { productPrices[it] }
                     ?: stringResource(R.string.loading),
-                onClick = { onProductSelected(product) })
+                onClick = {
+                    onProductSelected(product)
+                    onPurchase
+                })
         }
 
         // 购买按钮
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Button(
-                onClick = onPurchase,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = selectedProduct != null && billingConnectionState == BillingConnectionState.CONNECTED && purchaseState != PurchaseState.Pending
-            ) {
-                if (purchaseState == PurchaseState.Pending) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text(
-                        text = when {
-                            billingConnectionState != BillingConnectionState.CONNECTED -> stringResource(
-                                R.string.connecting_payment
-                            )
+//            Button(
+//                onClick = onPurchase,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(50.dp),
+//                enabled = selectedProduct != null && billingConnectionState == BillingConnectionState.CONNECTED && purchaseState != PurchaseState.Pending,
+//                shape = RoundedCornerShape(25.dp),
+//                colors = ButtonDefaults.buttonColors(
+//                    containerColor = Color.Transparent,
+//                    disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+//                ),
+//                contentPadding = PaddingValues(0.dp)
+//            ) {
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .background(
+//                            brush = Brush.linearGradient(
+//                                colors = if (selectedProduct != null && billingConnectionState == BillingConnectionState.CONNECTED && purchaseState != PurchaseState.Pending) {
+//                                    listOf(
+//                                        Color(0xFF9F2BEE), // 紫色渐变起始色
+//                                        Color(0xFF8545FF)  // 紫色渐变结束色
+//                                    )
+//                                } else {
+//                                    listOf(
+//                                        Color.Gray.copy(alpha = 0.3f), Color.Gray.copy(alpha = 0.3f)
+//                                    )
+//                                }
+//                            )
+//                        ), contentAlignment = Alignment.Center
+//                ) {
+//                    if (purchaseState == PurchaseState.Pending) {
+//                        CircularProgressIndicator(
+//                            modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp
+//                        )
+//                    } else {
+//                        Text(
+//                            text = when {
+//                                billingConnectionState != BillingConnectionState.CONNECTED -> stringResource(
+//                                    R.string.connecting_payment
+//                                )
+//
+//                                else -> stringResource(R.string.purchase_now)
+//                            },
+//                            style = MaterialTheme.typography.bodyLarge,
+//                            fontWeight = FontWeight.SemiBold,
+//                            color = Color.White
+//                        )
+//                    }
+//                }
+//            }
+        }
+    }
+}
 
-                            else -> stringResource(R.string.purchase_now)
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
+
+@Preview(
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_TYPE_NORMAL,
+    device = "spec:width=1080px,height=2340px,dpi=440"
+)
+@Composable
+fun DiamondScreenPreview() {
+    VistaraTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
+            // 这里只是UI预览
+            DiamondScreen(onBackPressed = {})
         }
     }
 }
