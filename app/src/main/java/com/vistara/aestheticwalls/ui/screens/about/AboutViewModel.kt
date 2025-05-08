@@ -7,6 +7,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.utils.Constants.PRIVACY_POLICY_URL
+import com.vistara.aestheticwalls.utils.Constants.TERMS_OF_SERVICE_URL
+import com.vistara.aestheticwalls.utils.Constants.USER_AGREEMENT_URL
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,9 +28,7 @@ class AboutViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "AboutViewModel"
-        private const val PRIVACY_POLICY_URL = "https://www.vistaraai.xyz/vistara/PrivacyPolicy.html"
-        private const val TERMS_OF_SERVICE_URL = "https://www.vistaraai.xyz/vistara/UseOfTerms.html"
-        private const val USER_AGREEMENT_URL = "https://www.vistaraai.xyz/vistara/UserAgreement.html"
+
     }
 
     // 应用版本

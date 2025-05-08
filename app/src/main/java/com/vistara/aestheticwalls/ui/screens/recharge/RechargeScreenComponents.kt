@@ -121,6 +121,7 @@ fun DiamondBalanceCard(diamondBalance: Int) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .align(Alignment.Center)
                     .padding(16.dp),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
@@ -131,13 +132,12 @@ fun DiamondBalanceCard(diamondBalance: Int) {
                     color = Color.White.copy(alpha = 0.6f)
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = diamondBalance.toString(),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -147,7 +147,7 @@ fun DiamondBalanceCard(diamondBalance: Int) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 16.dp, top = 16.dp),
+                    .padding(end = 16.dp, top = 20.dp),
                 horizontalArrangement = Arrangement.End
             ) {
                 Box(
@@ -354,7 +354,7 @@ fun TransactionHistoryContent(
 //            ),
 //            elevation = CardDefaults.cardElevation(4.dp)
 //        ) {
-            DiamondBalanceCard(diamondBalance)
+        DiamondBalanceCard(diamondBalance)
 //        }
 
         // 交易记录列表

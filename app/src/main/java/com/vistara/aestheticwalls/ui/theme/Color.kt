@@ -17,9 +17,13 @@ object AppColors {
     val LightBackground = Color(0xFFF5F5F5)
     val LightSurface = Color(0xFFFFFFFF)
 
+    val LightPremiumFeaturesBackground = Color(0xFFFFFFFF)
+
     // 深色主题背景和表面
     val DarkBackground = Color(0xFF121212)
     val DarkSurface = Color(0xFF1E1E1E)
+
+    val DarkPremiumFeaturesBackground = Color(0xFF201730)
 
     // 当前使用的背景和表面（将在Theme.kt中根据深浅色主题设置）
     val Background = LightBackground

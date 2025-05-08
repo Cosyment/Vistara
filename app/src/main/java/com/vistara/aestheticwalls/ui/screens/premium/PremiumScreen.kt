@@ -38,7 +38,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -59,6 +58,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.icons.AppIcons
+import com.vistara.aestheticwalls.ui.theme.AppColors.DarkPremiumFeaturesBackground
+import com.vistara.aestheticwalls.ui.theme.AppColors.LightPremiumFeaturesBackground
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import com.vistara.aestheticwalls.ui.theme.stringResource
 
@@ -80,6 +81,7 @@ fun PremiumScreen(
     val selectedPlan by viewModel.selectedPlan.collectAsState()
     val billingConnectionState by viewModel.billingConnectionState.collectAsState()
     val productPrices by viewModel.productPrices.collectAsState()
+    val isDarkTheme by viewModel.isDarkTheme.collectAsState()
 
     // 设置导航控制器
     viewModel.setNavController(navController)
@@ -104,36 +106,16 @@ fun PremiumScreen(
         }
     }
 
-    // 定义紫色渐变
-    val purpleGradient = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFFEC12E2), // 亮紫色
-            Color(0xFF8531FF)  // 深紫色
-        )
-    )
-
-    // 定义深色背景
-    val darkBackground = Color(0xFF10082A)
-
-    Scaffold(
-        topBar = {
-        TopAppBar(
-            title = { Text(stringResource(R.string.premium), color = Color.White) },
-            navigationIcon = {
-                IconButton(onClick = onBackPressed) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.back),
-                        tint = Color.White
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = darkBackground
-            )
-        )
-    }, snackbarHost = { SnackbarHost(snackBarHostState) }, containerColor = darkBackground
-    ) { paddingValues ->
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(stringResource(R.string.premium)) }, navigationIcon = {
+            IconButton(onClick = onBackPressed) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                )
+            }
+        })
+    }, snackbarHost = { SnackbarHost(snackBarHostState) }) { paddingValues ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -268,7 +250,7 @@ fun PremiumScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF201730) // 深紫色背景
+                        containerColor = if (isDarkTheme) DarkPremiumFeaturesBackground else LightPremiumFeaturesBackground // 深紫色背景
                     ),
                     elevation = CardDefaults.cardElevation(0.dp)
                 ) {
@@ -482,7 +464,7 @@ private fun SubscriptionCard(
     val textColor = if (isSelected) {
         Color(0xFF9F2BEE) // 紫色
     } else {
-        Color.White.copy(alpha = 0.6f) // 半透明白色
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) // 半透明白色
     }
 
     Box(modifier = modifier) {
@@ -709,7 +691,7 @@ private fun PremiumFeatureItem(
 
         Column {
             Text(
-                text = title, style = MaterialTheme.typography.titleMedium, color = Color.White
+                text = title, style = MaterialTheme.typography.titleMedium
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -717,7 +699,7 @@ private fun PremiumFeatureItem(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.White.copy(alpha = 0.4f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
             )
         }
     }

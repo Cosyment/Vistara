@@ -38,8 +38,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
-import com.vistara.aestheticwalls.billing.BillingConnectionState
-import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.ui.icons.AppIcons
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -102,12 +100,10 @@ fun RechargeScreen(
                 enter = fadeIn(animationSpec = tween(300)),
                 exit = fadeOut(animationSpec = tween(300))
             ) {
-                DiamondRechargeContent(
+                RechargeContent(
                     diamondBalance = diamondBalance,
                     diamondProducts = diamondProducts,
                     selectedProduct = selectedProduct,
-                    billingConnectionState = billingConnectionState,
-                    purchaseState = purchaseState,
                     productPrices = productPrices,
                     onProductSelected = viewModel::selectProduct,
                     onPurchase = { activity?.let { viewModel.purchaseDiamond(it) } })
@@ -131,12 +127,10 @@ fun RechargeScreen(
  * 钻石充值内容
  */
 @Composable
-fun DiamondRechargeContent(
+fun RechargeContent(
     diamondBalance: Int,
     diamondProducts: List<DiamondProduct>,
     selectedProduct: DiamondProduct?,
-    billingConnectionState: BillingConnectionState,
-    purchaseState: PurchaseState,
     productPrices: Map<String, String>,
     onProductSelected: (DiamondProduct) -> Unit,
     onPurchase: () -> Unit
@@ -245,12 +239,19 @@ fun DiamondRechargeContent(
     device = "spec:width=1080px,height=2340px,dpi=440"
 )
 @Composable
-fun DiamondScreenPreview() {
+fun RechargeScreenPreview() {
     VistaraTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             // 注意：预览中不会显示真实数据，因为没有提供真实的ViewModel
             // 这里只是UI预览
-            RechargeScreen(onBackPressed = {})
+            DiamondBalanceCard(100)
+//            RechargeContent(
+//                diamondBalance = 100,
+//                diamondProducts = emptyList(),
+//                selectedProduct = null,
+//                productPrices = emptyMap(),
+//                onProductSelected = {},
+//                onPurchase = {})
         }
     }
 }

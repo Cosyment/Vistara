@@ -45,6 +45,10 @@ class ThemeManager @Inject constructor(
         return dynamicColorsFlow.collectAsState(initial = true)
     }
 
+    fun isDarkTheme(): Flow<Boolean> {
+        return darkThemeFlow
+    }
+
     /**
      * 更新深色主题设置
      */
