@@ -6,6 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
+import com.vistara.aestheticwalls.data.remote.ApiService
+import com.vistara.aestheticwalls.data.remote.LoginRequest
+import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +28,8 @@ import javax.inject.Inject
 class TestViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val diamondRepository: DiamondRepository,
+    private val authRepository: AuthRepository,
+    private val apiService: ApiService,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -52,6 +57,14 @@ class TestViewModel @Inject constructor(
     private val _operationResult = MutableStateFlow<String?>(null)
     val operationResult: StateFlow<String?> = _operationResult.asStateFlow()
 
+    // 登录状态
+    private val _isLoginLoading = MutableStateFlow(false)
+    val isLoginLoading: StateFlow<Boolean> = _isLoginLoading.asStateFlow()
+
+    // 显示登录对话框
+    private val _showLoginDialog = MutableStateFlow(false)
+    val showLoginDialog: StateFlow<Boolean> = _showLoginDialog.asStateFlow()
+
     init {
         checkPremiumStatus()
         checkLoginStatus()
@@ -69,7 +82,8 @@ class TestViewModel @Inject constructor(
                 Log.d(TAG, "Login status: $isLoggedIn")
             } catch (e: Exception) {
                 Log.e(TAG, "Error checking login status: ${e.message}")
-                _operationResult.value = context.getString(R.string.check_login_status_failed, e.message)
+                _operationResult.value =
+                    context.getString(R.string.check_login_status_failed, e.message)
             }
         }
     }
@@ -85,7 +99,8 @@ class TestViewModel @Inject constructor(
                 Log.d(TAG, "Premium status: $isPremium")
             } catch (e: Exception) {
                 Log.e(TAG, "Error checking premium status: ${e.message}")
-                _operationResult.value = context.getString(R.string.check_premium_status_failed, e.message)
+                _operationResult.value =
+                    context.getString(R.string.check_premium_status_failed, e.message)
             }
         }
     }
@@ -119,7 +134,8 @@ class TestViewModel @Inject constructor(
                 Log.d(TAG, "Premium status disabled")
             } catch (e: Exception) {
                 Log.e(TAG, "Error disabling premium status: ${e.message}")
-                _operationResult.value = context.getString(R.string.disable_premium_failed, e.message)
+                _operationResult.value =
+                    context.getString(R.string.disable_premium_failed, e.message)
             }
         }
     }
@@ -137,7 +153,8 @@ class TestViewModel @Inject constructor(
                 Log.d(TAG, "Simulated login successful")
             } catch (e: Exception) {
                 Log.e(TAG, "Error simulating login: ${e.message}")
-                _operationResult.value = context.getString(R.string.simulate_login_failed, e.message)
+                _operationResult.value =
+                    context.getString(R.string.simulate_login_failed, e.message)
             }
         }
     }
@@ -155,7 +172,8 @@ class TestViewModel @Inject constructor(
                 Log.d(TAG, "Simulated logout successful")
             } catch (e: Exception) {
                 Log.e(TAG, "Error simulating logout: ${e.message}")
-                _operationResult.value = context.getString(R.string.simulate_logout_failed, e.message)
+                _operationResult.value =
+                    context.getString(R.string.simulate_logout_failed, e.message)
             }
         }
     }
@@ -229,5 +247,130 @@ class TestViewModel @Inject constructor(
      */
     fun clearOperationResult() {
         _operationResult.value = null
+    }
+
+    /**
+     * 显示登录对话框
+     */
+    fun showLoginDialog() {
+        _showLoginDialog.value = true
+    }
+
+    /**
+     * 隐藏登录对话框
+     */
+    fun hideLoginDialog() {
+        _showLoginDialog.value = false
+    }
+
+    /**
+     * 使用邮箱登录，模拟Google登录
+     * 随机生成nickname和token
+     */
+    fun loginWithEmail(email: String) {
+        viewModelScope.launch {
+            try {
+                _isLoginLoading.value = true
+
+                // 生成随机nickname
+                val randomNickname = generateRandomNickname()
+
+                // 生成随机token
+                val randomToken = generateRandomToken()
+
+                Log.d(TAG, "随机生成nickname: $randomNickname, token: $randomToken")
+
+                // 创建登录请求
+                val loginRequest = LoginRequest(
+                    nickname = randomNickname,
+                    email = email,
+                    avatar = "https://api.dicebear.com/7.x/micah/png?seed=${email}",
+                    token = randomToken
+                )
+
+                // 调用登录接口
+                val response = apiService.login(loginRequest)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val loginResponse = response.body()!!
+
+                    // 保存token
+                    userRepository.saveServerToken(loginResponse.token)
+
+                    // 更新登录状态
+                    userRepository.updateLoginStatus(true)
+                    _isLoggedIn.value = true
+
+                    // 保存用户信息
+                    saveUserInfo(
+                        userId = "test_${System.currentTimeMillis()}",
+                        userName = randomNickname,
+                        userEmail = email,
+                        userPhotoUrl = "https://api.dicebear.com/7.x/micah/png?seed=${email}"
+                    )
+
+                    // 更新高级状态（如果服务器返回了这个信息）
+                    loginResponse.isPremium?.let { isPremium ->
+                        userRepository.updatePremiumStatus(isPremium)
+                        _isPremiumUser.value = isPremium
+                    }
+
+                    _operationResult.value = context.getString(R.string.login_success)
+                    hideLoginDialog()
+                    Log.d(TAG, "Login successful")
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: "Unknown error"
+                    _operationResult.value = context.getString(R.string.login_failed)
+                    Log.e(TAG, "Login failed: $errorMsg")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during login: ${e.message}")
+                _operationResult.value = context.getString(R.string.login_failed)
+            } finally {
+                _isLoginLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * 生成随机昵称
+     */
+    private fun generateRandomNickname(): String {
+        val adjectives = listOf("快乐的", "聪明的", "勇敢的", "可爱的", "友善的", "活泼的", "机智的", "温柔的", "善良的", "幽默的")
+        val nouns = listOf("熊猫", "老虎", "狮子", "猫咪", "狗狗", "兔子", "松鼠", "大象", "长颈鹿", "猴子")
+
+        val randomAdjective = adjectives.random()
+        val randomNoun = nouns.random()
+        val randomNumber = (1000..9999).random()
+
+        return "$randomAdjective$randomNoun$randomNumber"
+    }
+
+    /**
+     * 生成随机token
+     */
+    private fun generateRandomToken(): String {
+        val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        return (1..32)
+            .map { charPool.random() }
+            .joinToString("")
+    }
+
+    /**
+     * 保存用户信息
+     */
+    private suspend fun saveUserInfo(
+        userId: String,
+        userName: String,
+        userEmail: String,
+        userPhotoUrl: String
+    ) {
+        try {
+            // 使用AuthRepository保存用户信息
+            authRepository.saveUserInfo(userId, userName, userEmail, userPhotoUrl)
+            Log.d(TAG, "用户信息保存成功: $userName, $userEmail")
+        } catch (e: Exception) {
+            Log.e(TAG, "保存用户信息失败: ${e.message}")
+        }
     }
 }

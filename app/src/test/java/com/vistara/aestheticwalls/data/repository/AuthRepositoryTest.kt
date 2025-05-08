@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.vistara.aestheticwalls.data.remote.ApiService
-import com.vistara.aestheticwalls.data.remote.GoogleLoginRequest
+import com.vistara.aestheticwalls.data.remote.LoginRequest
 import com.vistara.aestheticwalls.data.remote.LoginResponse
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
@@ -55,7 +55,7 @@ class AuthRepositoryTest {
         }
 
         val loginResponse = LoginResponse("server_token", true, "Success")
-        whenever(apiService.googleLogin(any())).thenReturn(Response.success(loginResponse))
+        whenever(apiService.login(any())).thenReturn(Response.success(loginResponse))
 
         // 执行测试
         val result = authRepository.handleSignInResult(task)
@@ -66,7 +66,7 @@ class AuthRepositoryTest {
         verify(userRepository).updatePremiumStatus(true)
         
         // 验证请求参数
-        verify(apiService).googleLogin(eq(GoogleLoginRequest(
+        verify(apiService).login(eq(LoginRequest(
             nickname = "Test User",
             email = "test@example.com",
             avatar = "",
@@ -90,7 +90,7 @@ class AuthRepositoryTest {
         }
 
         val responseBody: ResponseBody = mock()
-        whenever(apiService.googleLogin(any())).thenReturn(Response.error(400, responseBody))
+        whenever(apiService.login(any())).thenReturn(Response.error(400, responseBody))
 
         // 执行测试
         val result = authRepository.handleSignInResult(task)
@@ -99,7 +99,7 @@ class AuthRepositoryTest {
         assert(!result)
         
         // 验证请求参数
-        verify(apiService).googleLogin(eq(GoogleLoginRequest(
+        verify(apiService).login(eq(LoginRequest(
             nickname = "Test User",
             email = "test@example.com",
             avatar = "",

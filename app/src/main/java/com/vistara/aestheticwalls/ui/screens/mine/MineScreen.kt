@@ -139,16 +139,7 @@ fun MineScreen(
         )
     }
 
-    Scaffold(
-//        topBar = {
-//            TopAppBar(
-//                title = { }, colors = TopAppBarDefaults.topAppBarColors(
-//                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-//                    titleContentColor = MaterialTheme.colorScheme.onBackground
-//                )
-//            )
-//        }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -48,4 +48,14 @@ interface AuthRepository {
      * 检查用户是否已登录
      */
     suspend fun checkUserLoggedIn(): Boolean
+
+    /**
+     * 保存用户信息
+     */
+    suspend fun saveUserInfo(
+        userId: String,
+        userName: String,
+        userEmail: String,
+        userPhotoUrl: String
+    )
 }

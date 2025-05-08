@@ -38,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import com.vistara.aestheticwalls.ui.theme.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.ui.components.PaymentMethod
 import com.vistara.aestheticwalls.ui.components.PaymentMethodDialog
+import com.vistara.aestheticwalls.ui.components.TextInputDialog
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -64,6 +66,8 @@ fun TestScreen(
     val isDiamondTestEnabled by viewModel.isDiamondTestEnabled.collectAsState()
     val currentDiamondBalance by viewModel.currentDiamondBalance.collectAsState()
     val operationResult by viewModel.operationResult.collectAsState()
+    val isLoginLoading by viewModel.isLoginLoading.collectAsState()
+    val showLoginDialog by viewModel.showLoginDialog.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // 显示操作结果
@@ -165,6 +169,44 @@ fun TestScreen(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
+            }
+
+            // API登录测试
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
+
+            Text(
+                text = "API登录测试",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Button(
+                onClick = { viewModel.showLoginDialog() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("打开登录对话框")
+            }
+
+            // 登录对话框
+            if (showLoginDialog) {
+                TextInputDialog(
+                    onDismiss = { viewModel.hideLoginDialog() },
+                    onConfirm = { email ->
+                        // 使用默认密码"password"进行登录
+                        viewModel.loginWithEmail(email)
+                    },
+                    title = "登录",
+                    label = "邮箱",
+                    placeholder = "请输入邮箱",
+                    initialValue = "test@example.com",
+                    confirmText = "登录",
+                    dismissText = "取消",
+                    isLoading = isLoginLoading,
+                    keyboardType = KeyboardType.Email
+                )
             }
 
             HorizontalDivider(
@@ -332,13 +374,13 @@ fun TestScreen(
                 )
             }
 
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = DividerDefaults.Thickness,
-                color = DividerDefaults.color
-            )
+        }
+    }
 
-            // 可以在这里添加更多测试入口
+    // 登录状态显示
+    if (isLoggedIn) {
+        LaunchedEffect(Unit) {
+            snackbarHostState.showSnackbar("当前已登录")
         }
     }
 }

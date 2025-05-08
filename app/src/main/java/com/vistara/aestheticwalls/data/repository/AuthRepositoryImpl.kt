@@ -13,7 +13,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.vistara.aestheticwalls.data.remote.ApiService
-import com.vistara.aestheticwalls.data.remote.GoogleLoginRequest
+import com.vistara.aestheticwalls.data.remote.LoginRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -84,7 +84,7 @@ class AuthRepositoryImpl @Inject constructor(
 
                 try {
                     // 构建请求体
-                    val requestBody = GoogleLoginRequest(
+                    val requestBody = LoginRequest(
                         nickname = account.displayName ?: "",
                         email = account.email ?: "",
                         avatar = account.photoUrl?.toString() ?: "",
@@ -92,7 +92,7 @@ class AuthRepositoryImpl @Inject constructor(
                     )
 
                     // 发起后端登录请求
-                    val response = apiService.googleLogin(requestBody)
+                    val response = apiService.login(requestBody)
                     if (response.isSuccessful && response.body() != null) {
                         val loginResponse = response.body()!!
 //                        {"msg":"操作成功","code":200,"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3YWl0aW5naGNAZ21haWwuY29tIiwibG9naW5fdXNlcl9rZXkiOiIxYjBhOTNhMy0wYWNmLTQ4YjEtOTRiZS0xMTQ0OTViMjRiNTIifQ.C0VF0X4W4ICVFJTp7RDVVb8O8KekAHgyf_tE4cUZq7-gSbob9msaHnVVsJqbRlI69JOw0I17GW-Sgxz4vcHpXA"}
@@ -166,7 +166,7 @@ class AuthRepositoryImpl @Inject constructor(
     /**
      * 保存用户信息
      */
-    private suspend fun saveUserInfo(
+    override suspend fun saveUserInfo(
         userId: String,
         userName: String,
         userEmail: String,
