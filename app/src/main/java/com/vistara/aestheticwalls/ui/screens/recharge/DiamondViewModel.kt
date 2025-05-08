@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls.ui.screens.diamond
+package com.vistara.aestheticwalls.ui.screens.recharge
 
 import android.app.Activity
 import android.util.Log

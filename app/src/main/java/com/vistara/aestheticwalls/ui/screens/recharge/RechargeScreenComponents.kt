@@ -1,4 +1,4 @@
-package com.vistara.aestheticwalls.ui.screens.diamond
+package com.vistara.aestheticwalls.ui.screens.recharge
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

@@ -35,7 +35,6 @@ import com.vistara.aestheticwalls.ui.screens.about.AboutScreen
 import com.vistara.aestheticwalls.ui.screens.auth.AuthScreen
 import com.vistara.aestheticwalls.ui.screens.autochange.AutoChangeScreen
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
-import com.vistara.aestheticwalls.ui.screens.diamond.DiamondScreen
 import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
 import com.vistara.aestheticwalls.ui.screens.edit.WallpaperEditScreen
 import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
@@ -44,6 +43,7 @@ import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
 import com.vistara.aestheticwalls.ui.screens.premium.PremiumScreen
+import com.vistara.aestheticwalls.ui.screens.recharge.RechargeScreen
 import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
@@ -152,7 +152,7 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
 
             // 钻石充值页面
             composable("diamond") {
-                DiamondScreen(
+                RechargeScreen(
                     onBackPressed = { navController.navigateUp() })
             }
 

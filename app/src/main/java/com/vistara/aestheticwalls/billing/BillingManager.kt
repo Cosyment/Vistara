@@ -9,6 +9,7 @@ import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ConsumeParams
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -85,7 +86,7 @@ class BillingManager @Inject constructor(
     private val billingClient: BillingClient =
         BillingClient.newBuilder(context)
             .setListener(this)
-            .enablePendingPurchases() // 启用待处理购买支持
+            .enablePendingPurchases(PendingPurchasesParams.newBuilder().enablePrepaidPlans().enableOneTimeProducts().build()) // 启用待处理购买支持
             .build()
 
     // 连接状态

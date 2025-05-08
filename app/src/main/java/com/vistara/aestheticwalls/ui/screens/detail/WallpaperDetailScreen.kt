@@ -45,8 +45,8 @@ import com.vistara.aestheticwalls.data.model.WallpaperTarget
 import com.vistara.aestheticwalls.ui.components.LoginPromptDialog
 import com.vistara.aestheticwalls.ui.components.WallpaperDetail
 import com.vistara.aestheticwalls.ui.components.WallpaperSetOptions
-import com.vistara.aestheticwalls.ui.screens.diamond.DiamondPurchaseDialog
-import com.vistara.aestheticwalls.ui.screens.diamond.DiamondPurchaseResult
+import com.vistara.aestheticwalls.ui.screens.recharge.DiamondPurchaseDialog
+import com.vistara.aestheticwalls.ui.screens.recharge.RechargePurchaseResult
 import com.vistara.aestheticwalls.ui.theme.AppColors
 import com.vistara.aestheticwalls.ui.theme.stringResource
 import kotlinx.coroutines.launch
@@ -122,13 +122,13 @@ fun WallpaperDetailScreen(
     LaunchedEffect(diamondPurchaseResult) {
         diamondPurchaseResult?.let { result ->
             when (result) {
-                is DiamondPurchaseResult.Success -> {
+                is RechargePurchaseResult.Success -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(result.message)
                     }
                 }
 
-                is DiamondPurchaseResult.Error -> {
+                is RechargePurchaseResult.Error -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(result.message)
                     }

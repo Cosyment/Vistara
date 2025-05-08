@@ -32,7 +32,7 @@ import com.vistara.aestheticwalls.data.repository.UserPrefsRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.manager.AppWallpaperManager
-import com.vistara.aestheticwalls.ui.screens.diamond.DiamondPurchaseResult
+import com.vistara.aestheticwalls.ui.screens.recharge.RechargePurchaseResult
 import com.vistara.aestheticwalls.utils.ImageUtil
 import com.vistara.aestheticwalls.utils.NotificationUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -113,8 +113,8 @@ class WallpaperDetailViewModel @Inject constructor(
     val showDiamondPurchaseDialog: State<Boolean> = _showDiamondPurchaseDialog
 
     // 钻石购买结果
-    private val _diamondPurchaseResult = MutableStateFlow<DiamondPurchaseResult?>(null)
-    val diamondPurchaseResult: StateFlow<DiamondPurchaseResult?> = _diamondPurchaseResult.asStateFlow()
+    private val _diamondPurchaseResult = MutableStateFlow<RechargePurchaseResult?>(null)
+    val diamondPurchaseResult: StateFlow<RechargePurchaseResult?> = _diamondPurchaseResult.asStateFlow()
 
     // 是否需要请求存储权限
     private val _needStoragePermission = mutableStateOf(false)
@@ -583,7 +583,7 @@ class WallpaperDetailViewModel @Inject constructor(
 
             // 检查钻石余额是否足够
             if (!diamondRepository.hasSufficientDiamonds(diamondPrice)) {
-                _diamondPurchaseResult.value = DiamondPurchaseResult.Error(
+                _diamondPurchaseResult.value = RechargePurchaseResult.Error(
                     context.getString(R.string.diamond_insufficient)
                 )
                 return@launch
@@ -602,7 +602,7 @@ class WallpaperDetailViewModel @Inject constructor(
                 Log.d(TAG, "标记壁纸为已购买状态: ${currentWallpaper.id}, 结果: $markSuccess")
 
                 // 更新结果状态
-                _diamondPurchaseResult.value = DiamondPurchaseResult.Success(
+                _diamondPurchaseResult.value = RechargePurchaseResult.Success(
                     context.getString(R.string.diamond_purchase_success)
                 )
 
@@ -622,7 +622,7 @@ class WallpaperDetailViewModel @Inject constructor(
                 loadDiamondBalance()
             } else {
                 // 购买失败
-                _diamondPurchaseResult.value = DiamondPurchaseResult.Error(
+                _diamondPurchaseResult.value = RechargePurchaseResult.Error(
                     context.getString(R.string.diamond_purchase_failed)
                 )
             }
