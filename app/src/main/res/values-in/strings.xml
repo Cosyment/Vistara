@@ -82,7 +82,7 @@
     <string name="not_logged_in">Belum Masuk</string>
     <string name="login">Masuk</string>
     <string name="premium_user">Pengguna Premium</string>
-    <string name="premium_banner">✨ Buka semua keistimewaan, nikmati pengalaman HD ✨</string>
+    <string name="premium_banner">✨ Nikmati semua fitur, rasakan pengalaman HD ✨</string>
     <string name="favorites_login_required">Anda perlu masuk untuk menggunakan daftar favorit</string>
     <string name="downloads_login_required">Anda perlu masuk untuk menggunakan daftar unduhan</string>
     <string name="auto_wallpaper_login_required">Anda perlu masuk untuk menggunakan perubahan wallpaper otomatis</string>
@@ -178,10 +178,15 @@
     <string name="premium_description">Tingkatkan ke premium, buka semua wallpaper dan fitur</string>
     <string name="premium_user_description">Terima kasih atas dukungan Anda, Anda dapat menggunakan semua fitur premium</string>
     <string name="premium_feature_1">Unduh wallpaper berkualitas tinggi tanpa batas</string>
+    <string name="premium_feature_1_desc">Unduh sebanyak mungkin wallpaper yang Anda inginkan dalam resolusi penuh</string>
     <string name="premium_feature_2">Wallpaper hidup dengan efek khusus</string>
+    <string name="premium_feature_2_desc">Akses ke wallpaper hidup eksklusif dengan efek khusus</string>
     <string name="premium_feature_3">Wallpaper premium eksklusif</string>
+    <string name="premium_feature_3_desc">Akses ke koleksi wallpaper khusus premium</string>
     <string name="premium_feature_4">Fitur pengeditan lanjutan</string>
+    <string name="premium_feature_4_desc">Gunakan alat pengeditan profesional untuk menyesuaikan wallpaper Anda</string>
     <string name="premium_feature_5">Perubahan wallpaper otomatis</string>
+    <string name="premium_feature_5_desc">Atur wallpaper Anda untuk berubah secara otomatis pada frekuensi yang Anda inginkan</string>
     <string name="select_subscription">Pilih Paket Langganan</string>
     <string name="weekly_plan">Rencana Minggu</string>
     <string name="monthly_plan">Paket Bulanan</string>
@@ -404,6 +409,9 @@
     <string name="subscription_quarterly">Triwulanan</string>
     <string name="subscription_yearly">Tahunan</string>
     <string name="premium_lifetime">Seumur hidup</string>
+    <string name="subscription_title_week">1\nMinggu</string>
+    <string name="subscription_title_month">1\nBulan</string>
+    <string name="subscription_title_quarter">3\nBulan</string>
     <string name="sign_out_success">Berhasil keluar</string>
     <string name="sign_out_failed">Gagal keluar: %1$s</string>
     <string name="error_loading_data">Terjadi kesalahan tidak diketahui saat memuat data</string>
@@ -468,4 +476,45 @@
     <string name="unlock_premium_content">Buka Konten Premium</string>
     <string name="purchase_wallpaper">Beli wallpaper: %s</string>
     <string name="diamond_purchase_description">%d berlian</string>
+    <string name="diamond_icon">Ikon Berlian</string>
+    <string name="available_diamonds">Berlian Tersedia</string>
+    <string name="first_recharge_bonus">Bonus isi ulang pertama: Dapatkan 20% berlian tambahan!</string>
+
+    <!-- Payment Dialog related -->
+    <string name="diamond_label">Berlian</string>
+    <string name="payment_methods">Metode Pembayaran</string>
+    <string name="country">Negara</string>
+    <string name="indonesia">Indonesia</string>
+    <string name="coupon">Kupon</string>
+    <string name="none">Tidak Ada</string>
+    <string name="payment_price">Rp239.000</string>
+
+    <!-- Premium Screen related -->
+    <string name="exclusive_privileges">7 Hak Istimewa Eksklusif</string>
+    <string name="payment_terms">Pembayaran akan dibebankan ke akun Google Play Store Anda pada saat konfirmasi pembelian. Anda dapat mematikan perpanjangan otomatis setidaknya 24 jam sebelum akhir periode langganan Anda saat ini. Kami tidak menawarkan uji coba gratis untuk konten berlangganan. Periode langganan adalah satu bulan, dan langganan Anda akan diperpanjang secara otomatis dalam periode paket yang sama dengan harga yang sama. Langganan dapat dibatalkan kapan saja.</string>
+    <string name="cancel_subscription_prefix">Batalkan langganan Anda dengan mengklik di sini:</string>
+    <string name="cancel_subscription_link">Batalkan langganan</string>
+    <string name="more_info_prefix">Info lebih lanjut:</string>
+    <string name="terms_of_use">Ketentuan</string>
+    <string name="and">dan</string>
+    <string name="renew_now">Perpanjang Sekarang</string>
+    <string name="expired_on">Kedaluwarsa pada %s</string>
+    <string name="bonus_diamonds">Bonus: %d</string>
+    <string name="discount_percent_off">%d%% DISKON</string>
+
+    <!-- Premium Features -->
+    <string name="feature_video_call">Penawaran Khusus Panggilan Video</string>
+    <string name="feature_video_call_desc">VIP mendapatkan diskon 20%% per menit</string>
+    <string name="feature_unlimited_messages">Pesan Tak Terbatas</string>
+    <string name="feature_unlimited_messages_desc">Waktu gratis untuk mengirim pesan</string>
+    <string name="feature_checkin_bonus">Bonus Check-in</string>
+    <string name="feature_checkin_bonus_desc">Dapatkan hingga 5.000 berlian</string>
+    <string name="feature_match_offer">Penawaran Khusus Match</string>
+    <string name="feature_match_offer_desc">VIP hanya membutuhkan 15 berlian/match</string>
+    <string name="feature_who_see_me">Siapa yang melihat saya</string>
+    <string name="feature_who_see_me_desc">Buka hak istimewa untuk melihat daftar \"siapa yang melihat saya\"</string>
+    <string name="feature_photo_voice">Pesan foto dan suara</string>
+    <string name="feature_photo_voice_desc">Waktu gratis untuk mengirim pesan foto dan suara</string>
+    <string name="feature_secret_content">Gambar/video rahasia</string>
+    <string name="feature_secret_content_desc">Buka hak istimewa untuk melihat gambar dan video rahasia</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.vistara.aestheticwalls.ui.navigation
 
-import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -18,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import com.vistara.aestheticwalls.ui.theme.LocalAppResources
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -37,6 +35,7 @@ import com.vistara.aestheticwalls.ui.screens.about.AboutScreen
 import com.vistara.aestheticwalls.ui.screens.auth.AuthScreen
 import com.vistara.aestheticwalls.ui.screens.autochange.AutoChangeScreen
 import com.vistara.aestheticwalls.ui.screens.detail.WallpaperDetailScreen
+import com.vistara.aestheticwalls.ui.screens.diamond.DiamondScreen
 import com.vistara.aestheticwalls.ui.screens.downloads.DownloadsScreen
 import com.vistara.aestheticwalls.ui.screens.edit.WallpaperEditScreen
 import com.vistara.aestheticwalls.ui.screens.favorites.FavoritesScreen
@@ -44,14 +43,14 @@ import com.vistara.aestheticwalls.ui.screens.feedback.FeedbackScreen
 import com.vistara.aestheticwalls.ui.screens.home.HomeScreen
 import com.vistara.aestheticwalls.ui.screens.lives.LiveLibraryScreen
 import com.vistara.aestheticwalls.ui.screens.mine.MineScreen
-import com.vistara.aestheticwalls.ui.screens.diamond.DiamondScreen
 import com.vistara.aestheticwalls.ui.screens.premium.PremiumScreen
 import com.vistara.aestheticwalls.ui.screens.search.SearchScreen
 import com.vistara.aestheticwalls.ui.screens.settings.SettingsScreen
 import com.vistara.aestheticwalls.ui.screens.statics.StaticLibraryScreen
-import com.vistara.aestheticwalls.ui.screens.webview.WebViewScreen
 import com.vistara.aestheticwalls.ui.screens.test.ApiTestScreen
 import com.vistara.aestheticwalls.ui.screens.test.TestScreen
+import com.vistara.aestheticwalls.ui.screens.webview.WebViewScreen
+import com.vistara.aestheticwalls.ui.theme.LocalAppResources
 
 /**
  * 主导航组件
@@ -142,6 +141,49 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     })
             }
 
+            // 升级页面
+            composable("premium") {
+                PremiumScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onUpgradeSuccess = { navController.navigateUp() },
+                    navController = navController
+                )
+            }
+
+            // 钻石充值页面
+            composable("diamond") {
+                DiamondScreen(
+                    onBackPressed = { navController.navigateUp() })
+            }
+
+            // 搜索页面
+            composable(
+                route = "search?query={query}", arguments = listOf(navArgument("query") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                })
+            ) { backStackEntry ->
+                val query = backStackEntry.arguments?.getString("query") ?: ""
+                SearchScreen(onWallpaperClick = { wallpaper ->
+                    navController.navigate("wallpaper/${wallpaper.id}")
+                }, onBackClick = { navController.navigateUp() })
+            }
+
+            // 壁纸编辑页面
+            composable(
+                route = "edit/{wallpaperId}",
+                arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
+            ) {
+                val wallpaperId = it.arguments?.getString("wallpaperId") ?: ""
+
+                WallpaperEditScreen(
+                    onBackPressed = { navController.navigateUp() },
+                    onSaveComplete = {
+                        // 返回详情页面
+                        navController.navigateUp()
+                    })
+            }
+
             // 壁纸详情页面
             composable(
                 route = "wallpaper/{wallpaperId}",
@@ -211,14 +253,14 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
 
             // WebView页面
             composable(
-                route = "webview?url={url}",
-                arguments = listOf(navArgument("url") {
+                route = "webview?url={url}", arguments = listOf(navArgument("url") {
                     type = NavType.StringType
                     nullable = false
                 }, navArgument("title") {
                     type = NavType.StringType
                     defaultValue = ""
-                })) { backStackEntry ->
+                })
+            ) { backStackEntry ->
                 val encodedUrl = backStackEntry.arguments?.getString("url") ?: ""
                 val encodedTitle = backStackEntry.arguments?.getString("title") ?: ""
 
@@ -230,61 +272,17 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
                     url = url, title = title, onBackPressed = { navController.navigateUp() })
             }
 
-            // 升级页面
-            composable("premium") {
-                PremiumScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onUpgradeSuccess = { navController.navigateUp() })
-            }
-
-            // 搜索页面
-            composable(
-                route = "search?query={query}", arguments = listOf(navArgument("query") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                })
-            ) { backStackEntry ->
-                val query = backStackEntry.arguments?.getString("query") ?: ""
-                SearchScreen(onWallpaperClick = { wallpaper ->
-                    navController.navigate("wallpaper/${wallpaper.id}")
-                }, onBackClick = { navController.navigateUp() })
-            }
-
-            // 壁纸编辑页面
-            composable(
-                route = "edit/{wallpaperId}",
-                arguments = listOf(navArgument("wallpaperId") { type = NavType.StringType })
-            ) {
-                val wallpaperId = it.arguments?.getString("wallpaperId") ?: ""
-
-                WallpaperEditScreen(
-                    onBackPressed = { navController.navigateUp() },
-                    onSaveComplete = {
-                        // 返回详情页面
-                        navController.navigateUp()
-                    })
-            }
-
             // 测试工具页面
             composable("test") {
                 TestScreen(
                     onBackPressed = { navController.navigateUp() },
-                    onNavigateToApiTest = { navController.navigate("test/api") }
-                )
+                    onNavigateToApiTest = { navController.navigate("test/api") })
             }
 
             // API测试页面
             composable("test/api") {
                 ApiTestScreen(
-                    onBackPressed = { navController.navigateUp() }
-                )
-            }
-
-            // 钻石充值页面
-            composable("diamond") {
-                DiamondScreen(
-                    onBackPressed = { navController.navigateUp() }
-                )
+                    onBackPressed = { navController.navigateUp() })
             }
         }
 

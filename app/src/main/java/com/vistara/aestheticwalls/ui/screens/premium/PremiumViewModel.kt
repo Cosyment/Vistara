@@ -1,25 +1,30 @@
 package com.vistara.aestheticwalls.ui.screens.premium
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
 import javax.inject.Inject
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.utils.StringProvider
+import androidx.core.net.toUri
 
 /**
  * 升级页面的ViewModel
@@ -28,12 +33,18 @@ import com.vistara.aestheticwalls.utils.StringProvider
 class PremiumViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val billingManager: BillingManager,
-    private val stringProvider: StringProvider
+    private val stringProvider: StringProvider,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
-        private const val TAG = "UpgradeViewModel"
+        private const val TAG = "PremiumViewModel"
+        private const val PRIVACY_POLICY_URL = "https://www.vistaraai.xyz/vistara/PrivacyPolicy.html"
+        private const val TERMS_OF_SERVICE_URL = "https://www.vistaraai.xyz/vistara/UseOfTerms.html"
     }
+
+    // 导航控制器
+    private var navController: NavController? = null
 
     // 高级用户状态
     private val _isPremiumUser = MutableStateFlow(false)
@@ -205,6 +216,66 @@ class PremiumViewModel @Inject constructor(
     }
 
     /**
+     * 设置导航控制器
+     */
+    fun setNavController(controller: NavController) {
+        navController = controller
+    }
+
+    /**
+     * 打开隐私政策
+     */
+    fun openPrivacyPolicy() {
+        openInWebView(PRIVACY_POLICY_URL, context.getString(R.string.privacy_policy))
+    }
+
+    /**
+     * 打开服务条款
+     */
+    fun openTermsOfService() {
+        openInWebView(TERMS_OF_SERVICE_URL, context.getString(R.string.terms_of_use))
+    }
+
+    /**
+     * 在WebView中打开URL
+     */
+    private fun openInWebView(url: String, title: String) {
+        try {
+            navController?.let { nav ->
+                // 使用 URLEncoder 对 URL 和标题进行编码
+                val encodedUrl = URLEncoder.encode(url, "UTF-8")
+                val encodedTitle = URLEncoder.encode(title, "UTF-8")
+                val route = "webview?url=$encodedUrl"
+                Log.d(TAG, "Navigating to WebView with route: $route")
+                nav.navigate(route)
+            } ?: run {
+                Log.d(TAG, "NavController is null, opening URL in external browser: $url")
+                openExternalUrl(url) // 如果没有导航控制器，则使用外部浏览器
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error navigating to WebView: $url, ${e.message}")
+            openExternalUrl(url) // 如果导航失败，则使用外部浏览器
+        }
+    }
+
+    /**
+     * 在外部浏览器中打开URL
+     */
+    private fun openExternalUrl(url: String): Boolean {
+        return try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(url)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error opening URL in external browser: $url, ${e.message}")
+            false
+        }
+    }
+
+    /**
      * 打开订阅管理页面
      * 跳转到 Google Play 商店的订阅管理页面
      * @param activity 当前 Activity
@@ -218,7 +289,7 @@ class PremiumViewModel @Inject constructor(
         try {
             // 打开 Google Play 商店的订阅管理页面
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("https://play.google.com/store/account/subscriptions")
+                data = "https://play.google.com/store/account/subscriptions".toUri()
                 setPackage("com.android.vending") // Google Play 商店包名
             }
             activity.startActivity(intent)
@@ -228,7 +299,7 @@ class PremiumViewModel @Inject constructor(
             // 如果无法打开特定页面，则打开 Google Play 商店主页
             try {
                 val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse("https://play.google.com/store/account")
+                    data = "https://play.google.com/store/account".toUri()
                 }
                 activity.startActivity(fallbackIntent)
             } catch (e2: Exception) {

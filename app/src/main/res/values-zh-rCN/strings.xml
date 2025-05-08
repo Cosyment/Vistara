@@ -157,10 +157,15 @@
     <string name="premium_description">升级到高级版，解锁所有壁纸和功能</string>
     <string name="premium_user_description">感谢您的支持，您可以使用所有高级功能</string>
     <string name="premium_feature_1">无限下载高清壁纸</string>
+    <string name="premium_feature_1_desc">以原始分辨率下载任意数量的壁纸</string>
     <string name="premium_feature_2">特效动态壁纸</string>
+    <string name="premium_feature_2_desc">访问带有特殊效果的专属动态壁纸</string>
     <string name="premium_feature_3">专属高级壁纸</string>
+    <string name="premium_feature_3_desc">访问仅限高级会员的壁纸合集</string>
     <string name="premium_feature_4">高级编辑功能</string>
+    <string name="premium_feature_4_desc">使用专业编辑工具自定义您的壁纸</string>
     <string name="premium_feature_5">自动更换壁纸</string>
+    <string name="premium_feature_5_desc">设置壁纸按照您喜欢的频率自动更换</string>
     <string name="select_subscription">选择订阅计划</string>
     <string name="weekly_plan">周会员</string>
     <string name="monthly_plan">月会员</string>
@@ -401,6 +406,9 @@
     <string name="subscription_quarterly">季度</string>
     <string name="subscription_yearly">年</string>
     <string name="premium_lifetime">终身</string>
+    <string name="subscription_title_week">1\n周</string>
+    <string name="subscription_title_month">1\n个月</string>
+    <string name="subscription_title_quarter">3\n个月</string>
     <string name="sign_out_success">退出登录成功</string>
     <string name="sign_out_failed">退出登录失败: %1$s</string>
     <string name="error_loading_data">加载数据时发生未知错误</string>
@@ -472,4 +480,42 @@
     <string name="diamond_icon">钻石图标</string>
     <string name="available_diamonds">可用钻石</string>
     <string name="first_recharge_bonus">首充奖励：额外赠送20%钻石！</string>
+
+    <!-- 支付弹框相关 -->
+    <string name="diamond_label">钻石</string>
+    <string name="payment_methods">支付方式</string>
+    <string name="country">国家</string>
+    <string name="indonesia">印度尼西亚</string>
+    <string name="coupon">优惠券</string>
+    <string name="none">无</string>
+    <string name="payment_price">¥99.99</string>
+
+    <!-- 高级会员页面相关 -->
+    <string name="exclusive_privileges">7项专属特权</string>
+    <string name="payment_terms">购买确认后，费用将从您的Google Play商店账户中扣除。您可以在当前订阅期结束前至少24小时关闭自动续订。我们不提供订阅内容的免费试用。订阅期为一个月，您的订阅将在相同的套餐期限内以相同的价格自动续订。订阅可以随时取消。</string>
+    <string name="cancel_subscription_prefix">点击此处取消您的订阅：</string>
+    <string name="cancel_subscription_link">取消订阅</string>
+    <string name="more_info_prefix">更多信息，请访问我们的</string>
+    <string name="terms_of_use">使用条款</string>
+    <string name="and">和</string>
+    <string name="renew_now">立即续订</string>
+    <string name="expired_on">过期时间：%s</string>
+    <string name="bonus_diamonds">奖励：%d</string>
+    <string name="discount_percent_off">%d%% 折扣</string>
+
+    <!-- 高级特权 -->
+    <string name="feature_video_call">视频通话特惠</string>
+    <string name="feature_video_call_desc">VIP每分钟享受20%折扣</string>
+    <string name="feature_unlimited_messages">无限消息</string>
+    <string name="feature_unlimited_messages_desc">免费发送消息</string>
+    <string name="feature_checkin_bonus">签到奖励</string>
+    <string name="feature_checkin_bonus_desc">获得高达5,000钻石</string>
+    <string name="feature_match_offer">匹配特惠</string>
+    <string name="feature_match_offer_desc">VIP仅需15钻石/次匹配</string>
+    <string name="feature_who_see_me">谁看过我</string>
+    <string name="feature_who_see_me_desc">解锁查看"谁看过我"列表的特权</string>
+    <string name="feature_photo_voice">照片和语音消息</string>
+    <string name="feature_photo_voice_desc">免费发送照片和语音消息</string>
+    <string name="feature_secret_content">私密图片/视频</string>
+    <string name="feature_secret_content_desc">解锁查看私密图片和视频的特权</string>
 </resources>

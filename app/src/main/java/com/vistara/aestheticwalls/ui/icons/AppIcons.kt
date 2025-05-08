@@ -1202,6 +1202,429 @@ object AppIcons {
         }
 
     /**
+     * 无限下载图标 - 适用于无限下载高清壁纸功能
+     */
+    val UnlimitedDownload: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "unlimited_download",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 下载箭头
+                    moveTo(12.0f, 16.0f)
+                    lineTo(16.0f, 12.0f)
+                    horizontalLineTo(13.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(11.0f)
+                    verticalLineTo(12.0f)
+                    horizontalLineTo(8.0f)
+                    lineTo(12.0f, 16.0f)
+                    close()
+
+                    // 底部线条
+                    moveTo(5.0f, 20.0f)
+                    horizontalLineTo(19.0f)
+                    verticalLineTo(18.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineTo(20.0f)
+                    close()
+
+                    // 无限符号
+                    moveTo(7.0f, 6.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    reflectiveCurveToRelative(0.9f, 2.0f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveTo(8.1f, 6.0f, 7.0f, 6.0f)
+                    close()
+
+                    moveTo(17.0f, 6.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    reflectiveCurveToRelative(0.9f, 2.0f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveTo(18.1f, 6.0f, 17.0f, 6.0f)
+                    close()
+
+                    moveTo(7.0f, 9.0f)
+                    curveToRelative(-0.55f, 0.0f, -1.0f, -0.45f, -1.0f, -1.0f)
+                    reflectiveCurveToRelative(0.45f, -1.0f, 1.0f, -1.0f)
+                    reflectiveCurveToRelative(1.0f, 0.45f, 1.0f, 1.0f)
+                    reflectiveCurveTo(7.55f, 9.0f, 7.0f, 9.0f)
+                    close()
+
+                    moveTo(17.0f, 9.0f)
+                    curveToRelative(-0.55f, 0.0f, -1.0f, -0.45f, -1.0f, -1.0f)
+                    reflectiveCurveToRelative(0.45f, -1.0f, 1.0f, -1.0f)
+                    reflectiveCurveToRelative(1.0f, 0.45f, 1.0f, 1.0f)
+                    reflectiveCurveTo(17.55f, 9.0f, 17.0f, 9.0f)
+                    close()
+
+                    moveTo(12.0f, 8.5f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    horizontalLineTo(9.5f)
+                    verticalLineTo(8.0f)
+                    horizontalLineTo(10.0f)
+                    curveToRelative(0.28f, 0.0f, 0.5f, 0.22f, 0.5f, 0.5f)
+                    reflectiveCurveToRelative(-0.22f, 0.5f, -0.5f, 0.5f)
+                    horizontalLineTo(9.0f)
+                    curveToRelative(-0.55f, 0.0f, -1.0f, -0.45f, -1.0f, -1.0f)
+                    reflectiveCurveToRelative(0.45f, -1.0f, 1.0f, -1.0f)
+                    horizontalLineTo(10.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, 0.9f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(-0.9f, 2.0f, -2.0f, 2.0f)
+                    horizontalLineTo(9.5f)
+                    verticalLineTo(10.0f)
+                    horizontalLineTo(10.0f)
+                    curveToRelative(0.28f, 0.0f, 0.5f, -0.22f, 0.5f, -0.5f)
+                    close()
+
+                    moveTo(14.0f, 8.5f)
+                    curveToRelative(0.0f, -0.28f, 0.22f, -0.5f, 0.5f, -0.5f)
+                    horizontalLineTo(15.0f)
+                    curveToRelative(0.55f, 0.0f, 1.0f, 0.45f, 1.0f, 1.0f)
+                    reflectiveCurveToRelative(-0.45f, 1.0f, -1.0f, 1.0f)
+                    horizontalLineTo(14.5f)
+                    verticalLineTo(9.0f)
+                    horizontalLineTo(15.0f)
+                    curveToRelative(0.28f, 0.0f, 0.5f, -0.22f, 0.5f, -0.5f)
+                    reflectiveCurveToRelative(-0.22f, -0.5f, -0.5f, -0.5f)
+                    horizontalLineTo(14.5f)
+                    curveToRelative(-0.28f, 0.0f, -0.5f, 0.22f, -0.5f, 0.5f)
+                    reflectiveCurveToRelative(0.22f, 0.5f, 0.5f, 0.5f)
+                    horizontalLineTo(15.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, 0.9f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(-0.9f, 2.0f, -2.0f, 2.0f)
+                    horizontalLineTo(14.5f)
+                    verticalLineTo(12.0f)
+                    horizontalLineTo(15.0f)
+                    curveToRelative(0.28f, 0.0f, 0.5f, -0.22f, 0.5f, -0.5f)
+                    reflectiveCurveToRelative(-0.22f, -0.5f, -0.5f, -0.5f)
+                    horizontalLineTo(14.5f)
+                    curveToRelative(-0.28f, 0.0f, -0.5f, 0.22f, -0.5f, 0.5f)
+                    reflectiveCurveTo(14.22f, 12.0f, 14.5f, 12.0f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
+     * 特效动态壁纸图标 - 适用于特效动态壁纸功能
+     */
+    val SpecialEffectWallpaper: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "special_effect_wallpaper",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 手机外框
+                    moveTo(17.0f, 1.01f)
+                    lineTo(7.0f, 1.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    verticalLineToRelative(18.0f)
+                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineToRelative(10.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    verticalLineTo(3.0f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -1.99f, -2.0f, -1.99f)
+                    close()
+                    moveTo(17.0f, 19.0f)
+                    horizontalLineTo(7.0f)
+                    verticalLineTo(5.0f)
+                    horizontalLineToRelative(10.0f)
+                    verticalLineTo(19.0f)
+                    close()
+
+                    // 动态效果波浪
+                    moveTo(8.0f, 6.0f)
+                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(2.0f, -0.9f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(-0.9f, -2.0f, -2.0f, -2.0f)
+                    reflectiveCurveTo(8.0f, 4.9f, 8.0f, 6.0f)
+                    close()
+
+                    moveTo(16.0f, 12.0f)
+                    curveToRelative(0.0f, 1.1f, -0.9f, 2.0f, -2.0f, 2.0f)
+                    reflectiveCurveToRelative(-2.0f, -0.9f, -2.0f, -2.0f)
+                    reflectiveCurveToRelative(0.9f, -2.0f, 2.0f, -2.0f)
+                    reflectiveCurveTo(16.0f, 10.9f, 16.0f, 12.0f)
+                    close()
+
+                    moveTo(8.0f, 18.0f)
+                    curveToRelative(0.0f, -1.1f, 0.9f, -2.0f, 2.0f, -2.0f)
+                    reflectiveCurveToRelative(2.0f, 0.9f, 2.0f, 2.0f)
+                    reflectiveCurveToRelative(-0.9f, 2.0f, -2.0f, 2.0f)
+                    reflectiveCurveTo(8.0f, 19.1f, 8.0f, 18.0f)
+                    close()
+
+                    // 星星特效
+                    moveTo(18.0f, 7.0f)
+                    lineTo(19.0f, 5.0f)
+                    lineTo(20.0f, 7.0f)
+                    lineTo(22.0f, 8.0f)
+                    lineTo(20.0f, 9.0f)
+                    lineTo(19.0f, 11.0f)
+                    lineTo(18.0f, 9.0f)
+                    lineTo(16.0f, 8.0f)
+                    lineTo(18.0f, 7.0f)
+                    close()
+
+                    moveTo(4.0f, 14.0f)
+                    lineTo(5.0f, 12.0f)
+                    lineTo(6.0f, 14.0f)
+                    lineTo(8.0f, 15.0f)
+                    lineTo(6.0f, 16.0f)
+                    lineTo(5.0f, 18.0f)
+                    lineTo(4.0f, 16.0f)
+                    lineTo(2.0f, 15.0f)
+                    lineTo(4.0f, 14.0f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
+     * 专属高级壁纸图标 - 适用于专属高级壁纸功能
+     */
+    val ExclusiveWallpaper: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "exclusive_wallpaper",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 图片框
+                    moveTo(21.0f, 3.0f)
+                    horizontalLineTo(3.0f)
+                    curveToRelative(-1.1f, 0.0f, -2.0f, 0.9f, -2.0f, 2.0f)
+                    verticalLineToRelative(14.0f)
+                    curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f)
+                    horizontalLineToRelative(18.0f)
+                    curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f)
+                    verticalLineTo(5.0f)
+                    curveToRelative(0.0f, -1.1f, -0.9f, -2.0f, -2.0f, -2.0f)
+                    close()
+                    moveTo(21.0f, 19.0f)
+                    horizontalLineTo(3.0f)
+                    verticalLineTo(5.0f)
+                    horizontalLineToRelative(18.0f)
+                    verticalLineTo(19.0f)
+                    close()
+
+                    // 皇冠标志
+                    moveTo(12.0f, 6.0f)
+                    lineTo(9.0f, 9.0f)
+                    horizontalLineTo(15.0f)
+                    lineTo(12.0f, 6.0f)
+                    close()
+
+                    moveTo(8.0f, 10.0f)
+                    lineTo(6.0f, 8.0f)
+                    lineTo(4.0f, 10.0f)
+                    verticalLineTo(12.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(10.0f)
+                    close()
+
+                    moveTo(20.0f, 10.0f)
+                    lineTo(18.0f, 8.0f)
+                    lineTo(16.0f, 10.0f)
+                    verticalLineTo(12.0f)
+                    horizontalLineTo(20.0f)
+                    verticalLineTo(10.0f)
+                    close()
+
+                    moveTo(4.0f, 15.0f)
+                    horizontalLineTo(20.0f)
+                    verticalLineTo(13.0f)
+                    horizontalLineTo(4.0f)
+                    verticalLineTo(15.0f)
+                    close()
+
+                    moveTo(8.0f, 18.0f)
+                    horizontalLineTo(16.0f)
+                    verticalLineTo(16.0f)
+                    horizontalLineTo(8.0f)
+                    verticalLineTo(18.0f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
+     * 高级编辑功能图标 - 适用于高级编辑功能
+     */
+    val AdvancedEditing: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "advanced_editing",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 画笔
+                    moveTo(3.0f, 17.25f)
+                    verticalLineTo(21.0f)
+                    horizontalLineTo(6.75f)
+                    lineTo(17.81f, 9.94f)
+                    lineTo(14.06f, 6.19f)
+                    lineTo(3.0f, 17.25f)
+                    close()
+
+                    // 调色板
+                    moveTo(20.71f, 7.04f)
+                    curveToRelative(0.39f, -0.39f, 0.39f, -1.02f, 0.0f, -1.41f)
+                    lineTo(18.37f, 3.29f)
+                    curveToRelative(-0.39f, -0.39f, -1.02f, -0.39f, -1.41f, 0.0f)
+                    lineTo(15.0f, 5.25f)
+                    lineTo(18.75f, 9.0f)
+                    lineTo(20.71f, 7.04f)
+                    close()
+
+                    // 滑块控制
+                    moveTo(3.0f, 10.0f)
+                    horizontalLineTo(12.0f)
+                    verticalLineTo(12.0f)
+                    horizontalLineTo(3.0f)
+                    verticalLineTo(10.0f)
+                    close()
+
+                    moveTo(5.0f, 6.0f)
+                    horizontalLineTo(9.0f)
+                    verticalLineTo(8.0f)
+                    horizontalLineTo(5.0f)
+                    verticalLineTo(6.0f)
+                    close()
+
+                    moveTo(7.0f, 2.0f)
+                    horizontalLineTo(11.0f)
+                    verticalLineTo(4.0f)
+                    horizontalLineTo(7.0f)
+                    verticalLineTo(2.0f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
+     * 自动更换壁纸图标 - 适用于自动更换壁纸功能
+     */
+    val AutoWallpaperChange: ImageVector
+        get() {
+            return ImageVector.Builder(
+                name = "auto_wallpaper_change",
+                defaultWidth = 24.0.dp,
+                defaultHeight = 24.0.dp,
+                viewportWidth = 24.0f,
+                viewportHeight = 24.0f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black),
+                    fillAlpha = 1.0f,
+                    stroke = null,
+                    strokeAlpha = 1.0f,
+                    strokeLineWidth = 1.0f,
+                    strokeLineCap = StrokeCap.Butt,
+                    strokeLineJoin = StrokeJoin.Miter,
+                    strokeLineMiter = 1.0f,
+                    pathFillType = PathFillType.NonZero
+                ) {
+                    // 时钟
+                    moveTo(12.0f, 2.0f)
+                    curveToRelative(-5.52f, 0.0f, -10.0f, 4.48f, -10.0f, 10.0f)
+                    reflectiveCurveToRelative(4.48f, 10.0f, 10.0f, 10.0f)
+                    reflectiveCurveToRelative(10.0f, -4.48f, 10.0f, -10.0f)
+                    reflectiveCurveTo(17.52f, 2.0f, 12.0f, 2.0f)
+                    close()
+                    moveTo(12.0f, 20.0f)
+                    curveToRelative(-4.41f, 0.0f, -8.0f, -3.59f, -8.0f, -8.0f)
+                    reflectiveCurveToRelative(3.59f, -8.0f, 8.0f, -8.0f)
+                    reflectiveCurveToRelative(8.0f, 3.59f, 8.0f, 8.0f)
+                    reflectiveCurveTo(16.41f, 20.0f, 12.0f, 20.0f)
+                    close()
+
+                    // 时钟指针
+                    moveTo(12.5f, 7.0f)
+                    horizontalLineTo(11.0f)
+                    verticalLineToRelative(6.0f)
+                    lineToRelative(5.25f, 3.15f)
+                    lineToRelative(0.75f, -1.23f)
+                    lineToRelative(-4.5f, -2.67f)
+                    verticalLineTo(7.0f)
+                    close()
+
+                    // 循环箭头
+                    moveTo(17.65f, 6.35f)
+                    curveToRelative(-1.45f, -1.45f, -3.44f, -2.35f, -5.65f, -2.35f)
+                    verticalLineTo(2.0f)
+                    lineTo(8.0f, 5.0f)
+                    lineToRelative(4.0f, 3.0f)
+                    verticalLineTo(6.0f)
+                    curveToRelative(1.21f, 0.0f, 2.31f, 0.49f, 3.12f, 1.29f)
+                    curveToRelative(0.81f, 0.81f, 1.29f, 1.91f, 1.29f, 3.12f)
+                    curveToRelative(0.0f, 2.42f, -1.95f, 4.38f, -4.38f, 4.38f)
+                    curveToRelative(-2.42f, 0.0f, -4.38f, -1.95f, -4.38f, -4.38f)
+                    horizontalLineTo(6.0f)
+                    curveToRelative(0.0f, 3.31f, 2.69f, 6.0f, 6.0f, 6.0f)
+                    reflectiveCurveToRelative(6.0f, -2.69f, 6.0f, -6.0f)
+                    curveToRelative(0.0f, -1.65f, -0.67f, -3.15f, -1.75f, -4.24f)
+                    close()
+                }
+            }.build()
+        }
+
+    /**
      * 壁纸预览图标 - 更现代的壁纸预览设计
      */
     val WallpaperPreview: ImageVector

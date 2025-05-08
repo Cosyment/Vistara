@@ -191,10 +191,15 @@
     <string name="premium_description">Upgrade to premium, unlock all wallpapers and features</string>
     <string name="premium_user_description">Thank you for your support, you can use all premium features</string>
     <string name="premium_feature_1">Unlimited high-quality wallpaper downloads</string>
+    <string name="premium_feature_1_desc">Download as many wallpapers as you want in full resolution</string>
     <string name="premium_feature_2">Special effect live wallpapers</string>
+    <string name="premium_feature_2_desc">Access to exclusive dynamic wallpapers with special effects</string>
     <string name="premium_feature_3">Exclusive premium wallpapers</string>
+    <string name="premium_feature_3_desc">Access to premium-only wallpaper collections</string>
     <string name="premium_feature_4">Advanced editing features</string>
+    <string name="premium_feature_4_desc">Use professional editing tools to customize your wallpapers</string>
     <string name="premium_feature_5">Auto wallpaper change</string>
+    <string name="premium_feature_5_desc">Set your wallpaper to change automatically at your preferred frequency</string>
     <string name="select_subscription">Select Subscription Plan</string>
     <string name="weekly_plan">Weekly Plan</string>
     <string name="monthly_plan">Monthly Plan</string>
@@ -423,6 +428,9 @@
     <string name="subscription_monthly">Monthly</string>
     <string name="subscription_quarterly">Quarterly</string>
     <string name="subscription_yearly">Yearly</string>
+    <string name="subscription_title_week">1\nWeek</string>
+    <string name="subscription_title_month">1\nMonth</string>
+    <string name="subscription_title_quarter">3\nMonths</string>
     <string name="premium_lifetime">Lifetime</string>
     <string name="sign_out_success">Sign out successful</string>
     <string name="sign_out_failed">Sign out failed: %1$s</string>
@@ -484,4 +492,42 @@
     <string name="diamond_icon">Diamond Icon</string>
     <string name="available_diamonds">Available Diamonds</string>
     <string name="first_recharge_bonus">First recharge bonus: Get extra 20% diamonds!</string>
+
+    <!-- Payment Dialog related -->
+    <string name="diamond_label">Diamond</string>
+    <string name="payment_methods">Payment Methods</string>
+    <string name="country">Country</string>
+    <string name="indonesia">Indonesia</string>
+    <string name="coupon">Coupon</string>
+    <string name="none">None</string>
+    <string name="payment_price">$15.99</string>
+
+    <!-- Premium Screen related -->
+    <string name="exclusive_privileges">7 Exclusive Privilege</string>
+    <string name="payment_terms">Payment will be charged to your Google Play Store account at confirmation of purchase. You can turn off auto-renewal at least 24 hours before the end of your current subscription period. We do not offer a free trial for subscription content. The subscription period is one month, and your subscription will automatically renew within the same package period at the same price. Subscriptions can be cancelled at any time.</string>
+    <string name="cancel_subscription_prefix">Cancel your subscription by clicking here:</string>
+    <string name="cancel_subscription_link">Cancel subscription</string>
+    <string name="more_info_prefix">For more information, please visit our</string>
+    <string name="terms_of_use">Terms of use</string>
+    <string name="and">and</string>
+    <string name="renew_now">Renew Now</string>
+    <string name="expired_on">Expired on %s</string>
+    <string name="bonus_diamonds">Bonus: %d</string>
+    <string name="discount_percent_off">%d%% OFF</string>
+
+    <!-- Premium Features -->
+    <string name="feature_video_call">Video Call Special Offer</string>
+    <string name="feature_video_call_desc">VIP gets a 20%% discount per minute</string>
+    <string name="feature_unlimited_messages">Unlimited Messages</string>
+    <string name="feature_unlimited_messages_desc">Free times to send messages</string>
+    <string name="feature_checkin_bonus">Check-in Bonus</string>
+    <string name="feature_checkin_bonus_desc">Get up to 5,000 diamonds</string>
+    <string name="feature_match_offer">Match Special Offer</string>
+    <string name="feature_match_offer_desc">VIP only needs 15 diamonds/match</string>
+    <string name="feature_who_see_me">Who see me</string>
+    <string name="feature_who_see_me_desc">Unlock privilege to see \"who see me\" list</string>
+    <string name="feature_photo_voice">Photo and voice messages</string>
+    <string name="feature_photo_voice_desc">Free times to send photo and voice messages</string>
+    <string name="feature_secret_content">Secret images/videos</string>
+    <string name="feature_secret_content_desc">Unlock privilege to see secret images and videos</string>
 </resources>

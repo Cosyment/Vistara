@@ -33,7 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.vistara.aestheticwalls.ui.theme.stringResource
@@ -41,6 +43,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.components.PaymentMethod
+import com.vistara.aestheticwalls.ui.components.PaymentMethodDialog
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
@@ -281,6 +285,51 @@ fun TestScreen(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
                 }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
+
+            // 支付弹框测试
+            Text(
+                text = "支付弹框测试",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            // 使用by语法创建状态
+            var showPaymentDialog by remember { mutableStateOf(false) }
+            var selectedPaymentMethod by remember { mutableStateOf<PaymentMethod?>(null) }
+
+            Button(
+                onClick = { showPaymentDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("打开支付弹框")
+            }
+
+            // 显示选择的支付方式
+            selectedPaymentMethod?.let {
+                Text(
+                    text = "已选择支付方式: ${it.displayName}",
+                    modifier = Modifier.padding(top = 8.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            }
+
+            // 支付弹框
+            if (showPaymentDialog) {
+                PaymentMethodDialog(
+                    amount = "5600",
+                    onDismiss = { showPaymentDialog = false },
+                    onPaymentSelected = {
+                        selectedPaymentMethod = it
+                        showPaymentDialog = false
+                    }
+                )
             }
 
             HorizontalDivider(
