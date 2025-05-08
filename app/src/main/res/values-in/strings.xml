@@ -490,7 +490,7 @@
     <string name="payment_price">Rp239.000</string>
 
     <!-- Premium Screen related -->
-    <string name="exclusive_privileges">7 Hak Istimewa Eksklusif</string>
+    <string name="exclusive_privileges">5 Hak Istimewa Eksklusif</string>
     <string name="payment_terms">Pembayaran akan dibebankan ke akun Google Play Store Anda pada saat konfirmasi pembelian. Anda dapat mematikan perpanjangan otomatis setidaknya 24 jam sebelum akhir periode langganan Anda saat ini. Kami tidak menawarkan uji coba gratis untuk konten berlangganan. Periode langganan adalah satu bulan, dan langganan Anda akan diperpanjang secara otomatis dalam periode paket yang sama dengan harga yang sama. Langganan dapat dibatalkan kapan saja.</string>
     <string name="cancel_subscription_prefix">Batalkan langganan Anda dengan mengklik di sini:</string>
     <string name="cancel_subscription_link">Batalkan langganan</string>

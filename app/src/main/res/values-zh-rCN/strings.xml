@@ -491,7 +491,7 @@
     <string name="payment_price">¥99.99</string>
 
     <!-- 高级会员页面相关 -->
-    <string name="exclusive_privileges">7项专属特权</string>
+    <string name="exclusive_privileges">5项专属特权</string>
     <string name="payment_terms">购买确认后，费用将从您的Google Play商店账户中扣除。您可以在当前订阅期结束前至少24小时关闭自动续订。我们不提供订阅内容的免费试用。订阅期为一个月，您的订阅将在相同的套餐期限内以相同的价格自动续订。订阅可以随时取消。</string>
     <string name="cancel_subscription_prefix">点击此处取消您的订阅：</string>
     <string name="cancel_subscription_link">取消订阅</string>

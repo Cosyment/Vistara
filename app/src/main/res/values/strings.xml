@@ -503,7 +503,7 @@
     <string name="payment_price">$15.99</string>
 
     <!-- Premium Screen related -->
-    <string name="exclusive_privileges">7 Exclusive Privilege</string>
+    <string name="exclusive_privileges">5 Exclusive Privilege</string>
     <string name="payment_terms">Payment will be charged to your Google Play Store account at confirmation of purchase. You can turn off auto-renewal at least 24 hours before the end of your current subscription period. We do not offer a free trial for subscription content. The subscription period is one month, and your subscription will automatically renew within the same package period at the same price. Subscriptions can be cancelled at any time.</string>
     <string name="cancel_subscription_prefix">Cancel your subscription by clicking here:</string>
     <string name="cancel_subscription_link">Cancel subscription</string>

@@ -488,7 +488,7 @@
     <string name="payment_price">¥1,980</string>
 
     <!-- Premium Screen related -->
-    <string name="exclusive_privileges">7つの特典</string>
+    <string name="exclusive_privileges">5つの特典</string>
     <string name="payment_terms">購入確認時に、お支払いはGoogle Playストアアカウントに請求されます。現在の購読期間が終了する少なくとも24時間前に自動更新をオフにすることができます。購読コンテンツの無料トライアルは提供していません。購読期間は1ヶ月で、同じパッケージ期間で同じ価格で自動的に更新されます。購読はいつでもキャンセルできます。</string>
     <string name="cancel_subscription_prefix">ここをクリックして購読をキャンセル：</string>
     <string name="cancel_subscription_link">購読をキャンセル</string>
