@@ -145,7 +145,7 @@ fun PremiumScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 // VIP购买部分
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // 订阅卡片行
                 Row(
