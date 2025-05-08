@@ -3,6 +3,8 @@ package com.vistara.aestheticwalls.di
 import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.BuildConfig
 import com.vistara.aestheticwalls.data.remote.ApiCallHelper
 import com.vistara.aestheticwalls.data.remote.ApiKeyManager
@@ -12,7 +14,8 @@ import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
-import com.vistara.aestheticwalls.data.remote.ApiService
+import com.vistara.aestheticwalls.data.remote.api.ApiService
+import com.vistara.aestheticwalls.data.remote.AuthInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,6 +49,10 @@ object NetworkModule {
     fun provideGson(): Gson {
         return GsonBuilder()
             .setLenient()
+            .registerTypeAdapter(
+                object : TypeToken<ApiResult<*>>() {}.type,
+                com.vistara.aestheticwalls.data.remote.ApiResultAdapterFactory()
+            )
             .create()
     }
 
@@ -137,7 +144,8 @@ object NetworkModule {
         cache: Cache,
         loggingInterceptor: HttpLoggingInterceptor,
         @Named("cacheInterceptor") cacheInterceptor: Interceptor,
-        @Named("offlineInterceptor") offlineInterceptor: Interceptor
+        @Named("offlineInterceptor") offlineInterceptor: Interceptor,
+        authInterceptor: AuthInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .cache(cache)
@@ -146,6 +154,7 @@ object NetworkModule {
             .writeTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(loggingInterceptor)
             .addInterceptor(offlineInterceptor) // 离线拦截器先执行
+            .addInterceptor(authInterceptor) // 认证拦截器
             .addNetworkInterceptor(cacheInterceptor) // 网络拦截器后执行
             .build()
     }
@@ -576,6 +585,15 @@ object NetworkModule {
         @Named("wallhavenRetrofit") retrofit: Retrofit
     ): WallhavenApiService {
         return retrofit.create(WallhavenApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthInterceptor(
+        userRepository: com.vistara.aestheticwalls.data.repository.UserRepository,
+        authRepository: dagger.Lazy<com.vistara.aestheticwalls.data.repository.AuthRepository>
+    ): AuthInterceptor {
+        return AuthInterceptor(userRepository, authRepository)
     }
 
     @Provides

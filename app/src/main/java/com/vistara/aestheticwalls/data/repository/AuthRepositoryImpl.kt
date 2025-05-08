@@ -12,8 +12,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
-import com.vistara.aestheticwalls.data.remote.ApiService
-import com.vistara.aestheticwalls.data.remote.LoginRequest
+import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.ApiService
+import com.vistara.aestheticwalls.data.remote.api.LoginRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -92,19 +93,26 @@ class AuthRepositoryImpl @Inject constructor(
                     )
 
                     // 发起后端登录请求
-                    val response = apiService.login(requestBody)
-                    if (response.isSuccessful && response.body() != null) {
-                        val loginResponse = response.body()!!
-//                        {"msg":"操作成功","code":200,"token":"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ3YWl0aW5naGNAZ21haWwuY29tIiwibG9naW5fdXNlcl9rZXkiOiIxYjBhOTNhMy0wYWNmLTQ4YjEtOTRiZS0xMTQ0OTViMjRiNTIifQ.C0VF0X4W4ICVFJTp7RDVVb8O8KekAHgyf_tE4cUZq7-gSbob9msaHnVVsJqbRlI69JOw0I17GW-Sgxz4vcHpXA"}
-                        // 保存后端返回的token等信息
-                        Log.d(TAG, "登录成功，准备保存token: ${loginResponse.token}")
-                        userRepository.saveServerToken(loginResponse.token)
-                        userRepository.updateLoginStatus(true)
-                        userRepository.updatePremiumStatus(loginResponse.isPremium ?: false)
-                        true
-                    } else {
-                        Log.e(TAG, "Backend login failed: ${response.errorBody()?.string()}")
-                        false
+                    val result = apiService.login(requestBody)
+
+                    // 处理API结果
+                    when (result) {
+                        is ApiResult.Success -> {
+                            val loginResponse = result.data
+                            Log.d(TAG, "登录成功，准备保存token: ${loginResponse.token}")
+                            userRepository.saveServerToken(loginResponse.token)
+                            userRepository.updateLoginStatus(true)
+                            userRepository.updatePremiumStatus(loginResponse.isPremium ?: false)
+                            true
+                        }
+                        is ApiResult.Error -> {
+                            Log.e(TAG, "Backend login failed: ${result.code} ${result.message}")
+                            false
+                        }
+                        is ApiResult.Loading -> {
+                            Log.d(TAG, "Login loading")
+                            false
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Backend login request failed", e)

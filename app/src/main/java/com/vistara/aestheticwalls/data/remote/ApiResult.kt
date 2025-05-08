@@ -93,7 +93,8 @@ enum class ApiSource {
     UNSPLASH,
     PEXELS,
     PIXABAY,
-    WALLHAVEN
+    WALLHAVEN,
+    BACKEND // 后端API
 }
 
 /**

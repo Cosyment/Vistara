@@ -47,7 +47,18 @@ interface DiamondRepository {
     suspend fun getRecentTransactions(limit: Int): List<DiamondTransaction>
 
     /**
-     * 获取钻石商品列表
+     * 获取本地钻石商品列表
+     */
+    suspend fun getLocalDiamondProducts(): List<DiamondProduct>
+
+    /**
+     * 从API获取钻石商品列表
+     * @return 成功返回商品列表，失败返回null
+     */
+    suspend fun getApiDiamondProducts(): List<DiamondProduct>?
+
+    /**
+     * 获取钻石商品列表（优先从API获取，失败则使用本地数据）
      */
     suspend fun getDiamondProducts(): List<DiamondProduct>
 

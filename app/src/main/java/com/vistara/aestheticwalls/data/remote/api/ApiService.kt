@@ -1,22 +1,32 @@
-package com.vistara.aestheticwalls.data.remote
+package com.vistara.aestheticwalls.data.remote.api
 
-import retrofit2.Response
+import com.vistara.aestheticwalls.data.model.DiamondProduct
+import com.vistara.aestheticwalls.data.remote.ApiResult
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface ApiService {
     @POST("google/login")
-    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    suspend fun login(@Body request: LoginRequest): ApiResult<LoginResponse>
+
+    @GET("/system/user/getUserInfo")
+    suspend fun getProfile(): ApiResult<ProfileResponse>
 
     @POST("/system/order/add")
-    suspend fun createOrder(@Body request: CreateOrderRequest): Response<CreateOrderResponse>
+    suspend fun createOrder(@Body request: CreateOrderRequest): ApiResult<CreateOrderResponse>
 
-    @GET("products")
-    suspend fun getProducts(): Response<ProductsResponse>
+    @GET("/system/price/getList")
+    suspend fun getProducts(): ApiResponse<DiamondProduct>
 
     @GET("/system/method/getPayMethod")
-    suspend fun getPaymentMethods(): Response<PaymentMethodsResponse>
+    suspend fun getPaymentMethods(): ApiResponse<PaymentMethodsResponse>
+}
+
+data class ApiResponse<T>(
+    val code: Int, val msg: String, val data: T?
+){
+
 }
 
 data class LoginRequest(
@@ -25,6 +35,14 @@ data class LoginRequest(
 
 data class LoginResponse(
     val token: String, val isPremium: Boolean? = false, val msg: String? = null
+)
+
+data class ProfileResponse(
+    val nickname: String,
+    val email: String,
+    val avatar: String,
+    val diamond: Int,
+    val msg: String? = null
 )
 
 data class CreateOrderRequest(
@@ -45,7 +63,7 @@ data class Product(
 )
 
 data class ProductsResponse(
-    val products: List<Product>, val msg: String? = null
+    val products: List<Product>?, val msg: String? = null
 )
 
 data class PaymentMethod(

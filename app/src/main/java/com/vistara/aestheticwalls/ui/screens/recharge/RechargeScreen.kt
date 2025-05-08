@@ -8,15 +8,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +65,8 @@ fun RechargeScreen(
     val billingConnectionState by viewModel.billingConnectionState.collectAsState()
     val purchaseState by viewModel.purchaseState.collectAsState()
     val productPrices by viewModel.productPrices.collectAsState()
+    val apiProductsLoading by viewModel.apiProductsLoading.collectAsState()
+    val apiProductsError by viewModel.apiProductsError.collectAsState()
 
     var showTransactions by remember { mutableStateOf(false) }
 
@@ -105,6 +112,8 @@ fun RechargeScreen(
                     diamondProducts = diamondProducts,
                     selectedProduct = selectedProduct,
                     productPrices = productPrices,
+                    isLoading = apiProductsLoading,
+                    errorMessage = apiProductsError,
                     onProductSelected = viewModel::selectProduct,
                     onPurchase = { activity?.let { viewModel.purchaseDiamond(it) } })
             }
@@ -132,6 +141,8 @@ fun RechargeContent(
     diamondProducts: List<DiamondProduct>,
     selectedProduct: DiamondProduct?,
     productPrices: Map<String, String>,
+    isLoading: Boolean,
+    errorMessage: String?,
     onProductSelected: (DiamondProduct) -> Unit,
     onPurchase: () -> Unit
 ) {
@@ -160,17 +171,63 @@ fun RechargeContent(
             )
         }
 
-        itemsIndexed(diamondProducts) { index, product ->
-            DiamondProductCard(
-                index = index,
-                product = product,
-                isSelected = product == selectedProduct,
-                price = product.googlePlayProductId?.let { productPrices[it] }
-                    ?: stringResource(R.string.loading),
-                onClick = {
-                    onProductSelected(product)
-                    onPurchase
-                })
+        // 加载状态
+        if (isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(40.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.loading_products),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        }
+        // 错误提示
+        else if (errorMessage != null) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.error_loading_products, errorMessage),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        }
+
+        // 商品列表
+        if (!isLoading && errorMessage == null) {
+            itemsIndexed(diamondProducts) { index, product ->
+                DiamondProductCard(
+                    index = index,
+                    product = product,
+                    isSelected = product == selectedProduct,
+                    price = product.googlePlayProductId?.let { productPrices[it] }
+                        ?: stringResource(R.string.loading),
+                    onClick = {
+                        onProductSelected(product)
+                        onPurchase
+                    })
+            }
         }
 
         // 购买按钮

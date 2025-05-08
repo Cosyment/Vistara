@@ -452,6 +452,7 @@
     <string name="failed_to_get_category_wallpapers">Failed to get category wallpapers</string>
     <string name="login_success">Login successful</string>
     <string name="login_failed">Login failed</string>
+    <string name="login_loading">Logging in...</string>
     <string name="login_failed_with_status">Login failed: %1$s</string>
     <string name="login_failed_with_message">Login failed: %1$s</string>
     <string name="logout_success">Logged out successfully</string>
@@ -492,6 +493,8 @@
     <string name="diamond_icon">Diamond Icon</string>
     <string name="available_diamonds">Available Diamonds</string>
     <string name="first_recharge_bonus">First recharge bonus: Get extra 20% diamonds!</string>
+    <string name="loading_products">Loading products...</string>
+    <string name="error_loading_products">Error loading products: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">Diamond</string>

@@ -123,8 +123,9 @@ object RepositoryModule {
         diamondDao: DiamondDao,
         authRepository: AuthRepository,
         billingManagerProvider: javax.inject.Provider<com.vistara.aestheticwalls.billing.BillingManager>,
-        stringProvider: com.vistara.aestheticwalls.utils.StringProvider
+        stringProvider: com.vistara.aestheticwalls.utils.StringProvider,
+        apiService: com.vistara.aestheticwalls.data.remote.api.ApiService
     ): DiamondRepository {
-        return DiamondRepositoryImpl(diamondDao, authRepository, billingManagerProvider, stringProvider)
+        return DiamondRepositoryImpl(diamondDao, authRepository, billingManagerProvider, stringProvider, apiService)
     }
 }

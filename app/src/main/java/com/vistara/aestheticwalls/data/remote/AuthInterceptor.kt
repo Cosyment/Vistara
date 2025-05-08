@@ -17,38 +17,50 @@ import javax.inject.Singleton
 @Singleton
 class AuthInterceptor @Inject constructor(
     private val userRepository: UserRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: dagger.Lazy<AuthRepository>
 ) : Interceptor {
 
     companion object {
         private const val TAG = "AuthInterceptor"
         private const val HEADER_AUTH = "Authorization"
-        private const val HEADER_EMAIL = "X-User-Email"
+        private const val HEADER_EMAIL = "Email"
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
+        val url = originalRequest.url.toString()
+
+        Log.d(TAG, "拦截请求: $url")
+        Log.d(TAG, "原始请求头: ${originalRequest.headers}")
 
         // 获取token和邮箱
-        val token = runBlocking { userRepository.getServerToken() }
+        val token = runBlocking {
+            val t = userRepository.getServerToken()
+            Log.d(TAG, "获取到token: ${if (t.isNullOrEmpty()) "" else t}")
+            t
+        }
+
         val email = runBlocking {
             try {
-                authRepository.userEmail.first()
+                val e = authRepository.get().userEmail.first()
+                Log.d(TAG, "获取到邮箱: ${if (e.isNullOrEmpty()) "" else e}")
+                e
             } catch (e: Exception) {
-                Log.e(TAG, "获取邮箱失败: ${e.message}")
+                Log.e(TAG, "获取邮箱失败: ${e.message}", e)
                 null
             }
         }
 
         // 如果token为空，则不添加认证头
         if (token.isNullOrEmpty()) {
-            Log.d(TAG, "Token为空，不添加认证头")
-            return chain.proceed(originalRequest)
+            Log.w(TAG, "Token为空，不添加认证头，直接发送原始请求")
+            return chain.proceed(originalRequest).also {
+                Log.d(TAG, "请求完成，响应码: ${it.code}")
+            }
         }
 
         // 构建新的请求，添加认证头和邮箱头
-        val requestBuilder = originalRequest.newBuilder()
-            .header(HEADER_AUTH, "Bearer $token")
+        val requestBuilder = originalRequest.newBuilder().header(HEADER_AUTH, token)
 
         // 如果邮箱不为空，添加邮箱头
         if (!email.isNullOrEmpty()) {
@@ -57,8 +69,14 @@ class AuthInterceptor @Inject constructor(
         }
 
         val newRequest = requestBuilder.build()
-        Log.d(TAG, "添加认证头: Bearer $token")
+        Log.d(TAG, "添加认证头: $token")
+        Log.d(TAG, "新请求头: ${newRequest.headers[HEADER_AUTH]}")
 
-        return chain.proceed(newRequest)
+        return chain.proceed(newRequest).also {
+            Log.d(TAG, "请求完成，响应码: ${it.code}")
+            if (!it.isSuccessful) {
+                Log.e(TAG, "请求失败，响应码: ${it.code}, 消息: ${it.message}")
+            }
+        }
     }
 }

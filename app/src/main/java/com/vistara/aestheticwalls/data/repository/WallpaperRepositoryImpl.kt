@@ -390,6 +390,12 @@ class WallpaperRepositoryImpl @Inject constructor(
                             }
                         }
                     }
+
+                    ApiSource.BACKEND -> {
+                        // 后端API不支持壁纸搜索，返回空列表
+                        Log.w(TAG, "后端API不支持壁纸搜索")
+                        emptyList()
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "获取分类壁纸异常: ${e.message}")

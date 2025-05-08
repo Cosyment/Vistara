@@ -138,6 +138,7 @@ fun DiamondBalanceCard(diamondBalance: Int) {
                     text = diamondBalance.toString(),
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

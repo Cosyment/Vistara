@@ -3,9 +3,9 @@ package com.vistara.aestheticwalls.data.repository
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import com.vistara.aestheticwalls.data.remote.ApiService
-import com.vistara.aestheticwalls.data.remote.LoginRequest
-import com.vistara.aestheticwalls.data.remote.LoginResponse
+import com.vistara.aestheticwalls.data.remote.api.ApiService
+import com.vistara.aestheticwalls.data.remote.api.LoginRequest
+import com.vistara.aestheticwalls.data.remote.api.LoginResponse
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.flow.flowOf

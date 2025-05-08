@@ -6,8 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
-import com.vistara.aestheticwalls.data.remote.ApiService
-import com.vistara.aestheticwalls.data.remote.LoginRequest
+import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.ApiService
+import com.vistara.aestheticwalls.data.remote.api.LoginRequest
 import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
@@ -289,39 +290,48 @@ class TestViewModel @Inject constructor(
                 )
 
                 // 调用登录接口
-                val response = apiService.login(loginRequest)
+                val result = apiService.login(loginRequest)
 
-                if (response.isSuccessful && response.body() != null) {
-                    val loginResponse = response.body()!!
+                // 处理API结果
+                when (result) {
+                    is ApiResult.Success -> {
+                        val loginResponse = result.data
 
-                    // 保存token
-                    userRepository.saveServerToken(loginResponse.token)
+                        // 保存token
+                        userRepository.saveServerToken(loginResponse.token)
 
-                    // 更新登录状态
-                    userRepository.updateLoginStatus(true)
-                    _isLoggedIn.value = true
+                        // 更新登录状态
+                        userRepository.updateLoginStatus(true)
+                        _isLoggedIn.value = true
 
-                    // 保存用户信息
-                    saveUserInfo(
-                        userId = "test_${System.currentTimeMillis()}",
-                        userName = randomNickname,
-                        userEmail = email,
-                        userPhotoUrl = "https://api.dicebear.com/7.x/micah/png?seed=${email}"
-                    )
+                        // 保存用户信息
+                        saveUserInfo(
+                            userId = "test_${System.currentTimeMillis()}",
+                            userName = randomNickname,
+                            userEmail = email,
+                            userPhotoUrl = "https://api.dicebear.com/7.x/micah/png?seed=${email}"
+                        )
 
-                    // 更新高级状态（如果服务器返回了这个信息）
-                    loginResponse.isPremium?.let { isPremium ->
-                        userRepository.updatePremiumStatus(isPremium)
-                        _isPremiumUser.value = isPremium
+                        // 更新高级状态（如果服务器返回了这个信息）
+                        loginResponse.isPremium?.let { isPremium ->
+                            userRepository.updatePremiumStatus(isPremium)
+                            _isPremiumUser.value = isPremium
+                        }
+
+                        _operationResult.value = context.getString(R.string.login_success)
+                        hideLoginDialog()
+                        Log.d(TAG, "Login successful")
                     }
 
-                    _operationResult.value = context.getString(R.string.login_success)
-                    hideLoginDialog()
-                    Log.d(TAG, "Login successful")
-                } else {
-                    val errorMsg = response.errorBody()?.string() ?: "Unknown error"
-                    _operationResult.value = context.getString(R.string.login_failed)
-                    Log.e(TAG, "Login failed: $errorMsg")
+                    is ApiResult.Error -> {
+                        _operationResult.value = context.getString(R.string.login_failed) + ": ${result.message}"
+                        Log.e(TAG, "Login failed: ${result.code} ${result.message}")
+                    }
+
+                    is ApiResult.Loading -> {
+                        _operationResult.value = context.getString(R.string.login_loading)
+                        Log.d(TAG, "Login loading")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error during login: ${e.message}")
@@ -336,8 +346,20 @@ class TestViewModel @Inject constructor(
      * 生成随机昵称
      */
     private fun generateRandomNickname(): String {
-        val adjectives = listOf("快乐的", "聪明的", "勇敢的", "可爱的", "友善的", "活泼的", "机智的", "温柔的", "善良的", "幽默的")
-        val nouns = listOf("熊猫", "老虎", "狮子", "猫咪", "狗狗", "兔子", "松鼠", "大象", "长颈鹿", "猴子")
+        val adjectives = listOf(
+            "快乐的",
+            "聪明的",
+            "勇敢的",
+            "可爱的",
+            "友善的",
+            "活泼的",
+            "机智的",
+            "温柔的",
+            "善良的",
+            "幽默的"
+        )
+        val nouns =
+            listOf("熊猫", "老虎", "狮子", "猫咪", "狗狗", "兔子", "松鼠", "大象", "长颈鹿", "猴子")
 
         val randomAdjective = adjectives.random()
         val randomNoun = nouns.random()
@@ -351,19 +373,14 @@ class TestViewModel @Inject constructor(
      */
     private fun generateRandomToken(): String {
         val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-        return (1..32)
-            .map { charPool.random() }
-            .joinToString("")
+        return (1..32).map { charPool.random() }.joinToString("")
     }
 
     /**
      * 保存用户信息
      */
     private suspend fun saveUserInfo(
-        userId: String,
-        userName: String,
-        userEmail: String,
-        userPhotoUrl: String
+        userId: String, userName: String, userEmail: String, userPhotoUrl: String
     ) {
         try {
             // 使用AuthRepository保存用户信息

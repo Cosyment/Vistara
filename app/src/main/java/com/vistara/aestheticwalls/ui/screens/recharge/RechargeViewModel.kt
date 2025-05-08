@@ -60,6 +60,14 @@ class RechargeViewModel @Inject constructor(
     private val _productPrices = MutableStateFlow<Map<String, String>>(emptyMap())
     val productPrices: StateFlow<Map<String, String>> = _productPrices.asStateFlow()
 
+    // API商品加载状态
+    private val _apiProductsLoading = MutableStateFlow(false)
+    val apiProductsLoading: StateFlow<Boolean> = _apiProductsLoading.asStateFlow()
+
+    // API商品加载错误
+    private val _apiProductsError = MutableStateFlow<String?>(null)
+    val apiProductsError: StateFlow<String?> = _apiProductsError.asStateFlow()
+
     init {
         loadData()
         observeBillingState()
@@ -79,12 +87,21 @@ class RechargeViewModel @Inject constructor(
 
         // 获取钻石商品列表
         viewModelScope.launch {
-            val products = diamondRepository.getDiamondProducts()
-            _diamondProducts.value = products
+            try {
+                _apiProductsLoading.value = true
+                val products = diamondRepository.getDiamondProducts()
+                _diamondProducts.value = products
+                Log.d(TAG, "Diamond products loaded: ${products.size} products")
 
-            // 默认选中第一个商品
-            if (products.isNotEmpty() && _selectedProduct.value == null) {
-//                _selectedProduct.value = products[0]
+                // 默认选中第一个商品
+                if (products.isNotEmpty() && _selectedProduct.value == null) {
+                    _selectedProduct.value = products[0]
+                }
+            } catch (e: Exception) {
+                _apiProductsError.value = e.message
+                Log.e(TAG, "Error loading diamond products: ${e.message}", e)
+            } finally {
+                _apiProductsLoading.value = false
             }
         }
 
@@ -155,17 +172,10 @@ class RechargeViewModel @Inject constructor(
 
         _productPrices.value = priceMap
 
-        // 重新加载钻石商品列表，以获取最新的价格信息
-        viewModelScope.launch {
-            val products = diamondRepository.getDiamondProducts()
-            _diamondProducts.value = products
-
-            // 如果当前没有选中的商品，或者选中的商品不在列表中，则选择第一个商品
-            if (_selectedProduct.value == null || !products.contains(_selectedProduct.value)) {
-                if (products.isNotEmpty()) {
-                    _selectedProduct.value = products[0]
-                }
-            }
+        // 如果当前没有选中的商品，或者选中的商品不在列表中，则选择第一个商品
+        val currentProducts = _diamondProducts.value
+        if (currentProducts.isNotEmpty() && (_selectedProduct.value == null || !currentProducts.contains(_selectedProduct.value))) {
+            _selectedProduct.value = currentProducts[0]
         }
     }
 
@@ -192,4 +202,6 @@ class RechargeViewModel @Inject constructor(
     fun connectBillingService() {
         billingManager.connectToPlayBilling()
     }
+
+
 }
