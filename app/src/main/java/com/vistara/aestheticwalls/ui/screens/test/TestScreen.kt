@@ -44,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vistara.aestheticwalls.R
-import com.vistara.aestheticwalls.ui.components.PaymentMethod
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.ui.components.PaymentMethodDialog
 import com.vistara.aestheticwalls.ui.components.TextInputDialog
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -355,7 +355,7 @@ fun TestScreen(
             // 显示选择的支付方式
             selectedPaymentMethod?.let {
                 Text(
-                    text = "已选择支付方式: ${it.displayName}",
+                    text = "已选择支付方式: ${it.name}",
                     modifier = Modifier.padding(top = 8.dp),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)

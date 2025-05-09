@@ -480,6 +480,8 @@
     <string name="diamond_icon">钻石图标</string>
     <string name="available_diamonds">可用钻石</string>
     <string name="first_recharge_bonus">首充奖励：额外赠送20%钻石！</string>
+    <string name="loading_products">正在加载商品...</string>
+    <string name="error_loading_products">加载商品失败: %1$s</string>
 
     <!-- 支付弹框相关 -->
     <string name="diamond_label">钻石</string>
@@ -489,6 +491,11 @@
     <string name="coupon">优惠券</string>
     <string name="none">无</string>
     <string name="payment_price">¥99.99</string>
+    <string name="payment">支付</string>
+    <string name="creating_order">正在创建订单...</string>
+    <string name="order_creation_failed">创建订单失败</string>
+    <string name="error_loading_page">加载页面失败</string>
+    <string name="no_payment_methods">没有可用的支付方式</string>
 
     <!-- 高级会员页面相关 -->
     <string name="exclusive_privileges">5项专属特权</string>

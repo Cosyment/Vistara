@@ -153,7 +153,8 @@ fun MainNavigation(navController: NavHostController = rememberNavController()) {
             // 钻石充值页面
             composable("diamond") {
                 RechargeScreen(
-                    onBackPressed = { navController.navigateUp() })
+                    onBackPressed = { navController.navigateUp() },
+                    navController = navController)
             }
 
             // 搜索页面

@@ -4,6 +4,7 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiService {
     @POST("google/login")
@@ -18,8 +19,8 @@ interface ApiService {
     @GET("/system/price/getList")
     suspend fun getProducts(): ApiResponse<List<DiamondProduct>>
 
-    @GET("/system/method/getPayMethod")
-    suspend fun getPaymentMethods(): ApiResponse<PaymentMethodsResponse>
+    @GET("/system/method/getPayMethod/{itemName}")
+    suspend fun getPaymentMethods(@Path("itemName") itemName: String): ApiResponse<List<PaymentMethod>>
 }
 
 data class ApiResponse<T>(
@@ -35,42 +36,31 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val token: String,
-    val isPremium: Boolean? = false
+    val token: String, val isPremium: Boolean? = false
 )
 
 data class ProfileResponse(
-    val nickname: String,
-    val email: String,
-    val avatar: String,
-    val diamond: Int
+    val nickname: String, val email: String, val avatar: String, val diamond: Int
 )
 
 data class CreateOrderRequest(
-    val productId: String, val quantity: Int = 1, val paymentMethodId: String
+    val priceId: String, val paymentMethodId: String
 )
 
 data class CreateOrderResponse(
-    val orderId: String, val status: String, val paymentUrl: String? = null, val msg: String? = null
+    val orderId: String, val status: String, val payUrl: String? = null
 )
 
-data class Product(
-    val id: String,
-    val name: String,
-    val description: String,
-    val price: Double,
-    val currency: String = "CNY",
-    val imageUrl: String? = null
-)
-
-data class ProductsResponse(
-    val products: List<Product>?, val msg: String? = null
-)
 
 data class PaymentMethod(
-    val id: String, val name: String, val icon: String? = null, val isAvailable: Boolean = true
-)
-
-data class PaymentMethodsResponse(
-    val methods: List<PaymentMethod>, val msg: String? = null
-)
+    val id: String,
+    val name: String,
+    val price: String,
+    val dollarPrice: String,
+    val currency: String,
+    val productId: String,
+    val payMethodId: Int,
+    val payTypeMessage: String
+) {
+    val isGooglePay: Boolean = payMethodId == 1
+}

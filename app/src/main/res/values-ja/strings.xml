@@ -477,6 +477,8 @@
     <string name="diamond_icon">ダイヤモンドアイコン</string>
     <string name="available_diamonds">利用可能なダイヤモンド</string>
     <string name="first_recharge_bonus">初回チャージボーナス：20%追加ダイヤモンドをゲット！</string>
+    <string name="loading_products">商品を読み込み中...</string>
+    <string name="error_loading_products">商品の読み込みに失敗しました: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">ダイヤモンド</string>
@@ -486,6 +488,11 @@
     <string name="coupon">クーポン</string>
     <string name="none">なし</string>
     <string name="payment_price">¥1,980</string>
+    <string name="payment">お支払い</string>
+    <string name="creating_order">注文を作成中...</string>
+    <string name="order_creation_failed">注文の作成に失敗しました</string>
+    <string name="error_loading_page">ページの読み込みに失敗しました</string>
+    <string name="no_payment_methods">利用可能な支払い方法がありません</string>
 
     <!-- Premium Screen related -->
     <string name="exclusive_privileges">5つの特典</string>

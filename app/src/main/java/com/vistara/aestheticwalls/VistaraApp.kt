@@ -94,7 +94,7 @@ class VistaraApp : Application() {
 
         AppsFlyerLib.getInstance().apply {
             // 初始化SDK时传入转化数据监听器
-            init("pYBryM6RbSH6fTTYXAQ4xM", conversionDataListener, this@VistaraApp)
+            init(AF_DEV_KEY, conversionDataListener, this@VistaraApp)
 
             setCollectAndroidID(true)
 

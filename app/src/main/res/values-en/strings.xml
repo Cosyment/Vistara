@@ -477,6 +477,8 @@
     <string name="diamond_icon">Diamond Icon</string>
     <string name="available_diamonds">Available Diamonds</string>
     <string name="first_recharge_bonus">First recharge bonus: Get extra 20% diamonds!</string>
+    <string name="loading_products">Loading products...</string>
+    <string name="error_loading_products">Error loading products: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">Diamond</string>
@@ -486,6 +488,11 @@
     <string name="coupon">Coupon</string>
     <string name="none">None</string>
     <string name="payment_price">$15.99</string>
+    <string name="payment">Payment</string>
+    <string name="creating_order">Creating order...</string>
+    <string name="order_creation_failed">Failed to create order</string>
+    <string name="error_loading_page">Error loading page</string>
+    <string name="no_payment_methods">No payment methods available</string>
 
     <!-- Premium Screen related -->
     <string name="exclusive_privileges">5 Exclusive Privilege</string>

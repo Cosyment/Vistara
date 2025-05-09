@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.ui.screens.recharge
 
 import android.app.Activity
 import android.content.res.Configuration
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -42,8 +43,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.DiamondProduct
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
+import com.vistara.aestheticwalls.ui.components.PaymentMethodDialog
 import com.vistara.aestheticwalls.ui.icons.AppIcons
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 import com.vistara.aestheticwalls.ui.theme.stringResource
@@ -54,7 +58,9 @@ import com.vistara.aestheticwalls.ui.theme.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RechargeScreen(
-    onBackPressed: () -> Unit, viewModel: RechargeViewModel = hiltViewModel()
+    onBackPressed: () -> Unit,
+    navController: NavController? = null,
+    viewModel: RechargeViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -67,12 +73,55 @@ fun RechargeScreen(
     val productPrices by viewModel.productPrices.collectAsState()
     val apiProductsLoading by viewModel.apiProductsLoading.collectAsState()
     val apiProductsError by viewModel.apiProductsError.collectAsState()
+    val paymentMethods by viewModel.paymentMethods.collectAsState()
+    val showPaymentDialog by viewModel.showPaymentDialog.collectAsState()
+    val paymentUrl by viewModel.paymentUrl.collectAsState()
+    val orderCreationState by viewModel.orderCreationState.collectAsState()
 
     var showTransactions by remember { mutableStateOf(false) }
 
     // 连接计费服务
     LaunchedEffect(Unit) {
         viewModel.connectBillingService()
+    }
+
+    // 处理支付URL
+    LaunchedEffect(paymentUrl) {
+        paymentUrl?.let { url ->
+            try {
+                // 对URL进行编码
+                val encodedUrl = java.net.URLEncoder.encode(url, "UTF-8")
+                val route = "webview?url=$encodedUrl"
+
+                // 检查navController是否为null
+                if (navController == null) {
+                    Log.e("RechargeScreen", "NavController is null, cannot navigate to WebView")
+                } else {
+                    Log.d("RechargeScreen", "NavController is available, navigating to: $route")
+                    // 导航到WebView页面，使用正确的路由格式
+                    navController.navigate(route) {
+                        // 导航选项
+                        launchSingleTop = true
+                    }
+                    Log.d("RechargeScreen", "Navigation command executed for URL: $url")
+                }
+            } catch (e: Exception) {
+                Log.e("RechargeScreen", "Error navigating to WebView: ${e.message}", e)
+            }
+            // 清除支付URL，避免重复导航
+            viewModel.clearPaymentUrl()
+        }
+    }
+
+    // 显示支付方式对话框
+    if (showPaymentDialog && selectedProduct != null) {
+        PaymentMethodDialog(
+            amount =  "${selectedProduct?.diamondAmount}",
+            paymentMethods = paymentMethods,
+            isLoading = viewModel.paymentMethodsLoading.collectAsState().value,
+            onDismiss = viewModel::hidePaymentDialog,
+            onPaymentSelected = viewModel::handlePaymentMethodSelected
+        )
     }
 
     Scaffold(
@@ -115,7 +164,7 @@ fun RechargeScreen(
                     isLoading = apiProductsLoading,
                     errorMessage = apiProductsError,
                     onProductSelected = viewModel::selectProduct,
-                    onPurchase = { activity?.let { viewModel.purchaseDiamond(it) } })
+                    onPurchase = { viewModel.showPaymentDialog() })
             }
 
             // 交易记录
@@ -225,7 +274,7 @@ fun RechargeContent(
                         ?: stringResource(R.string.loading),
                     onClick = {
                         onProductSelected(product)
-                        onPurchase
+                        onPurchase()
                     })
             }
         }

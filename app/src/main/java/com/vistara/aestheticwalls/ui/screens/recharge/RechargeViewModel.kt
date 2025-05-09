@@ -1,14 +1,16 @@
 package com.vistara.aestheticwalls.ui.screens.recharge
 
 import android.app.Activity
+import android.app.Application
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -24,8 +26,10 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RechargeViewModel @Inject constructor(
-    private val diamondRepository: DiamondRepository, private val billingManager: BillingManager
-) : ViewModel() {
+    private val application: Application,
+    private val diamondRepository: DiamondRepository,
+    private val billingManager: BillingManager,
+) : AndroidViewModel(application) {
 
     companion object {
         private const val TAG = "RechargeViewModel"
@@ -67,6 +71,30 @@ class RechargeViewModel @Inject constructor(
     // API商品加载错误
     private val _apiProductsError = MutableStateFlow<String?>(null)
     val apiProductsError: StateFlow<String?> = _apiProductsError.asStateFlow()
+
+    // 支付方式列表
+    private val _paymentMethods = MutableStateFlow<List<PaymentMethod>>(emptyList())
+    val paymentMethods: StateFlow<List<PaymentMethod>> = _paymentMethods.asStateFlow()
+
+    // 支付方式加载状态
+    private val _paymentMethodsLoading = MutableStateFlow(false)
+    val paymentMethodsLoading: StateFlow<Boolean> = _paymentMethodsLoading.asStateFlow()
+
+    // 支付方式加载错误
+    private val _paymentMethodsError = MutableStateFlow<String?>(null)
+    val paymentMethodsError: StateFlow<String?> = _paymentMethodsError.asStateFlow()
+
+    // 显示支付方式对话框
+    private val _showPaymentDialog = MutableStateFlow(false)
+    val showPaymentDialog: StateFlow<Boolean> = _showPaymentDialog.asStateFlow()
+
+    // 订单创建状态
+    private val _orderCreationState = MutableStateFlow<OrderCreationState>(OrderCreationState.Idle)
+    val orderCreationState: StateFlow<OrderCreationState> = _orderCreationState.asStateFlow()
+
+    // 支付URL
+    private val _paymentUrl = MutableStateFlow<String?>(null)
+    val paymentUrl: StateFlow<String?> = _paymentUrl.asStateFlow()
 
     init {
         loadData()
@@ -179,7 +207,7 @@ class RechargeViewModel @Inject constructor(
                 _selectedProduct.value
             ))
         ) {
-            _selectedProduct.value = currentProducts[0]
+//            _selectedProduct.value = currentProducts[0]
         }
     }
 
@@ -207,5 +235,124 @@ class RechargeViewModel @Inject constructor(
         billingManager.connectToPlayBilling()
     }
 
+    /**
+     * 加载支付方式
+     */
+    fun loadPaymentMethods() {
+        viewModelScope.launch {
+            try {
+                _paymentMethodsLoading.value = true
+                _paymentMethodsError.value = null
 
+                val result =
+                    diamondRepository.getPaymentMethods(_selectedProduct.value?.itemName ?: "")
+                result.onSuccess { methods ->
+                    _paymentMethods.value = methods
+                    Log.d(TAG, "Payment methods loaded: ${methods.size}")
+                }.onError { code, errorMsg, source ->
+                    _paymentMethodsError.value = errorMsg
+                    Log.e(TAG, "Failed to load payment methods: $errorMsg")
+                }
+            } catch (e: Exception) {
+                _paymentMethodsError.value = e.message
+                Log.e(TAG, "Error loading payment methods: ${e.message}", e)
+            } finally {
+                _paymentMethodsLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * 显示支付方式对话框
+     */
+    fun showPaymentDialog() {
+        // 加载支付方式
+        loadPaymentMethods()
+        // 显示对话框
+        _showPaymentDialog.value = true
+    }
+
+    /**
+     * 隐藏支付方式对话框
+     */
+    fun hidePaymentDialog() {
+        _showPaymentDialog.value = false
+    }
+
+    /**
+     * 处理支付方式选择
+     */
+    fun handlePaymentMethodSelected(paymentMethod: PaymentMethod) {
+        // 获取当前选中的商品
+        val product = _selectedProduct.value ?: return
+
+        Log.d(
+            TAG, "Selected payment method: ${product.id} ${product.productId} ${paymentMethod.name}"
+        )
+
+        // 设置订单创建状态为加载中
+        _orderCreationState.value = OrderCreationState.Loading
+
+        // 创建订单
+        viewModelScope.launch {
+            try {
+                val result = diamondRepository.createOrder(
+                    productId = paymentMethod.id, paymentMethodId = paymentMethod.id
+                )
+
+                result.onSuccess { orderResponse ->
+                    // 订单创建成功
+                    _orderCreationState.value = OrderCreationState.Success(orderResponse)
+
+                    // 根据支付方式处理不同的支付逻辑
+                    when {
+                        // 如果是Google Play支付
+                        paymentMethod.isGooglePay -> {
+                            // 隐藏对话框
+                            hidePaymentDialog()
+                            // 调用Google Play支付
+                            val context = getApplication<Application>().applicationContext
+                            val activity = context as? Activity
+                            purchaseDiamond(activity)
+                        }
+                        // 其他支付方式
+                        else -> {
+                            // 隐藏对话框
+                            hidePaymentDialog()
+                            // 设置支付URL
+                            _paymentUrl.value = orderResponse.payUrl
+                            Log.d(TAG, "Payment URL: ${orderResponse.payUrl}")
+                        }
+                    }
+                }.onError { code, errorMsg, source ->
+                    // 订单创建失败
+                    _orderCreationState.value = OrderCreationState.Error(errorMsg)
+                    Log.e(TAG, "Failed to create order: $errorMsg")
+                }
+            } catch (e: Exception) {
+                // 订单创建异常
+                _orderCreationState.value = OrderCreationState.Error(e.message ?: "Unknown error")
+                Log.e(TAG, "Error creating order: ${e.message}", e)
+            }
+        }
+    }
+
+    /**
+     * 清除支付URL
+     */
+    fun clearPaymentUrl() {
+        _paymentUrl.value = null
+    }
+}
+
+/**
+ * 订单创建状态
+ */
+sealed class OrderCreationState {
+    object Idle : OrderCreationState()
+    object Loading : OrderCreationState()
+    data class Success(val orderResponse: com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse) :
+        OrderCreationState()
+
+    data class Error(val message: String) : OrderCreationState()
 }

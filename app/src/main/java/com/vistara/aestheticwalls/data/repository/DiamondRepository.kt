@@ -4,6 +4,8 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
 import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -82,4 +84,18 @@ interface DiamondRepository {
      * @return 是否消费成功
      */
     suspend fun consumeDiamonds(amount: Int, description: String, itemId: String? = null): Boolean
+
+    /**
+     * 获取支付方式列表
+     * @return 支付方式列表的API结果
+     */
+    suspend fun getPaymentMethods(itemName: String): ApiResult<List<PaymentMethod>>
+
+    /**
+     * 创建订单
+     * @param productId 商品ID
+     * @param paymentMethodId 支付方式ID
+     * @return 创建订单的API结果
+     */
+    suspend fun createOrder(productId: String, paymentMethodId: String): ApiResult<CreateOrderResponse>
 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,19 +40,25 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 
 /**
  * 支付方式选择弹框
  */
 @Composable
 fun PaymentMethodDialog(
-    amount: String = "5600", onDismiss: () -> Unit, onPaymentSelected: (PaymentMethod) -> Unit
+    amount: String = "5600",
+    paymentMethods: List<PaymentMethod> = emptyList(),
+    isLoading: Boolean = false,
+    onDismiss: () -> Unit,
+    onPaymentSelected: (PaymentMethod) -> Unit
 ) {
     // 控制动画状态
     var isVisible by remember { mutableStateOf(false) }
@@ -100,6 +108,7 @@ fun PaymentMethodDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
+                .navigationBarsPadding()
                 .wrapContentSize(Alignment.BottomCenter)
         ) {
             Box(
@@ -181,7 +190,7 @@ fun PaymentMethodDialog(
                                         Text(
                                             text = amount,
                                             color = Color.White,
-                                            fontSize = 16.sp,
+                                            fontSize = 20.sp,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                     }
@@ -207,10 +216,41 @@ fun PaymentMethodDialog(
                             )
 
                             // 支付方式列表
-                            PaymentMethodList(
-                                modifier = Modifier.padding(top = 5.dp),
-                                onPaymentSelected = handlePaymentSelected
-                            )
+                            if (isLoading) {
+                                // 显示加载指示器
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                        .padding(top = 5.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        color = Color.White
+                                    )
+                                }
+                            } else if (paymentMethods.isEmpty()) {
+                                // 显示空状态
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                        .padding(top = 5.dp), contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.no_payment_methods),
+                                        color = Color.White,
+                                        fontSize = 16.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            } else {
+                                // 显示支付方式列表
+                                PaymentMethodList(
+                                    modifier = Modifier.padding(top = 5.dp),
+                                    paymentMethods = paymentMethods,
+                                    onPaymentSelected = handlePaymentSelected
+                                )
+                            }
                         }
                     }
                 }
@@ -228,9 +268,7 @@ private fun CountrySelector(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = stringResource(R.string.country),
-            color = Color(0xFF9F9CA6),
-            fontSize = 12.sp
+            text = stringResource(R.string.country), color = Color(0xFF9F9CA6), fontSize = 12.sp
         )
 
         Card(
@@ -300,9 +338,7 @@ private fun CouponSelector(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = stringResource(R.string.coupon),
-            color = Color(0xFF9F9CA6),
-            fontSize = 12.sp
+            text = stringResource(R.string.coupon), color = Color(0xFF9F9CA6), fontSize = 12.sp
         )
 
         Card(
@@ -336,39 +372,31 @@ private fun CouponSelector(
  */
 @Composable
 private fun PaymentMethodList(
-    modifier: Modifier = Modifier, onPaymentSelected: (PaymentMethod) -> Unit
+    modifier: Modifier = Modifier,
+    paymentMethods: List<PaymentMethod> = emptyList(),
+    onPaymentSelected: (PaymentMethod) -> Unit
 ) {
-    var selectedPaymentMethod by remember { mutableStateOf<PaymentMethod?>(null) }
+    var selectedPaymentMethod by remember {
+        mutableStateOf<PaymentMethod?>(
+            null
+        )
+    }
 
     Column(modifier = modifier) {
-        // 支付方式项
-        PaymentMethodItem(
-            paymentMethod = PaymentMethod.MAYBANK,
-            isSelected = selectedPaymentMethod == PaymentMethod.MAYBANK,
-            onClick = {
-                selectedPaymentMethod = PaymentMethod.MAYBANK
-                onPaymentSelected(PaymentMethod.MAYBANK)
-            })
+        // 显示支付方式列表
+        paymentMethods.forEachIndexed { index, paymentMethod ->
+            if (index > 0) {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        PaymentMethodItem(
-            paymentMethod = PaymentMethod.BSN,
-            isSelected = selectedPaymentMethod == PaymentMethod.BSN,
-            onClick = {
-                selectedPaymentMethod = PaymentMethod.BSN
-                onPaymentSelected(PaymentMethod.BSN)
-            })
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        PaymentMethodItem(
-            paymentMethod = PaymentMethod.RHB,
-            isSelected = selectedPaymentMethod == PaymentMethod.RHB,
-            onClick = {
-                selectedPaymentMethod = PaymentMethod.RHB
-                onPaymentSelected(PaymentMethod.RHB)
-            })
+            PaymentMethodItem(
+                paymentMethod = paymentMethod,
+                isSelected = selectedPaymentMethod?.id == paymentMethod.id,
+                onClick = {
+                    selectedPaymentMethod = paymentMethod
+                    onPaymentSelected(paymentMethod)
+                })
+        }
     }
 }
 
@@ -379,6 +407,12 @@ private fun PaymentMethodList(
 private fun PaymentMethodItem(
     paymentMethod: PaymentMethod, isSelected: Boolean, onClick: () -> Unit
 ) {
+    // 根据支付方式ID获取对应的图标资源
+    val iconRes = when (paymentMethod.payMethodId) {
+        1 -> R.mipmap.ic_google
+        else -> R.mipmap.ic_payermax // 默认图标
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -398,16 +432,16 @@ private fun PaymentMethodItem(
         ) {
             // 银行图标
             Image(
-                painter = painterResource(id = paymentMethod.iconRes),
-                contentDescription = paymentMethod.displayName,
+                painter = painterResource(id = iconRes),
+                contentDescription = paymentMethod.name,
                 modifier = Modifier.size(24.dp),
                 contentScale = ContentScale.Fit
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             Text(
-                text = paymentMethod.displayName,
+                text = paymentMethod.payTypeMessage,
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium
@@ -424,7 +458,7 @@ private fun PaymentMethodItem(
                     .padding(horizontal = 20.dp, vertical = 5.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.payment_price),
+                    text = "${paymentMethod.currency} ${paymentMethod.price}",
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold
@@ -438,16 +472,23 @@ private fun PaymentMethodItem(
 @Composable
 fun PaymentMethodDialogPreview() {
     PaymentMethodDialog(
-        amount = "5600",
+        amount = "100",
+        paymentMethods = listOf(
+            PaymentMethod(
+                "maybank",
+                "Maybank",
+                "ic_maybank",
+                "123",
+                productId = "111",
+                payMethodId = 1,
+                currency = "$",
+                payTypeMessage = "TODO()"
+            ), PaymentMethod(
+                "bsn", "BSN", "ic_bsn", "123", productId = "123", payMethodId = 1, currency = "$",
+                payTypeMessage = "TODO()"
+            )
+        ),
+        isLoading = false,
         onDismiss = { /* Handle dismiss */ },
         onPaymentSelected = { /* Handle payment selection */ })
-}
-
-/**
- * 支付方式枚举
- */
-enum class PaymentMethod(val displayName: String, val iconRes: Int) {
-    MAYBANK("Maybank", R.drawable.ic_maybank), BSN("BSN", R.drawable.ic_bsn), RHB(
-        "RHB Bank", R.drawable.ic_rhb
-    )
 }

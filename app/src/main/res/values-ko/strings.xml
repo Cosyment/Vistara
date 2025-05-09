@@ -477,6 +477,8 @@
     <string name="diamond_icon">다이아몬드 아이콘</string>
     <string name="available_diamonds">사용 가능한 다이아몬드</string>
     <string name="first_recharge_bonus">첫 충전 보너스: 추가 20% 다이아몬드 획득!</string>
+    <string name="loading_products">상품 로딩 중...</string>
+    <string name="error_loading_products">상품 로딩 실패: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">다이아몬드</string>
@@ -486,6 +488,11 @@
     <string name="coupon">쿠폰</string>
     <string name="none">없음</string>
     <string name="payment_price">₩19,800</string>
+    <string name="payment">결제</string>
+    <string name="creating_order">주문 생성 중...</string>
+    <string name="order_creation_failed">주문 생성 실패</string>
+    <string name="error_loading_page">페이지 로딩 실패</string>
+    <string name="no_payment_methods">사용 가능한 결제 방법 없음</string>
 
     <!-- Premium Screen related -->
     <string name="exclusive_privileges">5가지 독점 특권</string>

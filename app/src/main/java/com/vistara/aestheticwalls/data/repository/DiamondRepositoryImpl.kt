@@ -9,7 +9,11 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
 import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.ApiSource
 import com.vistara.aestheticwalls.data.remote.api.ApiService
+import com.vistara.aestheticwalls.data.remote.api.CreateOrderRequest
+import com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.utils.StringProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -36,7 +40,7 @@ class DiamondRepositoryImpl @Inject constructor(
         get() = billingManagerProvider.get()
 
     companion object {
-        private const val TAG = "DiamondRepository"
+        private const val TAG = "DiamondRepositoryImpl"
         private const val DEFAULT_USER_ID = "default_user" // 未登录用户的默认ID
     }
 
@@ -304,5 +308,72 @@ class DiamondRepositoryImpl @Inject constructor(
             description = description,
             relatedItemId = itemId
         )
+    }
+
+    /**
+     * 获取支付方式列表
+     */
+    override suspend fun getPaymentMethods(itemName: String): ApiResult<List<PaymentMethod>> {
+        return try {
+            // 调用API获取支付方式
+            val response = apiService.getPaymentMethods(itemName)
+
+            if (response.isSuccess && response.data != null) {
+                Log.d(TAG, "Payment methods loaded successfully: ${response.data.size} methods")
+                ApiResult.Success(response.data)
+            } else {
+                Log.e(TAG, "Failed to load payment methods: ${response.msg}")
+                ApiResult.Error(
+                    code = response.code,
+                    message = response.msg,
+                    source = ApiSource.BACKEND
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading payment methods: ${e.message}", e)
+            ApiResult.Error(
+                code = null,
+                message = e.message ?: "Unknown error",
+                source = ApiSource.BACKEND
+            )
+        }
+    }
+
+    /**
+     * 创建订单
+     */
+    override suspend fun createOrder(
+        priceId: String,
+        paymentMethodId: String
+    ): ApiResult<CreateOrderResponse> {
+        return try {
+            // 创建订单请求
+            val request = CreateOrderRequest(
+                priceId = priceId,
+                paymentMethodId = paymentMethodId
+            )
+
+            // 调用API创建订单
+            val response = apiService.createOrder(request)
+
+            if (response.isSuccess && response.data != null) {
+                Log.d(TAG, "Order created successfully: ${response.data.orderId}")
+                ApiResult.Success(response.data)
+            } else {
+                Log.e(TAG, "Failed to create order: ${response.msg}")
+                ApiResult.Error(
+                    code = response.code,
+                    message = response.msg,
+                    source = ApiSource.BACKEND
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error creating order: ${e.message}", e)
+            ApiResult.Error(
+                code = null,
+                message = e.message ?: "Unknown error",
+                source = ApiSource.BACKEND
+            )
+        }
     }
 }

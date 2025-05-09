@@ -479,6 +479,8 @@
     <string name="diamond_icon">Ikon Berlian</string>
     <string name="available_diamonds">Berlian Tersedia</string>
     <string name="first_recharge_bonus">Bonus isi ulang pertama: Dapatkan 20% berlian tambahan!</string>
+    <string name="loading_products">Memuat produk...</string>
+    <string name="error_loading_products">Gagal memuat produk: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">Berlian</string>
@@ -488,6 +490,11 @@
     <string name="coupon">Kupon</string>
     <string name="none">Tidak Ada</string>
     <string name="payment_price">Rp239.000</string>
+    <string name="payment">Pembayaran</string>
+    <string name="creating_order">Membuat pesanan...</string>
+    <string name="order_creation_failed">Gagal membuat pesanan</string>
+    <string name="error_loading_page">Gagal memuat halaman</string>
+    <string name="no_payment_methods">Tidak ada metode pembayaran tersedia</string>
 
     <!-- Premium Screen related -->
     <string name="exclusive_privileges">5 Hak Istimewa Eksklusif</string>
