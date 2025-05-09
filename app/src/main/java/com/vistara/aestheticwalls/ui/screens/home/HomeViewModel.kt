@@ -143,7 +143,6 @@ class HomeViewModel @Inject constructor(
                 try {
                     when (val result = wallpaperRepository.getWallpapers("live", 1, 10)) {
                         is ApiResult.Success -> {
-                            Log.d(TAG, "动态壁纸加载成功: 获取到${result.data.size}个壁纸")
                             _liveWallpapers.value = result.data
                         }
                         is ApiResult.Error -> {

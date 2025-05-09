@@ -37,6 +37,12 @@ class UserRepositoryImpl @Inject constructor(
         private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         private val SERVER_TOKEN = stringPreferencesKey("server_token")
         private val USER_DIAMOND_BALANCE = intPreferencesKey("user_diamond_balance")
+
+        // 用户信息相关的Key
+        private val USER_NICKNAME = stringPreferencesKey("user_nickname")
+        private val USER_EMAIL = stringPreferencesKey("user_email")
+        private val USER_AVATAR = stringPreferencesKey("user_avatar")
+        private val USER_IS_WHITELIST = stringPreferencesKey("user_is_whitelist")
     }
 
     override val isPremiumUser: Flow<Boolean> = dataStore.data.map { preferences ->
@@ -51,6 +57,18 @@ class UserRepositoryImpl @Inject constructor(
         }
     }
 
+    override val userNickname: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[USER_NICKNAME]
+    }
+
+    override val userAvatar: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[USER_AVATAR]
+    }
+
+    override val userEmail: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[USER_EMAIL]
+    }
+
     override suspend fun checkPremiumStatus(): Boolean {
         return dataStore.data.map { preferences ->
             val isPremium = preferences[IS_PREMIUM_USER] == true
@@ -63,6 +81,10 @@ class UserRepositoryImpl @Inject constructor(
                 isPremium
             }
         }.first()
+    }
+
+    override suspend fun getLocalUser() {
+
     }
 
     override suspend fun updatePremiumStatus(isPremium: Boolean) {
@@ -86,6 +108,52 @@ class UserRepositoryImpl @Inject constructor(
             preferences.remove(PREMIUM_EXPIRY_DATE)
             preferences.remove(IS_LOGGED_IN)
             preferences.remove(SERVER_TOKEN)
+            preferences.remove(USER_NICKNAME)
+            preferences.remove(USER_EMAIL)
+            preferences.remove(USER_AVATAR)
+            preferences.remove(USER_IS_WHITELIST)
+            preferences.remove(USER_DIAMOND_BALANCE)
+        }
+    }
+
+    /**
+     * 获取缓存的用户个人资料
+     */
+    override suspend fun getCachedUserProfile(): ProfileResponse? {
+        return dataStore.data.map { preferences ->
+            val nickname = preferences[USER_NICKNAME]
+            val email = preferences[USER_EMAIL]
+            val avatar = preferences[USER_AVATAR]
+            val isWhiteList = preferences[USER_IS_WHITELIST]
+            val diamond = preferences[USER_DIAMOND_BALANCE]
+
+            if (email != null) {
+                ProfileResponse(
+                    nickname = nickname ?: "",
+                    email = email,
+                    avatar = avatar ?: "",
+                    diamond = diamond,
+                    isWhiteList = isWhiteList ?: "0"
+                )
+            } else {
+                null
+            }
+        }.first()
+    }
+
+    /**
+     * 缓存用户个人资料
+     */
+    override suspend fun cacheUserProfile(profile: ProfileResponse) {
+        Log.d(TAG, "缓存用户个人资料: $profile")
+        dataStore.edit { preferences ->
+            preferences[USER_NICKNAME] = profile.nickname
+            preferences[USER_EMAIL] = profile.email
+            preferences[USER_AVATAR] = profile.avatar
+            preferences[USER_IS_WHITELIST] = profile.isWhiteList
+            profile.diamond?.let { diamond ->
+                preferences[USER_DIAMOND_BALANCE] = diamond
+            }
         }
     }
 
@@ -143,9 +211,12 @@ class UserRepositoryImpl @Inject constructor(
         return safeApiCall(ApiSource.BACKEND) {
             val response = apiService.getProfile()
             if (response.isSuccess && response.data != null) {
+                // 缓存用户信息
+                cacheUserProfile(response.data)
+
                 // 更新本地钻石余额
                 response.data.diamond.let { diamond ->
-                    updateUserDiamondBalance(diamond)
+                    updateUserDiamondBalance(diamond ?: 0)
                 }
                 response.data
             } else {

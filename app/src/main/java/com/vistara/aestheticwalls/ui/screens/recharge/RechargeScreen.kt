@@ -276,13 +276,6 @@ fun RechargeContent(
                 // 优先使用productId获取的价格，其次使用API价格
                 val displayPrice = googlePriceFromProductId ?: apiPrice
 
-                // 记录价格信息，用于调试
-                Log.d("RechargeScreen", "Product ${product.id}: " +
-                        "productId=${product.productId}, " +
-                        "Google price from productId=$googlePriceFromProductId, " +
-                        "API price=$apiPrice, " +
-                        "Display price=$displayPrice")
-
                 DiamondProductCard(
                     index = index,
                     product = product,

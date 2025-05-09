@@ -58,7 +58,7 @@ fun PaymentMethodDialog(
     paymentMethods: List<PaymentMethod> = emptyList(),
     isLoading: Boolean = false,
     onDismiss: () -> Unit,
-    onPaymentSelected: (PaymentMethod) -> Unit
+    onPaymentSelected: (paymentMethodId: String) -> Unit
 ) {
     // 控制动画状态
     var isVisible by remember { mutableStateOf(false) }
@@ -95,7 +95,7 @@ fun PaymentMethodDialog(
     val handlePaymentSelected = { paymentMethod: PaymentMethod ->
         isClosing = true
         // 等待动画完成后再调用回调
-        onPaymentSelected(paymentMethod)
+        onPaymentSelected(paymentMethod.id)
     }
 
     Dialog(
@@ -484,7 +484,13 @@ fun PaymentMethodDialogPreview() {
                 currency = "$",
                 payTypeMessage = "TODO()"
             ), PaymentMethod(
-                "bsn", "BSN", "ic_bsn", "123", productId = "123", payMethodId = 1, currency = "$",
+                "bsn",
+                "BSN",
+                "ic_bsn",
+                "123",
+                productId = "123",
+                payMethodId = 1,
+                currency = "$",
                 payTypeMessage = "TODO()"
             )
         ),

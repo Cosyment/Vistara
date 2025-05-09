@@ -30,9 +30,6 @@ class AuthInterceptor @Inject constructor(
         val originalRequest = chain.request()
         val url = originalRequest.url.toString()
 
-        Log.d(TAG, "拦截请求: $url")
-        Log.d(TAG, "原始请求头: ${originalRequest.headers}")
-
         // 获取token和邮箱
         val token = runBlocking {
             val t = userRepository.get().getServerToken()
@@ -53,7 +50,6 @@ class AuthInterceptor @Inject constructor(
 
         // 如果token为空，则不添加认证头
         if (token.isNullOrEmpty()) {
-            Log.w(TAG, "Token为空，不添加认证头，直接发送原始请求")
             return chain.proceed(originalRequest).also {
                 Log.d(TAG, "请求完成，响应码: ${it.code}")
             }
@@ -69,11 +65,8 @@ class AuthInterceptor @Inject constructor(
         }
 
         val newRequest = requestBuilder.build()
-        Log.d(TAG, "添加认证头: $token")
-        Log.d(TAG, "新请求头: ${newRequest.headers[HEADER_AUTH]}")
 
         return chain.proceed(newRequest).also {
-            Log.d(TAG, "请求完成，响应码: ${it.code}")
             if (!it.isSuccessful) {
                 Log.e(TAG, "请求失败，响应码: ${it.code}, 消息: ${it.message}")
             }

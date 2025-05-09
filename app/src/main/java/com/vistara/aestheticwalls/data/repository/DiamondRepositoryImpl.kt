@@ -205,15 +205,9 @@ class DiamondRepositoryImpl @Inject constructor(
 
             // 处理API结果
             if (result.isSuccess) {
-                Log.d(TAG, "API products loaded successfully")
 
                 // 记录API返回的商品数据
                 result.data?.forEach { product ->
-                    Log.d(TAG, "API product: id=${product.id}, name=${product.name}, " +
-                            "diamondAmount=${product.diamondAmount}, price=${product.price}, " +
-                            "currency=${product.currency}, productId=${product.productId}, " +
-                            "googlePlayProductId=${product.googlePlayProductId}")
-
                     // 检查productId是否与BillingManager中的SKU匹配
                     if (product.productId != null) {
                         val isInSkuList = BillingManager.DIAMOND_SKUS.contains(product.productId)
@@ -231,7 +225,6 @@ class DiamondRepositoryImpl @Inject constructor(
                         // 尝试根据钻石数量映射到Google Play商品ID
                         val googlePlayId = mapToGooglePlayProductId(product.diamondAmount)
                         if (googlePlayId != null) {
-                            Log.d(TAG, "Mapped product ${product.id} with diamondAmount=${product.diamondAmount} to productId=$googlePlayId")
                             product.copy(productId = googlePlayId)
                         } else {
                             product

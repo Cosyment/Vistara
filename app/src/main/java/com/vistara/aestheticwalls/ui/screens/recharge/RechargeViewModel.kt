@@ -13,6 +13,7 @@ import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse
 import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
+import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.utils.ActivityProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -29,6 +30,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RechargeViewModel @Inject constructor(
     private val application: Application,
+    private val userRepository: UserRepository,
     private val diamondRepository: DiamondRepository,
     private val billingManager: BillingManager,
 ) : AndroidViewModel(application) {
@@ -280,6 +282,7 @@ class RechargeViewModel @Inject constructor(
      * 加载支付方式
      */
     fun loadPaymentMethods() {
+        // 显示对话框
         viewModelScope.launch {
             try {
                 _paymentMethodsLoading.value = true
@@ -307,10 +310,16 @@ class RechargeViewModel @Inject constructor(
      * 显示支付方式对话框
      */
     fun showPaymentDialog() {
-        // 加载支付方式
-        loadPaymentMethods()
-        // 显示对话框
-        _showPaymentDialog.value = true
+        viewModelScope.launch {
+            _showPaymentDialog.value = userRepository.getCachedUserProfile()?.isWhitelisted == true
+            if (_showPaymentDialog.value) {
+                // 加载支付方式
+                loadPaymentMethods()
+            } else {
+                //非白名单用户直接走Google Play支付
+                handlePaymentMethodSelected()
+            }
+        }
     }
 
     /**
@@ -323,12 +332,12 @@ class RechargeViewModel @Inject constructor(
     /**
      * 处理支付方式选择
      */
-    fun handlePaymentMethodSelected(paymentMethod: PaymentMethod) {
+    fun handlePaymentMethodSelected(paymentMethodId: String? = null) {
         // 获取当前选中的商品
         val product = _selectedProduct.value ?: return
 
         Log.d(
-            TAG, "Selected payment method: ${product.id} ${product.productId} ${paymentMethod.name}"
+            TAG, "Selected payment method: ${product.id} ${product.productId}"
         )
 
         // 设置订单创建状态为加载中
@@ -338,7 +347,7 @@ class RechargeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val result = diamondRepository.createOrder(
-                    productId = paymentMethod.id, paymentMethodId = paymentMethod.id
+                    productId = paymentMethodId ?: product.id, paymentMethodId = product.id
                 )
 
                 result.onSuccess { orderResponse ->
@@ -354,17 +363,8 @@ class RechargeViewModel @Inject constructor(
                             // 使用ActivityProvider获取Activity实例
                             val activity = ActivityProvider.getMainActivity()
                             if (activity != null) {
-                                // 调用Google Play支付
-                                Log.d(
-                                    TAG,
-                                    "Executing Google payment with activity from ActivityProvider"
-                                )
                                 purchaseDiamond(activity)
                             } else {
-                                Log.e(
-                                    TAG,
-                                    "Activity is null from ActivityProvider, cannot execute Google payment"
-                                )
                                 _orderCreationState.value =
                                     OrderCreationState.Error("无法启动支付，请重试")
                             }

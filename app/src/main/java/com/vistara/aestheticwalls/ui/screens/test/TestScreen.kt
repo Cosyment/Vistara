@@ -368,7 +368,7 @@ fun TestScreen(
                     amount = "5600",
                     onDismiss = { showPaymentDialog = false },
                     onPaymentSelected = {
-                        selectedPaymentMethod = it
+//                        selectedPaymentMethod = it
                         showPaymentDialog = false
                     }
                 )

@@ -1,6 +1,7 @@
 package com.vistara.aestheticwalls.data.remote.api
 
 import com.vistara.aestheticwalls.data.model.DiamondProduct
+import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -21,6 +22,9 @@ interface ApiService {
 
     @GET("/system/method/getPayMethod/{itemName}")
     suspend fun getPaymentMethods(@Path("itemName") itemName: String): ApiResponse<List<PaymentMethod>>
+
+    @GET("/system/order/list")
+    suspend fun getOrders(): ApiResponse<List<DiamondTransaction>>
 }
 
 data class ApiResponse<T>(
@@ -43,11 +47,12 @@ data class ProfileResponse(
     val nickname: String,
     val email: String,
     val avatar: String,
-    val diamond: Int,
-    val whitelisted: Boolean
+    val expireTime: String? = null,
+    val diamond: Int?,
+    val isWhiteList: String
 ) {
     val isPremium: Boolean get() = isWhitelisted
-    val isWhitelisted: Boolean get() = whitelisted
+    val isWhitelisted: Boolean get() = isWhiteList == "1"
 }
 
 data class CreateOrderRequest(
