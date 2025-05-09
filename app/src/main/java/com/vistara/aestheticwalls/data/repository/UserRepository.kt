@@ -1,5 +1,7 @@
 package com.vistara.aestheticwalls.data.repository
 
+import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.ProfileResponse
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
@@ -11,4 +13,16 @@ interface UserRepository {
     suspend fun updateLoginStatus(isLoggedIn: Boolean)
     suspend fun saveServerToken(token: String)
     suspend fun getServerToken(): String?
+
+    /**
+     * 获取用户个人资料
+     * @return 用户个人资料的API结果
+     */
+    suspend fun getUserProfile(): ApiResult<ProfileResponse>
+
+    /**
+     * 刷新用户个人资料
+     * 从服务器获取最新的用户信息并更新本地缓存
+     */
+    suspend fun refreshUserProfile()
 }

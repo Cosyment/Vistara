@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.data.local.DiamondDao
 import com.vistara.aestheticwalls.data.local.WallpaperDao
 import com.vistara.aestheticwalls.data.mapper.PexelsMapper
@@ -11,6 +12,7 @@ import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
 import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
+import com.vistara.aestheticwalls.data.remote.api.ApiService
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
@@ -93,9 +95,11 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideUserRepository(
-        dataStore: DataStore<Preferences>
+        dataStore: DataStore<Preferences>,
+        apiService: ApiService,
+        diamondRepository: dagger.Lazy<DiamondRepository>
     ): UserRepository {
-        return UserRepositoryImpl(dataStore)
+        return UserRepositoryImpl(dataStore, apiService, diamondRepository)
     }
 
     @Provides
@@ -119,9 +123,9 @@ object RepositoryModule {
     fun provideDiamondRepository(
         diamondDao: DiamondDao,
         authRepository: AuthRepository,
-        billingManagerProvider: javax.inject.Provider<com.vistara.aestheticwalls.billing.BillingManager>,
-        stringProvider: com.vistara.aestheticwalls.utils.StringProvider,
-        apiService: com.vistara.aestheticwalls.data.remote.api.ApiService
+        billingManagerProvider: javax.inject.Provider<BillingManager>,
+        stringProvider: StringProvider,
+        apiService: ApiService
     ): DiamondRepository {
         return DiamondRepositoryImpl(
             diamondDao, authRepository, billingManagerProvider, stringProvider, apiService

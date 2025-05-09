@@ -107,6 +107,23 @@ class MineViewModel @Inject constructor(
                     _userPhotoUrl.value = photoUrl
 
                     Log.d(TAG, "User info loaded: name=$name, photoUrl=$photoUrl")
+
+                    // 刷新用户个人资料
+                    try {
+                        Log.d(TAG, "开始刷新用户个人资料")
+                        userRepository.refreshUserProfile()
+
+                        // 刷新后重新获取钻石余额
+                        val updatedBalance = diamondRepository.getDiamondBalanceValue()
+                        if (updatedBalance != balance) {
+                            _diamondBalance.value = updatedBalance
+                            Log.d(TAG, "钻石余额已更新: $updatedBalance")
+                        }
+
+                        Log.d(TAG, "用户个人资料刷新完成")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "刷新用户个人资料失败: ${e.message}", e)
+                    }
                 }
 
                 Log.d(TAG, "User data loaded successfully")

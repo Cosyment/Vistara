@@ -16,7 +16,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class AuthInterceptor @Inject constructor(
-    private val userRepository: UserRepository,
+    private val userRepository: dagger.Lazy<UserRepository>,
     private val authRepository: dagger.Lazy<AuthRepository>
 ) : Interceptor {
 
@@ -35,7 +35,7 @@ class AuthInterceptor @Inject constructor(
 
         // 获取token和邮箱
         val token = runBlocking {
-            val t = userRepository.getServerToken()
+            val t = userRepository.get().getServerToken()
             Log.d(TAG, "获取到token: ${if (t.isNullOrEmpty()) "" else t}")
             t
         }

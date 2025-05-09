@@ -40,8 +40,15 @@ data class LoginResponse(
 )
 
 data class ProfileResponse(
-    val nickname: String, val email: String, val avatar: String, val diamond: Int
-)
+    val nickname: String,
+    val email: String,
+    val avatar: String,
+    val diamond: Int,
+    val whitelisted: Boolean
+) {
+    val isPremium: Boolean get() = isWhitelisted
+    val isWhitelisted: Boolean get() = whitelisted
+}
 
 data class CreateOrderRequest(
     val priceId: String, val paymentMethodId: String

@@ -16,6 +16,8 @@ import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.api.ApiService
 import com.vistara.aestheticwalls.data.remote.AuthInterceptor
+import com.vistara.aestheticwalls.data.repository.AuthRepository
+import com.vistara.aestheticwalls.data.repository.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -587,8 +589,8 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAuthInterceptor(
-        userRepository: com.vistara.aestheticwalls.data.repository.UserRepository,
-        authRepository: dagger.Lazy<com.vistara.aestheticwalls.data.repository.AuthRepository>
+        userRepository: dagger.Lazy<UserRepository>,
+        authRepository: dagger.Lazy<AuthRepository>
     ): AuthInterceptor {
         return AuthInterceptor(userRepository, authRepository)
     }

@@ -5,8 +5,12 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
+import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.LocaleManager
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -24,6 +28,12 @@ class VistaraApp : Application() {
     @Inject
     lateinit var localeManager: LocaleManager
 
+    @Inject
+    lateinit var userRepository: UserRepository
+
+    // 应用级协程作用域
+    private val appScope = CoroutineScope(Dispatchers.IO)
+
     override fun onCreate() {
         super.onCreate()
 
@@ -32,6 +42,25 @@ class VistaraApp : Application() {
 
         // 启用应用内语言切换
         AppCompatDelegate.setApplicationLocales(AppCompatDelegate.getApplicationLocales())
+
+        // 刷新用户信息
+        refreshUserProfile()
+    }
+
+    /**
+     * 刷新用户个人资料
+     * 从服务器获取最新的用户信息并更新本地缓存
+     */
+    private fun refreshUserProfile() {
+        appScope.launch {
+            try {
+                Log.d(TAG, "开始刷新用户个人资料")
+                userRepository.refreshUserProfile()
+                Log.d(TAG, "用户个人资料刷新完成")
+            } catch (e: Exception) {
+                Log.e(TAG, "刷新用户个人资料失败: ${e.message}", e)
+            }
+        }
     }
 
     private fun initAppsFlyer() {
