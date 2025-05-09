@@ -96,7 +96,7 @@ class AuthViewModel @Inject constructor(
             try {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 val success = authRepository.handleSignInResult(task)
-                if (success) {
+                if (success.isSuccess) {
                     _isLoggedIn.value = true
                     loadUserInfo()
                     _loginResult.value = LoginResult.Success(context.getString(R.string.login_success))

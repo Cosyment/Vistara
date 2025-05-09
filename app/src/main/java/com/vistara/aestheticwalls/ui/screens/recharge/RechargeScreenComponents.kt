@@ -21,8 +21,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -222,12 +220,12 @@ fun FirstRechargeCard() {
                 Spacer(modifier = Modifier.weight(1f))
 
                 // 箭头图标
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
+//                Icon(
+//                    imageVector = Icons.Default.ArrowForward,
+//                    contentDescription = null,
+//                    tint = Color.White,
+//                    modifier = Modifier.size(16.dp)
+//                )
             }
         }
     }
@@ -273,7 +271,7 @@ fun DiamondProductCard(
             ) {
                 Image(
                     painter = painterResource(
-                        ImageUtil.getDrawableByName("ic_diamond${index + 1}")
+                        ImageUtil.getDrawableByName("ic_diamond${if (index < 6) (index + 1) else 6}")
                             ?: R.mipmap.ic_diamond6
                     ), modifier = Modifier.size(40.dp), contentDescription = null
                 )

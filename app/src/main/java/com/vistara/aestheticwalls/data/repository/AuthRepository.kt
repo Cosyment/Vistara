@@ -2,6 +2,8 @@ package com.vistara.aestheticwalls.data.repository
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
+import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.LoginResponse
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -37,7 +39,7 @@ interface AuthRepository {
     /**
      * 处理Google登录结果
      */
-    suspend fun handleSignInResult(completedTask: Task<GoogleSignInAccount>): Boolean
+    suspend fun handleSignInResult(completedTask: Task<GoogleSignInAccount>): ApiResult<LoginResponse>
 
     /**
      * 退出登录

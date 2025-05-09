@@ -2,6 +2,7 @@ package com.vistara.aestheticwalls.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 import java.util.UUID
 
 /**
@@ -47,11 +48,14 @@ data class DiamondTransaction(
 data class DiamondProduct(
     val id: String,
     val name: String,
-    val diamondAmount: Int,
+    @SerializedName("num") val diamondAmount: Int,
     val price: Double,
     val currency: String = "CNY",
+    val itemName: String = "",
+    val payMethodId: Int = 0,
+    val dollarPrice: String? = null,
+    val productId: String? = null,
     val discount: Int = 0,  // 折扣百分比
-    val iconUrl: String? = null,
     val googlePlayProductId: String? = null // Google Play商品ID
 )
 
@@ -60,8 +64,6 @@ data class DiamondProduct(
  * 表示壁纸等内容的钻石价格
  */
 data class DiamondPrice(
-    val itemId: String,
-    val price: Int,
-    val originalPrice: Int? = null, // 原价，用于显示折扣
+    val itemId: String, val price: Int, val originalPrice: Int? = null, // 原价，用于显示折扣
     val isDiscounted: Boolean = false
 )

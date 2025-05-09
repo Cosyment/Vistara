@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
-import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.api.ApiService
 import com.vistara.aestheticwalls.data.remote.api.LoginRequest
 import com.vistara.aestheticwalls.data.repository.AuthRepository
@@ -291,47 +290,35 @@ class TestViewModel @Inject constructor(
 
                 // 调用登录接口
                 val result = apiService.login(loginRequest)
+                Log.d(TAG, "登录请求结果: $result")
 
-                // 处理API结果
-                when (result) {
-                    is ApiResult.Success -> {
-                        val loginResponse = result.data
+                if (result.isSuccess) {
+                    val loginResponse = result.data
 
-                        // 保存token
-                        userRepository.saveServerToken(loginResponse.token)
+                    // 保存token
+                    userRepository.saveServerToken(loginResponse?.token ?: "")
 
-                        // 更新登录状态
-                        userRepository.updateLoginStatus(true)
-                        _isLoggedIn.value = true
+                    // 更新登录状态
+                    userRepository.updateLoginStatus(true)
+                    _isLoggedIn.value = true
 
-                        // 保存用户信息
-                        saveUserInfo(
-                            userId = "test_${System.currentTimeMillis()}",
-                            userName = randomNickname,
-                            userEmail = email,
-                            userPhotoUrl = "https://api.dicebear.com/7.x/micah/png?seed=${email}"
-                        )
+                    // 保存用户信息
+                    saveUserInfo(
+                        userId = "test_${System.currentTimeMillis()}",
+                        userName = randomNickname,
+                        userEmail = email,
+                        userPhotoUrl = "https://api.dicebear.com/7.x/micah/png?seed=${email}"
+                    )
 
-                        // 更新高级状态（如果服务器返回了这个信息）
-                        loginResponse.isPremium?.let { isPremium ->
-                            userRepository.updatePremiumStatus(isPremium)
-                            _isPremiumUser.value = isPremium
-                        }
-
-                        _operationResult.value = context.getString(R.string.login_success)
-                        hideLoginDialog()
-                        Log.d(TAG, "Login successful")
+                    // 更新高级状态（如果服务器返回了这个信息）
+                    loginResponse?.isPremium?.let { isPremium ->
+                        userRepository.updatePremiumStatus(isPremium)
+                        _isPremiumUser.value = isPremium
                     }
 
-                    is ApiResult.Error -> {
-                        _operationResult.value = context.getString(R.string.login_failed) + ": ${result.message}"
-                        Log.e(TAG, "Login failed: ${result.code} ${result.message}")
-                    }
-
-                    is ApiResult.Loading -> {
-                        _operationResult.value = context.getString(R.string.login_loading)
-                        Log.d(TAG, "Login loading")
-                    }
+                    _operationResult.value = context.getString(R.string.login_success)
+                    hideLoginDialog()
+                    Log.d(TAG, "Login successful")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error during login: ${e.message}")

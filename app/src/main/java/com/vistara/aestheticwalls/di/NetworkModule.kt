@@ -49,10 +49,7 @@ object NetworkModule {
     fun provideGson(): Gson {
         return GsonBuilder()
             .setLenient()
-            .registerTypeAdapter(
-                object : TypeToken<ApiResult<*>>() {}.type,
-                com.vistara.aestheticwalls.data.remote.ApiResultAdapterFactory()
-            )
+            .registerTypeAdapterFactory(com.vistara.aestheticwalls.data.remote.ApiResultAdapterFactory())
             .create()
     }
 

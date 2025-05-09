@@ -3,6 +3,7 @@ package com.vistara.aestheticwalls.data.repository
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
+import com.vistara.aestheticwalls.data.remote.ApiResult
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -55,12 +56,12 @@ interface DiamondRepository {
      * 从API获取钻石商品列表
      * @return 成功返回商品列表，失败返回null
      */
-    suspend fun getApiDiamondProducts(): List<DiamondProduct>?
+    suspend fun getRemoteDiamondProducts(): List<DiamondProduct>?
 
     /**
      * 获取钻石商品列表（优先从API获取，失败则使用本地数据）
      */
-    suspend fun getDiamondProducts(): List<DiamondProduct>
+    suspend fun getDiamondProducts(): ApiResult<List<DiamondProduct>>
 
     /**
      * 清除用户数据

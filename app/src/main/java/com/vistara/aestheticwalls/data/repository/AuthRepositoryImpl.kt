@@ -13,8 +13,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.ApiSource
 import com.vistara.aestheticwalls.data.remote.api.ApiService
 import com.vistara.aestheticwalls.data.remote.api.LoginRequest
+import com.vistara.aestheticwalls.data.remote.api.LoginResponse
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -45,9 +47,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     // Google登录客户端
     private val googleSignInClient: GoogleSignInClient by lazy {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .build()
+        val gso =
+            GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build()
         GoogleSignIn.getClient(context, gso)
     }
 
@@ -71,7 +72,7 @@ class AuthRepositoryImpl @Inject constructor(
         preferences[USER_PHOTO_URL]
     }
 
-    override suspend fun handleSignInResult(completedTask: Task<GoogleSignInAccount>): Boolean {
+    override suspend fun handleSignInResult(completedTask: Task<GoogleSignInAccount>): ApiResult<LoginResponse> {
         return try {
             val account = completedTask.getResult(Exception::class.java)
             if (account != null) {
@@ -90,41 +91,38 @@ class AuthRepositoryImpl @Inject constructor(
                         email = account.email ?: "",
                         avatar = account.photoUrl?.toString() ?: "",
                         token = account.idToken ?: ""
-                    )
-
-                    // 发起后端登录请求
+                    )                    // 发起后端登录请求
                     val result = apiService.login(requestBody)
+                    Log.d(TAG, "Login API response: $result")
 
-                    // 处理API结果
-                    when (result) {
-                        is ApiResult.Success -> {
-                            val loginResponse = result.data
-                            Log.d(TAG, "登录成功，准备保存token: ${loginResponse.token}")
+                    if (result.isSuccess) {
+                        Log.d(TAG, "Login API response: $result")
+                        val loginResponse = result.data
+                        loginResponse?.let {
+                            Log.d(TAG, "登录成功: ${loginResponse.token}")
                             userRepository.saveServerToken(loginResponse.token)
                             userRepository.updateLoginStatus(true)
-                            userRepository.updatePremiumStatus(loginResponse.isPremium ?: false)
-                            true
+                            loginResponse.isPremium?.let { isPremium ->
+                                userRepository.updatePremiumStatus(isPremium)
+                            }
                         }
-                        is ApiResult.Error -> {
-                            Log.e(TAG, "Backend login failed: ${result.code} ${result.message}")
-                            false
-                        }
-                        is ApiResult.Loading -> {
-                            Log.d(TAG, "Login loading")
-                            false
-                        }
+                        ApiResult.Success(result.data!!)
+                    } else {
+                        Log.e(TAG, "Backend login failed: ${result.code} ${result.msg}")
+                        ApiResult.Error(result.code, result.msg, ApiSource.BACKEND)
                     }
+                    // 处理API结果
                 } catch (e: Exception) {
                     Log.e(TAG, "Backend login request failed", e)
-                    false
+                    ApiResult.Error(-1, e.message ?: "", ApiSource.BACKEND)
                 }
             } else {
                 Log.e(TAG, "Google sign in failed: account is null")
-                false
+                ApiResult.Error(-1, "Google sign in failed: account is null", ApiSource.BACKEND)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Google sign in failed", e)
-            false
+            ApiResult.Error(-1, e.message ?: "Google sign in failed", ApiSource.BACKEND)
         }
     }
 
@@ -175,10 +173,7 @@ class AuthRepositoryImpl @Inject constructor(
      * 保存用户信息
      */
     override suspend fun saveUserInfo(
-        userId: String,
-        userName: String,
-        userEmail: String,
-        userPhotoUrl: String
+        userId: String, userName: String, userEmail: String, userPhotoUrl: String
     ) {
         dataStore.edit { preferences ->
             preferences[IS_LOGGED_IN] = true

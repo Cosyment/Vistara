@@ -1,6 +1,5 @@
 package com.vistara.aestheticwalls.data.remote.api
 
-import com.vistara.aestheticwalls.data.model.pexels.PexelsCollection
 import com.vistara.aestheticwalls.data.model.pexels.PexelsCollectionMediaResponse
 import com.vistara.aestheticwalls.data.model.pexels.PexelsCollectionsResponse
 import com.vistara.aestheticwalls.data.model.pexels.PexelsPhoto

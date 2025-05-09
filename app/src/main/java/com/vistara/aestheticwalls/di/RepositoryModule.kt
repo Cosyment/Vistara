@@ -11,13 +11,11 @@ import com.vistara.aestheticwalls.data.mapper.UnsplashMapper
 import com.vistara.aestheticwalls.data.mapper.WallhavenMapper
 import com.vistara.aestheticwalls.data.remote.ApiLoadBalancer
 import com.vistara.aestheticwalls.data.remote.ApiUsageTracker
-import com.vistara.aestheticwalls.data.remote.api.PexelsApiAdapter
 import com.vistara.aestheticwalls.data.remote.api.PexelsApiService
 import com.vistara.aestheticwalls.data.remote.api.PixabayApiService
 import com.vistara.aestheticwalls.data.remote.api.UnsplashApiService
 import com.vistara.aestheticwalls.data.remote.api.WallhavenApiService
 import com.vistara.aestheticwalls.data.remote.api.WallpaperApiAdapter
-import com.vistara.aestheticwalls.utils.NetworkMonitor
 import com.vistara.aestheticwalls.data.repository.AuthRepository
 import com.vistara.aestheticwalls.data.repository.BannerRepository
 import com.vistara.aestheticwalls.data.repository.BannerRepositoryImpl
@@ -30,6 +28,7 @@ import com.vistara.aestheticwalls.data.repository.UserRepositoryImpl
 import com.vistara.aestheticwalls.data.repository.WallpaperRepository
 import com.vistara.aestheticwalls.data.repository.WallpaperRepositoryImpl
 import com.vistara.aestheticwalls.manager.ThemeManager
+import com.vistara.aestheticwalls.utils.NetworkMonitor
 import com.vistara.aestheticwalls.utils.StringProvider
 import dagger.Module
 import dagger.Provides
@@ -102,11 +101,9 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideBannerRepository(
-        @ApplicationContext context: Context,
-        networkMonitor: NetworkMonitor,
-        stringProvider: StringProvider
+        networkMonitor: NetworkMonitor, stringProvider: StringProvider
     ): BannerRepository {
-        return BannerRepositoryImpl(context, networkMonitor, stringProvider)
+        return BannerRepositoryImpl(networkMonitor, stringProvider)
     }
 
     @Provides
@@ -126,6 +123,8 @@ object RepositoryModule {
         stringProvider: com.vistara.aestheticwalls.utils.StringProvider,
         apiService: com.vistara.aestheticwalls.data.remote.api.ApiService
     ): DiamondRepository {
-        return DiamondRepositoryImpl(diamondDao, authRepository, billingManagerProvider, stringProvider, apiService)
+        return DiamondRepositoryImpl(
+            diamondDao, authRepository, billingManagerProvider, stringProvider, apiService
+        )
     }
 }

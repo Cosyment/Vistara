@@ -20,7 +20,6 @@ import com.vistara.aestheticwalls.utils.StringProvider
  */
 @Singleton
 class BannerRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val networkMonitor: NetworkMonitor,
     private val stringProvider: StringProvider
 ) : BannerRepository {

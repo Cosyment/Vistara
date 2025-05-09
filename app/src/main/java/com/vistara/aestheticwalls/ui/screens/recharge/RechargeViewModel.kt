@@ -24,12 +24,11 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class RechargeViewModel @Inject constructor(
-    private val diamondRepository: DiamondRepository,
-    private val billingManager: BillingManager
+    private val diamondRepository: DiamondRepository, private val billingManager: BillingManager
 ) : ViewModel() {
 
     companion object {
-        private const val TAG = "DiamondViewModel"
+        private const val TAG = "RechargeViewModel"
     }
 
     // 钻石余额
@@ -50,7 +49,8 @@ class RechargeViewModel @Inject constructor(
 
     // 计费连接状态
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
-    val billingConnectionState: StateFlow<BillingConnectionState> = _billingConnectionState.asStateFlow()
+    val billingConnectionState: StateFlow<BillingConnectionState> =
+        _billingConnectionState.asStateFlow()
 
     // 购买状态
     private val _purchaseState = MutableStateFlow<PurchaseState>(PurchaseState.Idle)
@@ -90,12 +90,13 @@ class RechargeViewModel @Inject constructor(
             try {
                 _apiProductsLoading.value = true
                 val products = diamondRepository.getDiamondProducts()
-                _diamondProducts.value = products
-                Log.d(TAG, "Diamond products loaded: ${products.size} products")
+                products?.onSuccess {
+                    _diamondProducts.value = it
+                }
 
                 // 默认选中第一个商品
-                if (products.isNotEmpty() && _selectedProduct.value == null) {
-                    _selectedProduct.value = products[0]
+                if (products.getOrNull()?.isNotEmpty() == true && _selectedProduct.value == null) {
+                    _selectedProduct.value = products.getOrNull()?.firstOrNull()
                 }
             } catch (e: Exception) {
                 _apiProductsError.value = e.message
@@ -174,7 +175,10 @@ class RechargeViewModel @Inject constructor(
 
         // 如果当前没有选中的商品，或者选中的商品不在列表中，则选择第一个商品
         val currentProducts = _diamondProducts.value
-        if (currentProducts.isNotEmpty() && (_selectedProduct.value == null || !currentProducts.contains(_selectedProduct.value))) {
+        if (currentProducts.isNotEmpty() && (_selectedProduct.value == null || !currentProducts.contains(
+                _selectedProduct.value
+            ))
+        ) {
             _selectedProduct.value = currentProducts[0]
         }
     }

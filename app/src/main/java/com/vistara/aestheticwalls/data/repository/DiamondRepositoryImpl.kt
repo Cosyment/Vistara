@@ -9,6 +9,7 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.model.DiamondTransactionType
 import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.ApiService
 import com.vistara.aestheticwalls.utils.StringProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -27,7 +28,7 @@ class DiamondRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository,
     private val billingManagerProvider: Provider<BillingManager>,
     private val stringProvider: StringProvider,
-    private val apiService: com.vistara.aestheticwalls.data.remote.api.ApiService
+    private val apiService: ApiService
 ) : DiamondRepository {
 
     // 延迟获取BillingManager实例
@@ -70,16 +71,12 @@ class DiamondRepositoryImpl @Inject constructor(
      * 更新钻石余额
      */
     override suspend fun updateDiamondBalance(
-        amount: Int,
-        type: DiamondTransactionType,
-        description: String,
-        relatedItemId: String?
+        amount: Int, type: DiamondTransactionType, description: String, relatedItemId: String?
     ): Boolean {
         try {
             val userId = getCurrentUserId()
             val currentAccount = diamondDao.getAccount(userId) ?: DiamondAccount(
-                userId = userId,
-                balance = 0
+                userId = userId, balance = 0
             )
 
             // 计算新余额
@@ -96,8 +93,7 @@ class DiamondRepositoryImpl @Inject constructor(
 
             // 创建新的账户对象
             val updatedAccount = currentAccount.copy(
-                balance = newBalance,
-                lastUpdated = System.currentTimeMillis()
+                balance = newBalance, lastUpdated = System.currentTimeMillis()
             )
 
             // 创建交易记录
@@ -168,11 +164,9 @@ class DiamondRepositoryImpl @Inject constructor(
             val product = DiamondProduct(
                 id = "diamond_$diamondAmount",
                 name = stringProvider.getString(
-                    R.string.diamond_purchase_description,
-                    diamondAmount
+                    R.string.diamond_purchase_description, diamondAmount
                 ),
-                diamondAmount = diamondAmount,
-                price = priceValue,
+                diamondAmount = diamondAmount, price = priceValue,
                 // 根据商品ID设置折扣
                 discount = when {
                     productId.endsWith("off") -> 10 // 假设带"off"后缀的商品有10%折扣
@@ -181,7 +175,12 @@ class DiamondRepositoryImpl @Inject constructor(
                     diamondAmount >= 500 -> 5       // 小额钻石包有5%折扣
                     else -> 0
                 },
-                googlePlayProductId = productId
+                googlePlayProductId = productId,
+                currency = "",
+                itemName = "",
+                payMethodId = 1,
+                dollarPrice = "",
+                productId = productId,
             )
 
             products.add(product)
@@ -195,25 +194,18 @@ class DiamondRepositoryImpl @Inject constructor(
      * 从API获取钻石商品列表
      * @return 成功返回商品列表，失败返回null
      */
-    override suspend fun getApiDiamondProducts(): List<DiamondProduct>? {
+    override suspend fun getRemoteDiamondProducts(): List<DiamondProduct>? {
         try {
             // 调用API获取商品数据
             val result = apiService.getProducts()
 
             // 处理API结果
-            return when (result) {
-                is ApiResult.Success -> {
-                    Log.d(TAG, "API products loaded successfully")
-                    result.data
-                }
-                is ApiResult.Error -> {
-                    Log.e(TAG, "API error: ${result.code} ${result.message}")
-                    null
-                }
-                is ApiResult.Loading -> {
-                    Log.d(TAG, "API loading")
-                    null
-                }
+            if (result.isSuccess) {
+                Log.d(TAG, "API products loaded successfully")
+                return result.data?.sortedBy { it.diamondAmount }
+            } else {
+                Log.e(TAG, "API error:")
+                return null
             }
 
 
@@ -227,18 +219,18 @@ class DiamondRepositoryImpl @Inject constructor(
     /**
      * 获取钻石商品列表（优先从API获取，失败则使用本地数据）
      */
-    override suspend fun getDiamondProducts(): List<DiamondProduct> {
+    override suspend fun getDiamondProducts(): ApiResult<List<DiamondProduct>> {
         // 尝试从API获取商品数据
-        val apiProducts = getApiDiamondProducts()
+        val remoteProducts = getRemoteDiamondProducts()
 
         // 如果API获取成功，则返回API数据
-        if (apiProducts != null) {
-            return apiProducts
+        if (remoteProducts != null) {
+            return ApiResult.Success(remoteProducts)
         }
 
         // 否则返回本地数据
         Log.d(TAG, "Using local diamond products")
-        return getLocalDiamondProducts()
+        return ApiResult.Success(getLocalDiamondProducts())
     }
 
     /**
@@ -289,9 +281,7 @@ class DiamondRepositoryImpl @Inject constructor(
      * 消费钻石
      */
     override suspend fun consumeDiamonds(
-        amount: Int,
-        description: String,
-        itemId: String?
+        amount: Int, description: String, itemId: String?
     ): Boolean {
         if (amount <= 0) {
             Log.e(TAG, "Diamond amount must be positive: $amount")
