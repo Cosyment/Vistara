@@ -98,4 +98,11 @@ interface DiamondRepository {
      * @return 创建订单的API结果
      */
     suspend fun createOrder(productId: String, paymentMethodId: String): ApiResult<CreateOrderResponse>
+
+    /**
+     * 检查订单状态
+     * @param outTradeNo 订单号
+     * @return 检查结果的API结果
+     */
+    suspend fun checkOrder(outTradeNo: String): ApiResult<String>
 }

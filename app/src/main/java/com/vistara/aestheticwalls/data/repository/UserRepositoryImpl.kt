@@ -189,7 +189,6 @@ class UserRepositoryImpl @Inject constructor(
         val token = dataStore.data.map<Preferences, String?> { preferences ->
             preferences[SERVER_TOKEN]
         }.first()
-        Log.d(TAG, "获取服务器token: $token")
         return token
     }
 

@@ -402,4 +402,33 @@ class DiamondRepositoryImpl @Inject constructor(
             )
         }
     }
+
+    /**
+     * 检查订单状态
+     */
+    override suspend fun checkOrder(outTradeNo: String): ApiResult<String> {
+        return try {
+            // 调用API检查订单状态
+            val response = apiService.checkOrder(outTradeNo)
+
+            if (response.isSuccess) {
+                Log.d(TAG, "Order check successful for order: $outTradeNo")
+                ApiResult.Success(response.data ?: "")
+            } else {
+                Log.e(TAG, "Failed to check order $outTradeNo: ${response.msg}")
+                ApiResult.Error(
+                    code = response.code,
+                    message = response.msg,
+                    source = ApiSource.BACKEND
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking order $outTradeNo: ${e.message}", e)
+            ApiResult.Error(
+                code = null,
+                message = e.message ?: "Unknown error",
+                source = ApiSource.BACKEND
+            )
+        }
+    }
 }

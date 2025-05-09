@@ -522,4 +522,5 @@
     <string name="feature_photo_voice_desc">Free times to send photo and voice messages</string>
     <string name="feature_secret_content">Secret images/videos</string>
     <string name="feature_secret_content_desc">Unlock privilege to see secret images and videos</string>
+    <string name="no_subscription_products">暂无订阅商品</string>
 </resources>

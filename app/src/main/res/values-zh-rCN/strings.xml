@@ -525,4 +525,5 @@
     <string name="feature_photo_voice_desc">免费发送照片和语音消息</string>
     <string name="feature_secret_content">私密图片/视频</string>
     <string name="feature_secret_content_desc">解锁查看私密图片和视频的特权</string>
+    <string name="no_subscription_products">暂无订阅商品</string>
 </resources>

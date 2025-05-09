@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -57,7 +58,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.vistara.aestheticwalls.R
+import com.vistara.aestheticwalls.ui.components.PaymentMethodDialog
 import com.vistara.aestheticwalls.ui.icons.AppIcons
+import com.vistara.aestheticwalls.ui.screens.recharge.OrderCreationState
 import com.vistara.aestheticwalls.ui.theme.AppColors.DarkPremiumFeaturesBackground
 import com.vistara.aestheticwalls.ui.theme.AppColors.LightPremiumFeaturesBackground
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -74,14 +77,23 @@ fun PremiumScreen(
     viewModel: PremiumViewModel = hiltViewModel(),
     navController: NavController = rememberNavController()
 ) {
+    val context = LocalContext.current
     val activity = LocalActivity.current
     val isPremiumUser by viewModel.isPremiumUser.collectAsState()
+    val canPayment by viewModel.canPayment.collectAsState()
     val isUpgrading by viewModel.isUpgrading.collectAsState()
     val upgradeResult by viewModel.upgradeResult.collectAsState()
     val selectedPlan by viewModel.selectedPlan.collectAsState()
     val billingConnectionState by viewModel.billingConnectionState.collectAsState()
     val productPrices by viewModel.productPrices.collectAsState()
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
+    val paymentMethods by viewModel.paymentMethods.collectAsState()
+    val showPaymentDialog by viewModel.showPaymentDialog.collectAsState()
+    val paymentUrl by viewModel.paymentUrl.collectAsState()
+    val orderCreationState by viewModel.orderCreationState.collectAsState()
+    val subscriptionProducts by viewModel.subscriptionProducts.collectAsState()
+    val apiProductsLoading by viewModel.apiProductsLoading.collectAsState()
+    val apiProductsError by viewModel.apiProductsError.collectAsState()
 
     // 设置导航控制器
     viewModel.setNavController(navController)
@@ -104,6 +116,57 @@ fun PremiumScreen(
                 }
             }
         }
+    }
+
+    // 处理支付URL
+    LaunchedEffect(paymentUrl) {
+        paymentUrl?.let { url ->
+            try {
+                // 对URL进行编码
+                val encodedUrl = java.net.URLEncoder.encode(url, "UTF-8")
+                val route = "webview?url=$encodedUrl"
+
+                // 检查navController是否为null
+                if (navController == null) {
+                    android.util.Log.e(
+                        "PremiumScreen",
+                        "NavController is null, cannot navigate to WebView"
+                    )
+                } else {
+                    android.util.Log.d(
+                        "PremiumScreen",
+                        "NavController is available, navigating to: $route"
+                    )
+                    // 导航到WebView页面，使用正确的路由格式
+                    navController.navigate(route) {
+                        // 导航选项
+                        launchSingleTop = true
+                    }
+                    android.util.Log.d("PremiumScreen", "Navigation command executed for URL: $url")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("PremiumScreen", "Error navigating to WebView: ${e.message}", e)
+            }
+            // 清除支付URL，避免重复导航
+            viewModel.clearPaymentUrl()
+        }
+    }
+
+    // 显示支付方式对话框
+    if (showPaymentDialog && selectedPlan != null) {
+        PaymentMethodDialog(
+            amount = when (selectedPlan) {
+                PremiumPlan.WEEKLY -> stringResource(R.string.subscription_title_week)
+                PremiumPlan.MONTHLY -> stringResource(R.string.subscription_title_month)
+                PremiumPlan.QUARTERLY -> stringResource(R.string.subscription_title_quarter)
+                PremiumPlan.YEARLY -> stringResource(R.string.weekly_plan)
+                PremiumPlan.LIFETIME -> stringResource(R.string.monthly_plan)
+            },
+            paymentMethods = paymentMethods,
+            isLoading = viewModel.paymentMethodsLoading.collectAsState().value,
+            onDismiss = viewModel::hidePaymentDialog,
+            onPaymentSelected = viewModel::handlePaymentMethodSelected
+        )
     }
 
     Scaffold(topBar = {
@@ -130,50 +193,99 @@ fun PremiumScreen(
                 Spacer(modifier = Modifier.height(10.dp))
 
                 // 订阅卡片行
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    // 周卡
-                    SubscriptionCard(
-                        title = stringResource(R.string.subscription_title_week),
-                        price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_WEEKLY]
-                            ?: stringResource(R.string.loading),
-                        originalPrice = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_WEEKLY]
-                            ?: stringResource(R.string.loading),
-                        isSelected = selectedPlan == PremiumPlan.WEEKLY,
-                        modifier = Modifier.weight(1f),
-                        onClick = { viewModel.selectPlan(PremiumPlan.WEEKLY) })
+                if (apiProductsLoading) {
+                    // 显示加载状态
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "加载商品中...",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                } else if (apiProductsError != null) {
+                    // 显示错误状态
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "加载商品失败: ${apiProductsError ?: ""}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                } else if (subscriptionProducts.isEmpty()) {
+                    // 显示空状态
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.no_subscription_products),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                } else {
+                    // 显示订阅卡片
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // 动态生成订阅卡片
+                        subscriptionProducts.forEachIndexed { index, product ->
+                            // 获取价格，优先使用Google Play价格
+                            val googlePriceFromProductId = product.productId?.let { productPrices[it] }
+                            // API返回的价格
+                            val apiPrice = "${product.currency} ${product.price}"
+                            // 优先使用productId获取的价格，其次使用API价格
+                            val displayPrice = googlePriceFromProductId ?: apiPrice
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                            // 确定对应的PremiumPlan
+                            val plan = when {
+                                product.productId?.contains("weekly", ignoreCase = true) == true -> PremiumPlan.WEEKLY
+                                product.productId?.contains("monthly", ignoreCase = true) == true -> PremiumPlan.MONTHLY
+                                product.productId?.contains("quarterly", ignoreCase = true) == true -> PremiumPlan.QUARTERLY
+                                else -> PremiumPlan.MONTHLY // 默认为月度套餐
+                            }
 
-                    // 月卡
-                    SubscriptionCard(
-                        title = stringResource(R.string.subscription_title_month),
-                        price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY]
-                            ?: stringResource(R.string.loading),
-                        originalPrice = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_MONTHLY]
-                            ?: stringResource(R.string.loading),
-                        isSelected = selectedPlan == PremiumPlan.MONTHLY,
-                        modifier = Modifier.weight(1f),
-                        showBonus = false,
-                        onClick = { viewModel.selectPlan(PremiumPlan.MONTHLY) })
+                            // 如果不是第一个卡片，添加间距
+                            if (index > 0) {
+                                Spacer(modifier = Modifier.width(12.dp))
+                            }
 
-                    Spacer(modifier = Modifier.width(12.dp))
-
-                    // 季卡
-                    SubscriptionCard(
-                        title = stringResource(R.string.subscription_title_quarter),
-                        price = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_QUARTERLY]
-                            ?: stringResource(R.string.loading),
-                        originalPrice = productPrices[com.vistara.aestheticwalls.billing.BillingManager.SUBSCRIPTION_QUARTERLY]
-                            ?: stringResource(R.string.loading),
-                        isSelected = selectedPlan == PremiumPlan.QUARTERLY,
-                        modifier = Modifier.weight(1f),
-                        showDiscount = false,
-                        onClick = { viewModel.selectPlan(PremiumPlan.QUARTERLY) })
+                            // 订阅卡片
+                            SubscriptionCard(
+                                title = product.itemName,
+                                price = displayPrice,
+                                originalPrice = displayPrice, // 可以根据需要设置原价
+                                isSelected = selectedPlan == plan,
+                                modifier = Modifier.weight(1f),
+                                showBonus = index == 1, // 默认第二个商品显示奖励标签
+                                showDiscount = false, // 根据需要设置折扣标签
+                                onClick = { viewModel.selectPlan(plan) }
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -348,7 +460,7 @@ fun PremiumScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(44.dp),
-                    enabled = !isUpgrading && !isPremiumUser && billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED,
+                    enabled = canPayment,
                     shape = RoundedCornerShape(24.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,
@@ -361,7 +473,7 @@ fun PremiumScreen(
                             .fillMaxSize()
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = if (!isUpgrading && !isPremiumUser && billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED) {
+                                    colors = if (canPayment) {
                                         listOf(
                                             Color(0xFFEC12E2), // 亮紫色
                                             Color(0xFF8531FF)  // 深紫色
@@ -375,7 +487,7 @@ fun PremiumScreen(
                                 )
                             ), contentAlignment = Alignment.Center
                     ) {
-                        if (isUpgrading) {
+                        if (isUpgrading || orderCreationState == OrderCreationState.Loading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 color = Color.White,
@@ -385,10 +497,12 @@ fun PremiumScreen(
                             Text(
                                 text = when {
                                     isPremiumUser -> stringResource(R.string.error_already_premium)
+                                    canPayment -> stringResource(R.string.upgrade_now)
                                     billingConnectionState != com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED -> stringResource(
                                         R.string.connecting_payment
                                     )
 
+                                    orderCreationState is OrderCreationState.Error -> (orderCreationState as OrderCreationState.Error).message
                                     else -> stringResource(R.string.renew_now)
                                 },
                                 style = MaterialTheme.typography.bodyLarge,
@@ -418,7 +532,7 @@ fun PremiumScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(0.dp), // 高度为0，隐藏按钮但保留功能
-                    enabled = !isUpgrading && billingConnectionState == com.vistara.aestheticwalls.billing.BillingConnectionState.CONNECTED,
+                    enabled = canPayment,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent, contentColor = Color.Transparent
                     ),

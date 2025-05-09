@@ -50,6 +50,7 @@ data class DiamondProduct(
     val name: String,
     @SerializedName("num") val diamondAmount: Int,
     val price: Double,
+    val priceType: String? = null,
     val currency: String = "CNY",
     val itemName: String = "",
     val payMethodId: Int = 0,

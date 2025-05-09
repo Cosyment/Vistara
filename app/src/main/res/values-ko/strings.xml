@@ -522,4 +522,5 @@
     <string name="feature_photo_voice_desc">사진 및 음성 메시지 전송 무료</string>
     <string name="feature_secret_content">비밀 이미지/비디오</string>
     <string name="feature_secret_content_desc">비밀 이미지 및 비디오를 볼 수 있는 특권 해제</string>
+    <string name="no_subscription_products">暂无订阅商品</string>
 </resources>

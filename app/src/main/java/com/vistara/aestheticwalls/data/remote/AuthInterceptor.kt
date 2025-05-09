@@ -61,7 +61,6 @@ class AuthInterceptor @Inject constructor(
         // 如果邮箱不为空，添加邮箱头
         if (!email.isNullOrEmpty()) {
             requestBuilder.header(HEADER_EMAIL, email)
-            Log.d(TAG, "添加邮箱头: $email")
         }
 
         val newRequest = requestBuilder.build()

@@ -123,7 +123,7 @@ class RechargeViewModel @Inject constructor(
                 _apiProductsLoading.value = true
                 val products = diamondRepository.getDiamondProducts()
                 products?.onSuccess {
-                    _diamondProducts.value = it
+                    _diamondProducts.value = it.filter { it.priceType == "1" }
                 }
 
                 // 默认选中第一个商品

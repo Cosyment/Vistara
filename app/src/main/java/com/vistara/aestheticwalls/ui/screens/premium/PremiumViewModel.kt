@@ -13,8 +13,13 @@ import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingConnectionState
 import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
+import com.vistara.aestheticwalls.data.model.DiamondProduct
+import com.vistara.aestheticwalls.data.remote.ApiResult
+import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
+import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.ThemeManager
+import com.vistara.aestheticwalls.ui.screens.recharge.OrderCreationState
 import com.vistara.aestheticwalls.utils.Constants.PRIVACY_POLICY_URL
 import com.vistara.aestheticwalls.utils.Constants.TERMS_OF_SERVICE_URL
 import com.vistara.aestheticwalls.utils.StringProvider
@@ -38,7 +43,8 @@ class PremiumViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val billingManager: BillingManager,
     private val stringProvider: StringProvider,
-    private val themeManager: ThemeManager
+    private val themeManager: ThemeManager,
+    private val diamondRepository: DiamondRepository
 ) : ViewModel() {
 
     companion object {
@@ -51,6 +57,8 @@ class PremiumViewModel @Inject constructor(
     private val _darkTheme = MutableStateFlow(false)
     val isDarkTheme: StateFlow<Boolean> = _darkTheme.asStateFlow()
 
+    private val _canPayment = MutableStateFlow(false)
+    val canPayment: StateFlow<Boolean> = _canPayment.asStateFlow()
 
     // 高级用户状态
     private val _isPremiumUser = MutableStateFlow(false)
@@ -77,14 +85,57 @@ class PremiumViewModel @Inject constructor(
     private val _productPrices = MutableStateFlow<Map<String, String>>(emptyMap())
     val productPrices: StateFlow<Map<String, String>> = _productPrices.asStateFlow()
 
+    // 订阅商品列表
+    private val _subscriptionProducts = MutableStateFlow<List<DiamondProduct>>(emptyList())
+    val subscriptionProducts: StateFlow<List<DiamondProduct>> = _subscriptionProducts.asStateFlow()
+
+    // API商品加载状态
+    private val _apiProductsLoading = MutableStateFlow(false)
+    val apiProductsLoading: StateFlow<Boolean> = _apiProductsLoading.asStateFlow()
+
+    // API商品加载错误
+    private val _apiProductsError = MutableStateFlow<String?>(null)
+    val apiProductsError: StateFlow<String?> = _apiProductsError.asStateFlow()
+
+    // 支付方式相关
+    private val _paymentMethods = MutableStateFlow<List<PaymentMethod>>(emptyList())
+    val paymentMethods: StateFlow<List<PaymentMethod>> = _paymentMethods.asStateFlow()
+
+    private val _paymentMethodsLoading = MutableStateFlow(false)
+    val paymentMethodsLoading: StateFlow<Boolean> = _paymentMethodsLoading.asStateFlow()
+
+    private val _paymentMethodsError = MutableStateFlow<String?>(null)
+    val paymentMethodsError: StateFlow<String?> = _paymentMethodsError.asStateFlow()
+
+    // 支付对话框
+    private val _showPaymentDialog = MutableStateFlow(false)
+    val showPaymentDialog: StateFlow<Boolean> = _showPaymentDialog.asStateFlow()
+
+    // 订单创建状态
+    private val _orderCreationState = MutableStateFlow<OrderCreationState>(OrderCreationState.Idle)
+    val orderCreationState: StateFlow<OrderCreationState> = _orderCreationState.asStateFlow()
+
+    // 支付URL
+    private val _paymentUrl = MutableStateFlow<String?>(null)
+    val paymentUrl: StateFlow<String?> = _paymentUrl.asStateFlow()
+
     init {
         // 初始化时清除升级结果，避免显示旧的错误消息
         _upgradeResult.value = null
 
         checkPremiumStatus()
+        observePaymentStatus()
         observeBillingState()
         observePurchaseState()
         observeDarkTheme()
+        loadSubscriptionProducts()
+    }
+
+    private fun observePaymentStatus() {
+        viewModelScope.launch {
+            _canPayment.value =
+                userRepository.getCachedUserProfile()?.isWhitelisted == false || (!_isPremiumUser.value && !_isUpgrading.value && _billingConnectionState.value == BillingConnectionState.CONNECTED && _orderCreationState != OrderCreationState.Loading)
+        }
     }
 
     private fun observeDarkTheme() {
@@ -146,8 +197,7 @@ class PremiumViewModel @Inject constructor(
                         _isUpgrading.value = false
                         _upgradeResult.value = UpgradeResult.Error(
                             stringProvider.getString(
-                                R.string.upgrade_failed,
-                                state.message
+                                R.string.upgrade_failed, state.message
                             )
                         )
                     }
@@ -195,6 +245,169 @@ class PremiumViewModel @Inject constructor(
     }
 
     /**
+     * 加载订阅商品列表
+     */
+    private fun loadSubscriptionProducts() {
+        viewModelScope.launch {
+            try {
+                _apiProductsLoading.value = true
+                _apiProductsError.value = null
+
+                // 从API获取钻石商品列表
+                val result = diamondRepository.getDiamondProducts()
+                result.onSuccess { products ->
+                    // 过滤出订阅商品（这里假设订阅商品的productId包含"subscription"）
+                    val subscriptionProducts = products.filter { product ->
+                        product.priceType == "2"
+                    }
+
+                    // 根据套餐类型排序：周、月、季
+                    val sortedProducts = subscriptionProducts.sortedBy { product ->
+                        when {
+                            product.productId?.contains("weekly", ignoreCase = true) == true -> 0
+                            product.productId?.contains("monthly", ignoreCase = true) == true -> 1
+                            product.productId?.contains("quarterly", ignoreCase = true) == true -> 2
+                            else -> 3
+                        }
+                    }
+
+                    _subscriptionProducts.value = sortedProducts
+                    Log.d(TAG, "Loaded ${sortedProducts.size} subscription products")
+
+                    // 如果没有从API获取到订阅商品，则创建默认的订阅商品
+                    if (sortedProducts.isEmpty()) {
+//                        createDefaultSubscriptionProducts()
+                    }
+                }.onError { code, message, source ->
+                    _apiProductsError.value = message
+                    Log.e(TAG, "Error loading subscription products: $message")
+                    // 创建默认的订阅商品
+                    createDefaultSubscriptionProducts()
+                }
+            } catch (e: Exception) {
+                _apiProductsError.value = e.message
+                Log.e(TAG, "Exception loading subscription products: ${e.message}", e)
+                // 创建默认的订阅商品
+                createDefaultSubscriptionProducts()
+            } finally {
+                _apiProductsLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * 创建默认的订阅商品
+     */
+    private fun createDefaultSubscriptionProducts() {
+        // 创建默认的订阅商品
+        val defaultProducts = listOf(
+            DiamondProduct(
+                id = "subscription_weekly",
+                name = stringProvider.getString(R.string.subscription_title_week),
+                itemName = stringProvider.getString(R.string.subscription_title_week),
+                diamondAmount = 0,
+                price = 19.99,
+                currency = "¥",
+                productId = BillingManager.SUBSCRIPTION_WEEKLY,
+                discount = 0,
+                payMethodId = 0,
+                dollarPrice = null,
+                googlePlayProductId = null
+            ), DiamondProduct(
+                id = "subscription_monthly",
+                name = stringProvider.getString(R.string.subscription_title_month),
+                itemName = stringProvider.getString(R.string.subscription_title_month),
+                diamondAmount = 0,
+                price = 49.99,
+                currency = "¥",
+                productId = BillingManager.SUBSCRIPTION_MONTHLY,
+                discount = 0,
+                payMethodId = 0,
+                dollarPrice = null,
+                googlePlayProductId = null
+            ), DiamondProduct(
+                id = "subscription_quarterly",
+                name = stringProvider.getString(R.string.subscription_title_quarter),
+                itemName = stringProvider.getString(R.string.subscription_title_quarter),
+                diamondAmount = 0,
+                price = 129.99,
+                currency = "¥",
+                productId = BillingManager.SUBSCRIPTION_QUARTERLY,
+                discount = 0,
+                payMethodId = 0,
+                dollarPrice = null,
+                googlePlayProductId = null
+            )
+        )
+
+        _subscriptionProducts.value = defaultProducts
+        Log.d(TAG, "Created ${defaultProducts.size} default subscription products")
+    }
+
+    /**
+     * 加载支付方式
+     */
+    private fun loadPaymentMethods() {
+        viewModelScope.launch {
+            _paymentMethodsLoading.value = true
+            _paymentMethodsError.value = null
+
+            try {
+                // 根据选择的套餐确定商品ID
+                val productId = when (_selectedPlan.value) {
+                    PremiumPlan.WEEKLY -> BillingManager.SUBSCRIPTION_WEEKLY
+                    PremiumPlan.MONTHLY -> BillingManager.SUBSCRIPTION_MONTHLY
+                    PremiumPlan.QUARTERLY -> BillingManager.SUBSCRIPTION_QUARTERLY
+                    PremiumPlan.YEARLY -> BillingManager.SUBSCRIPTION_MONTHLY // 暂时使用月度套餐
+                    PremiumPlan.LIFETIME -> BillingManager.SUBSCRIPTION_QUARTERLY // 暂时使用季度套餐
+                }
+
+                val result = diamondRepository.getPaymentMethods(productId)
+                if (result is ApiResult.Success) {
+                    _paymentMethods.value = result.data
+                    Log.d(TAG, "Payment methods loaded: ${result.data.size}")
+                } else if (result is ApiResult.Error) {
+                    _paymentMethodsError.value = result.message
+                    Log.e(TAG, "Error loading payment methods: ${result.message}")
+                }
+            } catch (e: Exception) {
+                _paymentMethodsError.value = e.message
+                Log.e(TAG, "Error loading payment methods: ${e.message}", e)
+            } finally {
+                _paymentMethodsLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * 显示支付方式对话框
+     */
+    fun showPaymentDialog() {
+        viewModelScope.launch {
+            _showPaymentDialog.value = userRepository.getCachedUserProfile()?.isWhitelisted == true
+            if (_showPaymentDialog.value) {
+                // 加载支付方式
+                loadPaymentMethods()
+            } else {
+                if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
+                    _upgradeResult.value =
+                        UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
+                } else {
+                    //非白名单用户直接走Google Play支付
+                    handlePaymentMethodSelected()
+                }
+            }
+        }
+    }
+
+    /**
+     * 隐藏支付方式对话框
+     */
+    fun hidePaymentDialog() {
+        _showPaymentDialog.value = false
+    }
+
+    /**
      * 选择套餐
      */
     fun selectPlan(plan: PremiumPlan) {
@@ -211,23 +424,83 @@ class PremiumViewModel @Inject constructor(
             return
         }
 
-        if (_billingConnectionState.value != BillingConnectionState.CONNECTED) {
-            _upgradeResult.value =
-                UpgradeResult.Error(stringProvider.getString(R.string.payment_service_not_connected))
-            return
-        }
+        // 显示支付方式对话框或直接创建订单
+        showPaymentDialog()
+    }
 
+    /**
+     * 处理支付方式选择
+     */
+    fun handlePaymentMethodSelected(paymentMethodId: String? = null) {
         // 根据选择的套餐确定商品ID
         val productId = when (_selectedPlan.value) {
             PremiumPlan.WEEKLY -> BillingManager.SUBSCRIPTION_WEEKLY
             PremiumPlan.MONTHLY -> BillingManager.SUBSCRIPTION_MONTHLY
             PremiumPlan.QUARTERLY -> BillingManager.SUBSCRIPTION_QUARTERLY
-            PremiumPlan.YEARLY -> TODO()
-            PremiumPlan.LIFETIME -> TODO()
+            PremiumPlan.YEARLY -> BillingManager.SUBSCRIPTION_MONTHLY // 暂时使用月度套餐
+            PremiumPlan.LIFETIME -> BillingManager.SUBSCRIPTION_QUARTERLY // 暂时使用季度套餐
         }
 
-        // 启动购买流程
-        billingManager.launchBillingFlow(activity, productId)
+        Log.d(
+            TAG, "Selected payment method: $productId"
+        )
+
+        // 设置订单创建状态为加载中
+        _orderCreationState.value = OrderCreationState.Loading
+
+        // 创建订单
+        viewModelScope.launch {
+            try {
+                val result = diamondRepository.createOrder(
+                    productId = paymentMethodId ?: productId, paymentMethodId = productId
+                )
+
+                result.onSuccess { orderResponse ->
+                    // 订单创建成功
+                    _orderCreationState.value = OrderCreationState.Success(orderResponse)
+                    // 根据支付方式处理不同的支付逻辑
+                    when {
+                        // 如果是Google Play支付
+                        orderResponse.isGooglePay -> {
+                            // 隐藏对话框
+                            hidePaymentDialog()
+                            // 使用当前Activity实例
+                            val currentActivity = context as? Activity
+                            if (currentActivity != null) {
+                                // 调用Google Play支付
+                                Log.d(
+                                    TAG, "Executing Google payment with current activity"
+                                )
+                                // 启动购买流程
+                                billingManager.launchBillingFlow(currentActivity, productId)
+                            } else {
+                                Log.e(
+                                    TAG, "Activity is null, cannot execute Google payment"
+                                )
+                                _orderCreationState.value =
+                                    OrderCreationState.Error("无法启动支付，请重试")
+                            }
+                        }
+                        // 其他支付方式
+                        else -> {
+                            // 隐藏对话框
+                            hidePaymentDialog()
+                            // 设置支付URL
+                            _paymentUrl.value = orderResponse.payUrl
+                            Log.d(TAG, "Payment URL: ${orderResponse.payUrl}")
+                        }
+                    }
+                }.onError { code, errorMsg, source ->
+                    // 订单创建失败
+                    _orderCreationState.value = OrderCreationState.Error(errorMsg)
+                    Log.e(TAG, "Failed to create order: $errorMsg")
+                }
+            } catch (e: Exception) {
+                // 订单创建异常
+                _orderCreationState.value = OrderCreationState.Error(e.message ?: "Unknown error")
+                Log.e(TAG, "Error creating order: ${e.message}", e)
+            }
+        }
     }
 
     /**
@@ -248,6 +521,13 @@ class PremiumViewModel @Inject constructor(
      */
     fun clearUpgradeResult() {
         _upgradeResult.value = null
+    }
+
+    /**
+     * 清除支付URL
+     */
+    fun clearPaymentUrl() {
+        _paymentUrl.value = null
     }
 
     /**
@@ -351,15 +631,18 @@ class PremiumViewModel @Inject constructor(
  * 升级套餐
  */
 enum class PremiumPlan(
-    val titleResId: Int,
-    val descriptionResId: Int,
-    val discountResId: Int? = null
+    val titleResId: Int, val descriptionResId: Int, val discountResId: Int? = null
 ) {
-    WEEKLY(R.string.weekly_plan, R.string.weekly_plan_description),
-    MONTHLY(R.string.monthly_plan, R.string.monthly_plan_description),
+    WEEKLY(R.string.weekly_plan, R.string.weekly_plan_description), MONTHLY(
+        R.string.monthly_plan, R.string.monthly_plan_description
+    ),
 
-    QUARTERLY(R.string.quarterly_plan, R.string.quarterly_plan_description),
-    YEARLY(R.string.yearly_plan, R.string.yearly_plan_description, R.string.save_about),
+    QUARTERLY(
+        R.string.quarterly_plan, R.string.quarterly_plan_description
+    ),
+    YEARLY(
+        R.string.yearly_plan, R.string.yearly_plan_description, R.string.save_about
+    ),
     LIFETIME(R.string.lifetime_plan, R.string.lifetime_plan_description)
 }
 
