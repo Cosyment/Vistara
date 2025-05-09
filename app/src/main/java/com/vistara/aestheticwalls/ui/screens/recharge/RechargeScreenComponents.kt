@@ -326,7 +326,8 @@ fun DiamondProductCard(
                     )
                     .padding(horizontal = 20.dp, vertical = 7.dp),
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1
             )
         }
     }

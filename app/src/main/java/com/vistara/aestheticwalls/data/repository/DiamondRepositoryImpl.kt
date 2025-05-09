@@ -206,7 +206,40 @@ class DiamondRepositoryImpl @Inject constructor(
             // 处理API结果
             if (result.isSuccess) {
                 Log.d(TAG, "API products loaded successfully")
-                return result.data?.sortedBy { it.diamondAmount }
+
+                // 记录API返回的商品数据
+                result.data?.forEach { product ->
+                    Log.d(TAG, "API product: id=${product.id}, name=${product.name}, " +
+                            "diamondAmount=${product.diamondAmount}, price=${product.price}, " +
+                            "currency=${product.currency}, productId=${product.productId}, " +
+                            "googlePlayProductId=${product.googlePlayProductId}")
+
+                    // 检查productId是否与BillingManager中的SKU匹配
+                    if (product.productId != null) {
+                        val isInSkuList = BillingManager.DIAMOND_SKUS.contains(product.productId)
+                        Log.d(TAG, "Product ${product.id} with productId=${product.productId} " +
+                                "is ${if (isInSkuList) "in" else "NOT in"} BillingManager.DIAMOND_SKUS")
+                    }
+                }
+
+                // 将API返回的productId映射到googlePlayProductId
+                val updatedProducts = result.data?.map { product ->
+                    // 如果productId存在且在BillingManager.DIAMOND_SKUS中，则将其设置为googlePlayProductId
+                    if (product.productId != null && BillingManager.DIAMOND_SKUS.contains(product.productId)) {
+                        product
+                    } else {
+                        // 尝试根据钻石数量映射到Google Play商品ID
+                        val googlePlayId = mapToGooglePlayProductId(product.diamondAmount)
+                        if (googlePlayId != null) {
+                            Log.d(TAG, "Mapped product ${product.id} with diamondAmount=${product.diamondAmount} to productId=$googlePlayId")
+                            product.copy(productId = googlePlayId)
+                        } else {
+                            product
+                        }
+                    }
+                }
+
+                return updatedProducts?.sortedBy { it.diamondAmount }
             } else {
                 Log.e(TAG, "API error:")
                 return null

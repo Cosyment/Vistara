@@ -12,6 +12,7 @@ import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
 import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
+import com.vistara.aestheticwalls.utils.ActivityProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -124,7 +125,7 @@ class RechargeViewModel @Inject constructor(
 
                 // 默认选中第一个商品
                 if (products.getOrNull()?.isNotEmpty() == true && _selectedProduct.value == null) {
-                    _selectedProduct.value = products.getOrNull()?.firstOrNull()
+//                    _selectedProduct.value = products.getOrNull()?.firstOrNull()
                 }
             } catch (e: Exception) {
                 _apiProductsError.value = e.message
@@ -196,10 +197,34 @@ class RechargeViewModel @Inject constructor(
 
         // 获取所有钻石商品的价格
         BillingManager.DIAMOND_SKUS.forEach { productId ->
-            priceMap[productId] = billingManager.getProductPrice(productId)
+            val price = billingManager.getProductPrice(productId)
+            priceMap[productId] = price
+            Log.d(TAG, "Google Play price for $productId: $price")
         }
 
+        // 更新价格状态
         _productPrices.value = priceMap
+        Log.d(TAG, "Updated product prices from Google Play: ${priceMap.size} items")
+        Log.d(TAG, "All Google Play SKUs: ${BillingManager.DIAMOND_SKUS}")
+
+        // 记录所有商品的ID和价格映射关系
+        _diamondProducts.value.forEach { product ->
+            val productId = product.productId
+            val priceFromProductId = productId?.let { priceMap[it] }
+            val apiPrice = "${product.currency} ${product.price}"
+
+            Log.d(TAG, "Product ${product.id}: " +
+                    "productId=$productId, " +
+                    "price from productId=$priceFromProductId, " +
+                    "API price=$apiPrice")
+
+            // 检查productId是否在BillingManager.DIAMOND_SKUS中
+            if (productId != null) {
+                val isInSkuList = BillingManager.DIAMOND_SKUS.contains(productId)
+                Log.d(TAG, "Product ${product.id} with productId=$productId " +
+                        "is ${if (isInSkuList) "in" else "NOT in"} BillingManager.DIAMOND_SKUS")
+            }
+        }
 
         // 如果当前没有选中的商品，或者选中的商品不在列表中，则选择第一个商品
         val currentProducts = _diamondProducts.value
@@ -224,8 +249,18 @@ class RechargeViewModel @Inject constructor(
     fun purchaseDiamond(activity: Activity?) {
         val product = _selectedProduct.value ?: return
 
+        // 使用productId
+        val billingProductId = product.productId
+
+        if (billingProductId == null) {
+            Log.e(TAG, "Cannot purchase product ${product.id}: no valid product ID")
+            return
+        }
+
+        Log.d(TAG, "Launching billing flow for product ${product.id} with billing ID: $billingProductId")
+
         // 启动购买流程
-        billingManager.launchBillingFlow(activity, product.googlePlayProductId ?: return)
+        billingManager.launchBillingFlow(activity, billingProductId)
     }
 
     /**
@@ -310,10 +345,16 @@ class RechargeViewModel @Inject constructor(
                         paymentMethod.isGooglePay -> {
                             // 隐藏对话框
                             hidePaymentDialog()
-                            // 调用Google Play支付
-                            val context = getApplication<Application>().applicationContext
-                            val activity = context as? Activity
-                            purchaseDiamond(activity)
+                            // 使用ActivityProvider获取Activity实例
+                            val activity = ActivityProvider.getMainActivity()
+                            if (activity != null) {
+                                // 调用Google Play支付
+                                Log.d(TAG, "Executing Google payment with activity from ActivityProvider")
+                                purchaseDiamond(activity)
+                            } else {
+                                Log.e(TAG, "Activity is null from ActivityProvider, cannot execute Google payment")
+                                _orderCreationState.value = OrderCreationState.Error("无法启动支付，请重试")
+                            }
                         }
                         // 其他支付方式
                         else -> {

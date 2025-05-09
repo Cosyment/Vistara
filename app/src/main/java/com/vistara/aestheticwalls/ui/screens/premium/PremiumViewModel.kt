@@ -78,6 +78,9 @@ class PremiumViewModel @Inject constructor(
     val productPrices: StateFlow<Map<String, String>> = _productPrices.asStateFlow()
 
     init {
+        // 初始化时清除升级结果，避免显示旧的错误消息
+        _upgradeResult.value = null
+
         checkPremiumStatus()
         observeBillingState()
         observePurchaseState()

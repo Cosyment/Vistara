@@ -66,10 +66,10 @@ class BillingManager @Inject constructor(
 
         // 钻石商品映射表，包含SKU和对应的钻石数量
         val DIAMOND_PRODUCTS = mapOf(
-//            DIAMOND_80 to 80,
-//            DIAMOND_140 to 140,
-//            DIAMOND_199 to 199,
-//            DIAMOND_352 to 352,
+            DIAMOND_80 to 80,
+            DIAMOND_140 to 140,
+            DIAMOND_199 to 199,
+            DIAMOND_352 to 352,
             DIAMOND_500 to 500,
             DIAMOND_705 to 705,
             DIAMOND_799 to 799,
@@ -479,6 +479,10 @@ class BillingManager @Inject constructor(
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
             _connectionState.value = BillingConnectionState.CONNECTED
             Log.d(TAG, "Billing client connected")
+
+            // 重置购买状态，避免显示旧的错误消息
+            _purchaseState.value = PurchaseState.Idle
+            Log.d(TAG, "Reset purchase state to Idle")
 
             // 连接成功后查询商品详情和购买历史
             queryProductDetails()
