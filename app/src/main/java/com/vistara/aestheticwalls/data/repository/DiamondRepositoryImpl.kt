@@ -390,7 +390,7 @@ class DiamondRepositoryImpl @Inject constructor(
             val response = apiService.createOrder(request)
 
             if (response.isSuccess && response.data != null) {
-                Log.d(TAG, "Order created successfully: ${response.data.orderId}")
+                Log.d(TAG, "Order created successfully: ${response.data.id}")
                 ApiResult.Success(response.data)
             } else {
                 Log.e(TAG, "Failed to create order: ${response.msg}")

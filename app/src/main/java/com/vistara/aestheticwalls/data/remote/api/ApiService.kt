@@ -48,8 +48,15 @@ data class CreateOrderRequest(
 )
 
 data class CreateOrderResponse(
-    val orderId: String, val status: String, val payUrl: String? = null
-)
+    val id: String,
+    val status: String,
+    val payUrl: String? = null,
+    val priceId: String,
+    val diamondNum: Int,
+    val payMethodId: Int
+) {
+    val isGooglePay: Boolean get() = payMethodId == 1
+}
 
 
 data class PaymentMethod(
@@ -61,6 +68,4 @@ data class PaymentMethod(
     val productId: String,
     val payMethodId: Int,
     val payTypeMessage: String
-) {
-    val isGooglePay: Boolean = payMethodId == 1
-}
+)

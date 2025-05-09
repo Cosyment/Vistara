@@ -10,6 +10,7 @@ import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
+import com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse
 import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.utils.ActivityProvider
@@ -213,16 +214,18 @@ class RechargeViewModel @Inject constructor(
             val priceFromProductId = productId?.let { priceMap[it] }
             val apiPrice = "${product.currency} ${product.price}"
 
-            Log.d(TAG, "Product ${product.id}: " +
-                    "productId=$productId, " +
-                    "price from productId=$priceFromProductId, " +
-                    "API price=$apiPrice")
+            Log.d(
+                TAG,
+                "Product ${product.id}: " + "productId=$productId, " + "price from productId=$priceFromProductId, " + "API price=$apiPrice"
+            )
 
             // 检查productId是否在BillingManager.DIAMOND_SKUS中
             if (productId != null) {
                 val isInSkuList = BillingManager.DIAMOND_SKUS.contains(productId)
-                Log.d(TAG, "Product ${product.id} with productId=$productId " +
-                        "is ${if (isInSkuList) "in" else "NOT in"} BillingManager.DIAMOND_SKUS")
+                Log.d(
+                    TAG,
+                    "Product ${product.id} with productId=$productId " + "is ${if (isInSkuList) "in" else "NOT in"} BillingManager.DIAMOND_SKUS"
+                )
             }
         }
 
@@ -257,7 +260,10 @@ class RechargeViewModel @Inject constructor(
             return
         }
 
-        Log.d(TAG, "Launching billing flow for product ${product.id} with billing ID: $billingProductId")
+        Log.d(
+            TAG,
+            "Launching billing flow for product ${product.id} with billing ID: $billingProductId"
+        )
 
         // 启动购买流程
         billingManager.launchBillingFlow(activity, billingProductId)
@@ -338,22 +344,29 @@ class RechargeViewModel @Inject constructor(
                 result.onSuccess { orderResponse ->
                     // 订单创建成功
                     _orderCreationState.value = OrderCreationState.Success(orderResponse)
-
                     // 根据支付方式处理不同的支付逻辑
                     when {
+
                         // 如果是Google Play支付
-                        paymentMethod.isGooglePay -> {
+                        orderResponse.isGooglePay -> {
                             // 隐藏对话框
                             hidePaymentDialog()
                             // 使用ActivityProvider获取Activity实例
                             val activity = ActivityProvider.getMainActivity()
                             if (activity != null) {
                                 // 调用Google Play支付
-                                Log.d(TAG, "Executing Google payment with activity from ActivityProvider")
+                                Log.d(
+                                    TAG,
+                                    "Executing Google payment with activity from ActivityProvider"
+                                )
                                 purchaseDiamond(activity)
                             } else {
-                                Log.e(TAG, "Activity is null from ActivityProvider, cannot execute Google payment")
-                                _orderCreationState.value = OrderCreationState.Error("无法启动支付，请重试")
+                                Log.e(
+                                    TAG,
+                                    "Activity is null from ActivityProvider, cannot execute Google payment"
+                                )
+                                _orderCreationState.value =
+                                    OrderCreationState.Error("无法启动支付，请重试")
                             }
                         }
                         // 其他支付方式
@@ -392,8 +405,7 @@ class RechargeViewModel @Inject constructor(
 sealed class OrderCreationState {
     object Idle : OrderCreationState()
     object Loading : OrderCreationState()
-    data class Success(val orderResponse: com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse) :
-        OrderCreationState()
+    data class Success(val orderResponse: CreateOrderResponse) : OrderCreationState()
 
     data class Error(val message: String) : OrderCreationState()
 }
