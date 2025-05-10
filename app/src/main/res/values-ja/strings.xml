@@ -15,6 +15,9 @@
     <string name="notification_download_progress_title">壁紙をダウンロード中</string>
     <string name="notification_download_progress_text">壁紙をダウンロード中です</string>
 
+    <string name="loading_subscription_products">商品を読み込み中...</string>
+    <string name="error_loading_subscription_products">商品の読み込みに失敗しました: %1$s</string>
+
     <string name="notification_download_complete_title">壁紙のダウンロードが完了しました</string>
     <string name="notification_download_complete_text">壁紙がデバイスに正常にダウンロードされました</string>
 

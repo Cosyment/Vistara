@@ -202,7 +202,8 @@ fun PremiumScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "加载商品中...", style = MaterialTheme.typography.bodyMedium
+                                text = stringResource(R.string.loading_subscription_products),
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
@@ -215,7 +216,7 @@ fun PremiumScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "加载商品失败: ${apiProductsError ?: ""}",
+                            text = stringResource(R.string.error_loading_subscription_products, apiProductsError ?: ""),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error
                         )

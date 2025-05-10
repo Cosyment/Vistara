@@ -449,6 +449,8 @@
     <string name="notification_channel_live_wallpaper">动态壁纸通知</string>
     <string name="notification_channel_live_wallpaper_desc">关于待处理的动态壁纸设置的通知</string>
     <string name="notification_live_wallpaper_pending_title">视频壁纸已就绪</string>
+    <string name="loading_subscription_products">加载商品中...</string>
+    <string name="error_loading_subscription_products">加载商品失败: %1$s</string>
     <string name="notification_live_wallpaper_pending_text">点击将"%1$s"设置为您的视频壁纸</string>
 
     <!-- Diamond related -->

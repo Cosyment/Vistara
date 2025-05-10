@@ -481,6 +481,8 @@
     <string name="first_recharge_bonus">Bonus isi ulang pertama: Dapatkan 20% berlian tambahan!</string>
     <string name="loading_products">Memuat produk...</string>
     <string name="error_loading_products">Gagal memuat produk: %1$s</string>
+    <string name="loading_subscription_products">Memuat produk...</string>
+    <string name="error_loading_subscription_products">Gagal memuat produk: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">Berlian</string>

@@ -495,6 +495,8 @@
     <string name="first_recharge_bonus">First recharge bonus: Get extra 20% diamonds!</string>
     <string name="loading_products">Loading products...</string>
     <string name="error_loading_products">Error loading products: %1$s</string>
+    <string name="loading_subscription_products">Loading products...</string>
+    <string name="error_loading_subscription_products">Error loading products: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">Diamond</string>

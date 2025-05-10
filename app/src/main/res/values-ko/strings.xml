@@ -479,6 +479,8 @@
     <string name="first_recharge_bonus">첫 충전 보너스: 추가 20% 다이아몬드 획득!</string>
     <string name="loading_products">상품 로딩 중...</string>
     <string name="error_loading_products">상품 로딩 실패: %1$s</string>
+    <string name="loading_subscription_products">상품 로딩 중...</string>
+    <string name="error_loading_subscription_products">상품 로딩 실패: %1$s</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">다이아몬드</string>
