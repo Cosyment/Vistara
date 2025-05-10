@@ -454,6 +454,13 @@
     <string name="no_subscription_products">暂无订阅商品</string>
     <string name="notification_live_wallpaper_pending_text">点击将"%1$s"设置为您的视频壁纸</string>
 
+    <!-- WebView Screen related -->
+    <string name="verifying_payment_result">正在验证支付结果...</string>
+    <string name="payment_success_updating_account">支付成功，正在更新账户信息...</string>
+    <string name="payment_verification_failed">支付验证失败</string>
+    <string name="payment_success_but_update_failed">支付成功，但更新账户信息失败</string>
+    <string name="payment_success">支付成功！</string>
+
     <!-- Diamond related -->
     <string name="diamond_recharge">充值</string>
     <string name="my_diamond_balance">我的钻石余额</string>

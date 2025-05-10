@@ -484,6 +484,13 @@
     <string name="loading_products">商品を読み込み中...</string>
     <string name="error_loading_products">商品の読み込みに失敗しました: %1$s</string>
 
+    <!-- WebView Screen related -->
+    <string name="verifying_payment_result">支払い結果を確認中...</string>
+    <string name="payment_success_updating_account">支払い成功、アカウント情報を更新中...</string>
+    <string name="payment_verification_failed">支払い確認に失敗しました</string>
+    <string name="payment_success_but_update_failed">支払いは成功しましたが、アカウント情報の更新に失敗しました</string>
+    <string name="payment_success">支払い成功！</string>
+
     <!-- Payment Dialog related -->
     <string name="diamond_label">ダイヤモンド</string>
     <string name="payment_methods">支払い方法</string>

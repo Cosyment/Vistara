@@ -496,6 +496,13 @@
     <string name="error_loading_page">Error loading page</string>
     <string name="no_payment_methods">No payment methods available</string>
 
+    <!-- WebView Screen related -->
+    <string name="verifying_payment_result">Verifying payment result...</string>
+    <string name="payment_success_updating_account">Payment successful, updating account information...</string>
+    <string name="payment_verification_failed">Payment verification failed</string>
+    <string name="payment_success_but_update_failed">Payment successful, but failed to update account information</string>
+    <string name="payment_success">Payment successful!</string>
+
     <!-- Premium Screen related -->
     <string name="exclusive_privileges">5 Exclusive Privilege</string>
     <string name="payment_terms">Payment will be charged to your Google Play Store account at confirmation of purchase. You can turn off auto-renewal at least 24 hours before the end of your current subscription period. We do not offer a free trial for subscription content. The subscription period is one month, and your subscription will automatically renew within the same package period at the same price. Subscriptions can be cancelled at any time.</string>

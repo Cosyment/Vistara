@@ -485,6 +485,13 @@
     <string name="error_loading_subscription_products">Gagal memuat produk: %1$s</string>
     <string name="no_subscription_products">Tidak ada produk langganan tersedia</string>
 
+    <!-- WebView Screen related -->
+    <string name="verifying_payment_result">Memverifikasi hasil pembayaran...</string>
+    <string name="payment_success_updating_account">Pembayaran berhasil, memperbarui informasi akun...</string>
+    <string name="payment_verification_failed">Verifikasi pembayaran gagal</string>
+    <string name="payment_success_but_update_failed">Pembayaran berhasil, tetapi gagal memperbarui informasi akun</string>
+    <string name="payment_success">Pembayaran berhasil!</string>
+
     <!-- Payment Dialog related -->
     <string name="diamond_label">Berlian</string>
     <string name="payment_methods">Metode Pembayaran</string>

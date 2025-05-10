@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.background
@@ -106,6 +107,19 @@ fun WebViewScreen(
                                 }
                             }
 
+                            override fun shouldInterceptRequest(
+                                view: WebView,
+                                request: WebResourceRequest
+                            ): WebResourceResponse? {
+                                val url = request.url.toString()
+                                val headers = request.requestHeaders
+
+                                Log.d("WebView", "URL: $url")
+                                Log.d("WebView", "Headers: $headers")
+
+                                return super.shouldInterceptRequest(view, request)
+                            }
+
                             override fun onPageFinished(view: WebView?, url: String?) {
                                 super.onPageFinished(view, url)
                                 isLoading = false
@@ -195,7 +209,7 @@ fun WebViewScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "正在验证支付结果...",
+                                text = stringResource(R.string.verifying_payment_result),
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -218,7 +232,7 @@ fun WebViewScreen(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "支付成功，正在更新账户信息...",
+                                text = stringResource(R.string.payment_success_updating_account),
                                 color = Color.White,
                                 style = MaterialTheme.typography.bodyLarge
                             )
@@ -238,7 +252,7 @@ fun WebViewScreen(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = "支付验证失败",
+                                text = stringResource(R.string.payment_verification_failed),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge
                             )
@@ -256,7 +270,7 @@ fun WebViewScreen(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text("确定")
+                                Text(stringResource(R.string.confirm))
                             }
                         }
                     }
@@ -274,7 +288,7 @@ fun WebViewScreen(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = "支付成功，但更新账户信息失败",
+                                text = stringResource(R.string.payment_success_but_update_failed),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge,
                                 textAlign = TextAlign.Center
@@ -293,7 +307,7 @@ fun WebViewScreen(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text("确定")
+                                Text(stringResource(R.string.confirm))
                             }
                         }
                     }
@@ -311,7 +325,7 @@ fun WebViewScreen(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             Text(
-                                text = "支付成功！",
+                                text = stringResource(R.string.payment_success),
                                 color = Color.White,
                                 style = MaterialTheme.typography.titleLarge
                             )
@@ -325,7 +339,7 @@ fun WebViewScreen(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text("返回")
+                                Text(stringResource(R.string.go_back))
                             }
                         }
                     }

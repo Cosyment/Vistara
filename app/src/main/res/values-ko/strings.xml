@@ -483,6 +483,13 @@
     <string name="error_loading_subscription_products">상품 로딩 실패: %1$s</string>
     <string name="no_subscription_products">이용 가능한 구독 상품이 없습니다</string>
 
+    <!-- WebView Screen related -->
+    <string name="verifying_payment_result">결제 결과 확인 중...</string>
+    <string name="payment_success_updating_account">결제 성공, 계정 정보 업데이트 중...</string>
+    <string name="payment_verification_failed">결제 확인 실패</string>
+    <string name="payment_success_but_update_failed">결제는 성공했지만 계정 정보 업데이트에 실패했습니다</string>
+    <string name="payment_success">결제 성공!</string>
+
     <!-- Payment Dialog related -->
     <string name="diamond_label">다이아몬드</string>
     <string name="payment_methods">결제 방법</string>
