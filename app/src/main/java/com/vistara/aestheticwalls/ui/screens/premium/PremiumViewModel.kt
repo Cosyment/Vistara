@@ -72,9 +72,9 @@ class PremiumViewModel @Inject constructor(
     private val _upgradeResult = MutableStateFlow<UpgradeResult?>(null)
     val upgradeResult: StateFlow<UpgradeResult?> = _upgradeResult.asStateFlow()
 
-    // 选中的套餐
-    private val _selectedPlan = MutableStateFlow(PremiumPlan.MONTHLY)
-    val selectedPlan: StateFlow<PremiumPlan> = _selectedPlan.asStateFlow()
+    // 选中的套餐，初始为null表示没有选中任何套餐
+    private val _selectedPlan = MutableStateFlow<PremiumPlan?>(null)
+    val selectedPlan: StateFlow<PremiumPlan?> = _selectedPlan.asStateFlow()
 
     // 计费连接状态
     private val _billingConnectionState = MutableStateFlow(BillingConnectionState.DISCONNECTED)
@@ -134,7 +134,7 @@ class PremiumViewModel @Inject constructor(
     private fun observePaymentStatus() {
         viewModelScope.launch {
             _canPayment.value =
-                userRepository.getCachedUserProfile()?.isWhitelisted == false || (!_isPremiumUser.value && !_isUpgrading.value && _billingConnectionState.value == BillingConnectionState.CONNECTED && _orderCreationState != OrderCreationState.Loading)
+                userRepository.getCachedUserProfile()?.isWhitelisted == true || (!_isPremiumUser.value && !_isUpgrading.value && _billingConnectionState.value == BillingConnectionState.CONNECTED && _orderCreationState != OrderCreationState.Loading)
         }
     }
 
@@ -264,9 +264,18 @@ class PremiumViewModel @Inject constructor(
                     // 根据套餐类型排序：周、月、季
                     val sortedProducts = subscriptionProducts.sortedBy { product ->
                         when {
-                            product.productId?.contains("weekly", ignoreCase = true) == true -> 0
-                            product.productId?.contains("monthly", ignoreCase = true) == true -> 1
-                            product.productId?.contains("quarterly", ignoreCase = true) == true -> 2
+                            product.productId?.contains(
+                                "vistara_sub_week", ignoreCase = true
+                            ) == true -> 0
+
+                            product.productId?.contains(
+                                "vistara_sub_month", ignoreCase = true
+                            ) == true -> 1
+
+                            product.productId?.contains(
+                                "vistara_sub_quarter", ignoreCase = true
+                            ) == true -> 2
+
                             else -> 3
                         }
                     }
@@ -277,6 +286,17 @@ class PremiumViewModel @Inject constructor(
                     // 如果没有从API获取到订阅商品，则创建默认的订阅商品
                     if (sortedProducts.isEmpty()) {
 //                        createDefaultSubscriptionProducts()
+                    } else {
+                        // 如果有订阅商品，默认选择第一个
+                        sortedProducts.firstOrNull()?.let { firstProduct ->
+//                            val plan = when {
+//                                firstProduct.productId?.contains("subweek", ignoreCase = true) == true -> PremiumPlan.WEEKLY
+//                                firstProduct.productId?.contains("submonth", ignoreCase = true) == true -> PremiumPlan.MONTHLY
+//                                firstProduct.productId?.contains("sub3month", ignoreCase = true) == true -> PremiumPlan.QUARTERLY
+//                                else -> PremiumPlan.MONTHLY // 默认为月度套餐
+//                            }
+                            _selectedPlan.value = PremiumPlan.WEEKLY
+                        }
                     }
                 }.onError { code, message, source ->
                     _apiProductsError.value = message
@@ -342,6 +362,12 @@ class PremiumViewModel @Inject constructor(
 
         _subscriptionProducts.value = defaultProducts
         Log.d(TAG, "Created ${defaultProducts.size} default subscription products")
+
+        // 默认选择第一个产品
+        defaultProducts.firstOrNull()?.let {
+            _selectedPlan.value = PremiumPlan.WEEKLY
+            Log.d(TAG, "Default selected plan from default products: ${_selectedPlan.value}")
+        }
     }
 
     /**
@@ -353,6 +379,11 @@ class PremiumViewModel @Inject constructor(
             _paymentMethodsError.value = null
 
             try {
+                // 如果没有选择套餐，默认使用月度套餐
+                if (_selectedPlan.value == null) {
+                    _selectedPlan.value = PremiumPlan.MONTHLY
+                }
+
                 // 根据选择的套餐确定商品ID
                 val productId = when (_selectedPlan.value) {
                     PremiumPlan.WEEKLY -> BillingManager.SUBSCRIPTION_WEEKLY
@@ -360,9 +391,13 @@ class PremiumViewModel @Inject constructor(
                     PremiumPlan.QUARTERLY -> BillingManager.SUBSCRIPTION_QUARTERLY
                     PremiumPlan.YEARLY -> BillingManager.SUBSCRIPTION_MONTHLY // 暂时使用月度套餐
                     PremiumPlan.LIFETIME -> BillingManager.SUBSCRIPTION_QUARTERLY // 暂时使用季度套餐
+                    null -> BillingManager.SUBSCRIPTION_MONTHLY // 默认使用月度套餐
                 }
 
-                val result = diamondRepository.getPaymentMethods(productId)
+                val itemName =
+                    subscriptionProducts.value.find { it.productId == productId }?.itemName ?: ""
+
+                val result = diamondRepository.getPaymentMethods(itemName)
                 if (result is ApiResult.Success) {
                     _paymentMethods.value = result.data
                     Log.d(TAG, "Payment methods loaded: ${result.data.size}")
@@ -411,6 +446,7 @@ class PremiumViewModel @Inject constructor(
      * 选择套餐
      */
     fun selectPlan(plan: PremiumPlan) {
+        Log.d(TAG, "Selecting plan: $plan")
         _selectedPlan.value = plan
     }
 
@@ -432,6 +468,11 @@ class PremiumViewModel @Inject constructor(
      * 处理支付方式选择
      */
     fun handlePaymentMethodSelected(paymentMethodId: String? = null) {
+        // 如果没有选择套餐，默认使用月度套餐
+        if (_selectedPlan.value == null) {
+            _selectedPlan.value = PremiumPlan.MONTHLY
+        }
+
         // 根据选择的套餐确定商品ID
         val productId = when (_selectedPlan.value) {
             PremiumPlan.WEEKLY -> BillingManager.SUBSCRIPTION_WEEKLY
@@ -439,6 +480,7 @@ class PremiumViewModel @Inject constructor(
             PremiumPlan.QUARTERLY -> BillingManager.SUBSCRIPTION_QUARTERLY
             PremiumPlan.YEARLY -> BillingManager.SUBSCRIPTION_MONTHLY // 暂时使用月度套餐
             PremiumPlan.LIFETIME -> BillingManager.SUBSCRIPTION_QUARTERLY // 暂时使用季度套餐
+            null -> BillingManager.SUBSCRIPTION_MONTHLY // 默认使用月度套餐
         }
 
         Log.d(

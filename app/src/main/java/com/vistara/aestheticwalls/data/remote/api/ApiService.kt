@@ -26,6 +26,9 @@ interface ApiService {
     @GET("/system/order/list")
     suspend fun getOrders(): ApiPageResponse<DiamondTransaction>
 
+    @GET("/system/user/deduction/{num}")
+    suspend fun deduct(@Path("num") num: Int): ApiResponse<ProfileResponse>
+
     @POST("/system/order/myCallback/{outTradeNo}")
     suspend fun checkOrder(@Path("outTradeNo") outTradeNo: String): ApiResponse<String>
 }
@@ -63,7 +66,7 @@ data class ProfileResponse(
     val isWhiteList: String
 ) {
     val isPremium: Boolean get() = isWhitelisted
-    val isWhitelisted: Boolean get() = isWhiteList == "0"
+    val isWhitelisted: Boolean get() = isWhiteList == "1"
 }
 
 data class CreateOrderRequest(

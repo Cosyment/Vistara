@@ -60,7 +60,7 @@ data class DiamondProduct(
     val dollarPrice: String? = null,
     val productId: String? = null,
     val discount: Int = 0,  // 折扣百分比
-    val googlePlayProductId: String? = null // Google Play商品ID
+    var googlePlayProductId: String? = null // Google Play商品ID
 )
 
 /**

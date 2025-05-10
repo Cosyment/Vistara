@@ -128,21 +128,12 @@ fun PremiumScreen(
 
                 // 检查navController是否为null
                 if (navController == null) {
-                    android.util.Log.e(
-                        "PremiumScreen",
-                        "NavController is null, cannot navigate to WebView"
-                    )
                 } else {
-                    android.util.Log.d(
-                        "PremiumScreen",
-                        "NavController is available, navigating to: $route"
-                    )
                     // 导航到WebView页面，使用正确的路由格式
                     navController.navigate(route) {
                         // 导航选项
                         launchSingleTop = true
                     }
-                    android.util.Log.d("PremiumScreen", "Navigation command executed for URL: $url")
                 }
             } catch (e: Exception) {
                 android.util.Log.e("PremiumScreen", "Error navigating to WebView: ${e.message}", e)
@@ -161,6 +152,7 @@ fun PremiumScreen(
                 PremiumPlan.QUARTERLY -> stringResource(R.string.subscription_title_quarter)
                 PremiumPlan.YEARLY -> stringResource(R.string.weekly_plan)
                 PremiumPlan.LIFETIME -> stringResource(R.string.monthly_plan)
+                null -> stringResource(R.string.subscription_title_month) // 默认月度套餐
             },
             paymentMethods = paymentMethods,
             isLoading = viewModel.paymentMethodsLoading.collectAsState().value,
@@ -210,8 +202,7 @@ fun PremiumScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "加载商品中...",
-                                style = MaterialTheme.typography.bodyMedium
+                                text = "加载商品中...", style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
@@ -254,7 +245,8 @@ fun PremiumScreen(
                         // 动态生成订阅卡片
                         subscriptionProducts.forEachIndexed { index, product ->
                             // 获取价格，优先使用Google Play价格
-                            val googlePriceFromProductId = product.productId?.let { productPrices[it] }
+                            val googlePriceFromProductId =
+                                product.productId?.let { productPrices[it] }
                             // API返回的价格
                             val apiPrice = "${product.currency} ${product.price}"
                             // 优先使用productId获取的价格，其次使用API价格
@@ -262,10 +254,42 @@ fun PremiumScreen(
 
                             // 确定对应的PremiumPlan
                             val plan = when {
-                                product.productId?.contains("weekly", ignoreCase = true) == true -> PremiumPlan.WEEKLY
-                                product.productId?.contains("monthly", ignoreCase = true) == true -> PremiumPlan.MONTHLY
-                                product.productId?.contains("quarterly", ignoreCase = true) == true -> PremiumPlan.QUARTERLY
-                                else -> PremiumPlan.MONTHLY // 默认为月度套餐
+                                product.productId?.contains(
+                                    "vistara_sub_week", ignoreCase = true
+                                ) == true -> PremiumPlan.WEEKLY
+
+                                product.productId?.contains(
+                                    "vistara_sub_month", ignoreCase = true
+                                ) == true -> PremiumPlan.MONTHLY
+
+                                product.productId?.contains(
+                                    "vistara_sub_quarter", ignoreCase = true
+                                ) == true -> PremiumPlan.QUARTERLY
+
+                                else -> {
+                                    // 如果无法通过productId确定，尝试通过名称确定
+                                    when {
+                                        product.itemName.contains(
+                                            "周", ignoreCase = true
+                                        ) || product.itemName.contains(
+                                            "week", ignoreCase = true
+                                        ) -> PremiumPlan.WEEKLY
+
+                                        product.itemName.contains(
+                                            "月", ignoreCase = true
+                                        ) || product.itemName.contains(
+                                            "month", ignoreCase = true
+                                        ) -> PremiumPlan.MONTHLY
+
+                                        product.itemName.contains(
+                                            "季", ignoreCase = true
+                                        ) || product.itemName.contains(
+                                            "quarter", ignoreCase = true
+                                        ) -> PremiumPlan.QUARTERLY
+
+                                        else -> null // 如果无法确定套餐类型，则设为null
+                                    }
+                                }
                             }
 
                             // 如果不是第一个卡片，添加间距
@@ -275,15 +299,24 @@ fun PremiumScreen(
 
                             // 订阅卡片
                             SubscriptionCard(
-                                title = product.itemName,
+                                title = when (plan) {
+                                    PremiumPlan.WEEKLY -> stringResource(R.string.subscription_title_week)
+                                    PremiumPlan.MONTHLY -> stringResource(R.string.subscription_title_month)
+                                    PremiumPlan.QUARTERLY -> stringResource(R.string.subscription_title_quarter)
+                                    else -> product.itemName
+                                },
                                 price = displayPrice,
                                 originalPrice = displayPrice, // 可以根据需要设置原价
-                                isSelected = selectedPlan == plan,
+                                isSelected = plan != null && plan == selectedPlan,
                                 modifier = Modifier.weight(1f),
-                                showBonus = index == 1, // 默认第二个商品显示奖励标签
+                                showBonus = false, // 默认第二个商品显示奖励标签
                                 showDiscount = false, // 根据需要设置折扣标签
-                                onClick = { viewModel.selectPlan(plan) }
-                            )
+                                onClick = {
+                                    // 只有当plan不为null时才选择套餐
+                                    plan?.let {
+                                        viewModel.selectPlan(it)
+                                    }
+                                })
                         }
                     }
                 }
@@ -516,13 +549,13 @@ fun PremiumScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // 过期日期
-                Text(
-                    text = stringResource(R.string.expired_on, "2024-5-10"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF524C5F),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+//                Text(
+//                    text = stringResource(R.string.expired_on, "2024-5-10"),
+//                    style = MaterialTheme.typography.bodySmall,
+//                    color = Color(0xFF524C5F),
+//                    textAlign = TextAlign.Center,
+//                    modifier = Modifier.fillMaxWidth()
+//                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 

@@ -47,6 +47,7 @@ class BillingManager @Inject constructor(
         const val SUBSCRIPTION_WEEKLY = "vistara_sub_week"     // 周订阅
         const val SUBSCRIPTION_MONTHLY = "vistara_sub_month"   // 月订阅
         const val SUBSCRIPTION_QUARTERLY = "vistara_sub_quarter" // 季度订阅
+
 //        const val SUBSCRIPTION_YEARLY = "vistara_premium_yearly"     // 年订阅
 
         // 一次性购买SKU

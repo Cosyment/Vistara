@@ -290,7 +290,7 @@ fun DiamondProductCard(
                     ),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
                 if (product.discount > 0) {
@@ -327,7 +327,7 @@ fun DiamondProductCard(
                     )
                     .padding(horizontal = 20.dp, vertical = 7.dp),
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.onPrimary,
                 maxLines = 1
             )
         }

@@ -1,6 +1,5 @@
 package com.vistara.aestheticwalls.data.repository
 
-import android.text.format.DateUtils
 import android.util.Log
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingManager
@@ -326,13 +325,36 @@ class DiamondRepositoryImpl @Inject constructor(
             return false
         }
 
-        // 更新余额，消费为负数
-        return updateDiamondBalance(
-            amount = -amount,
-            type = DiamondTransactionType.PURCHASE,
-            description = description,
-            relatedItemId = itemId
-        )
+        try {
+            // 调用API扣除钻石
+            val response = apiService.deduct(amount)
+
+            if (response.isSuccess) {
+                Log.d(TAG, "Diamond deduction API call successful: $amount diamonds")
+
+                // API调用成功后，更新本地余额
+                return updateDiamondBalance(
+                    amount = -amount,
+                    type = DiamondTransactionType.PURCHASE,
+                    description = description,
+                    relatedItemId = itemId
+                )
+            } else {
+                Log.e(TAG, "Diamond deduction API call failed: ${response.msg}")
+                return false
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error calling diamond deduction API: ${e.message}", e)
+
+            // 如果API调用失败，回退到本地更新
+            Log.d(TAG, "Falling back to local diamond balance update")
+            return updateDiamondBalance(
+                amount = -amount,
+                type = DiamondTransactionType.PURCHASE,
+                description = description,
+                relatedItemId = itemId
+            )
+        }
     }
 
     /**
@@ -349,17 +371,13 @@ class DiamondRepositoryImpl @Inject constructor(
             } else {
                 Log.e(TAG, "Failed to load payment methods: ${response.msg}")
                 ApiResult.Error(
-                    code = response.code,
-                    message = response.msg,
-                    source = ApiSource.BACKEND
+                    code = response.code, message = response.msg, source = ApiSource.BACKEND
                 )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading payment methods: ${e.message}", e)
             ApiResult.Error(
-                code = null,
-                message = e.message ?: "Unknown error",
-                source = ApiSource.BACKEND
+                code = null, message = e.message ?: "Unknown error", source = ApiSource.BACKEND
             )
         }
     }
@@ -368,14 +386,12 @@ class DiamondRepositoryImpl @Inject constructor(
      * 创建订单
      */
     override suspend fun createOrder(
-        productId: String,
-        paymentMethodId: String
+        productId: String, paymentMethodId: String
     ): ApiResult<CreateOrderResponse> {
         return try {
             // 创建订单请求
             val request = CreateOrderRequest(
-                priceId = productId,
-                paymentMethodId = paymentMethodId
+                priceId = productId, paymentMethodId = paymentMethodId
             )
 
             // 调用API创建订单
@@ -387,17 +403,13 @@ class DiamondRepositoryImpl @Inject constructor(
             } else {
                 Log.e(TAG, "Failed to create order: ${response.msg}")
                 ApiResult.Error(
-                    code = response.code,
-                    message = response.msg,
-                    source = ApiSource.BACKEND
+                    code = response.code, message = response.msg, source = ApiSource.BACKEND
                 )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error creating order: ${e.message}", e)
             ApiResult.Error(
-                code = null,
-                message = e.message ?: "Unknown error",
-                source = ApiSource.BACKEND
+                code = null, message = e.message ?: "Unknown error", source = ApiSource.BACKEND
             )
         }
     }
@@ -416,17 +428,13 @@ class DiamondRepositoryImpl @Inject constructor(
             } else {
                 Log.e(TAG, "Failed to check order $outTradeNo: ${response.msg}")
                 ApiResult.Error(
-                    code = response.code,
-                    message = response.msg,
-                    source = ApiSource.BACKEND
+                    code = response.code, message = response.msg, source = ApiSource.BACKEND
                 )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking order $outTradeNo: ${e.message}", e)
             ApiResult.Error(
-                code = null,
-                message = e.message ?: "Unknown error",
-                source = ApiSource.BACKEND
+                code = null, message = e.message ?: "Unknown error", source = ApiSource.BACKEND
             )
         }
     }
@@ -440,7 +448,10 @@ class DiamondRepositoryImpl @Inject constructor(
             val response = apiService.getOrders()
 
             if (response.isSuccess && response.rows != null) {
-                Log.d(TAG, "Transactions loaded successfully from API: ${response.rows.size} transactions")
+                Log.d(
+                    TAG,
+                    "Transactions loaded successfully from API: ${response.rows.size} transactions"
+                )
 
                 // 将API返回的交易记录保存到本地数据库
                 val userId = getCurrentUserId()
@@ -454,17 +465,13 @@ class DiamondRepositoryImpl @Inject constructor(
             } else {
                 Log.e(TAG, "Failed to load transactions from API: ${response.msg}")
                 ApiResult.Error(
-                    code = response.code,
-                    message = response.msg,
-                    source = ApiSource.BACKEND
+                    code = response.code, message = response.msg, source = ApiSource.BACKEND
                 )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading transactions from API: ${e.message}", e)
             ApiResult.Error(
-                code = null,
-                message = e.message ?: "Unknown error",
-                source = ApiSource.BACKEND
+                code = null, message = e.message ?: "Unknown error", source = ApiSource.BACKEND
             )
         }
     }
