@@ -217,9 +217,9 @@ fun RechargeContent(
         }
 
         // 首充奖励卡片
-        item {
-            FirstRechargeCard()
-        }
+//        item {
+//            FirstRechargeCard()
+//        }
 
         // 钻石商品列表
         item {

@@ -483,6 +483,7 @@
     <string name="error_loading_products">Gagal memuat produk: %1$s</string>
     <string name="loading_subscription_products">Memuat produk...</string>
     <string name="error_loading_subscription_products">Gagal memuat produk: %1$s</string>
+    <string name="no_subscription_products">Tidak ada produk langganan tersedia</string>
 
     <!-- Payment Dialog related -->
     <string name="diamond_label">Berlian</string>
@@ -497,6 +498,7 @@
     <string name="order_creation_failed">Gagal membuat pesanan</string>
     <string name="error_loading_page">Gagal memuat halaman</string>
     <string name="no_payment_methods">Tidak ada metode pembayaran tersedia</string>
+
 
     <!-- Premium Screen related -->
     <string name="exclusive_privileges">5 Hak Istimewa Eksklusif</string>
@@ -526,5 +528,4 @@
     <string name="feature_photo_voice_desc">Waktu gratis untuk mengirim pesan foto dan suara</string>
     <string name="feature_secret_content">Gambar/video rahasia</string>
     <string name="feature_secret_content_desc">Buka hak istimewa untuk melihat gambar dan video rahasia</string>
-    <string name="no_subscription_products">暂无订阅商品</string>
 </resources>
