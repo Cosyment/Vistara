@@ -48,6 +48,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
+import com.vistara.aestheticwalls.ui.theme.VistaraTheme
 
 /**
  * 支付方式选择弹框
@@ -188,7 +189,7 @@ fun PaymentMethodDialog(
                                         )
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(
-                                            text = amount,
+                                            text = amount.replace("\n", " "),
                                             color = Color.White,
                                             fontSize = 20.sp,
                                             fontWeight = FontWeight.SemiBold
@@ -468,33 +469,35 @@ private fun PaymentMethodItem(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PaymentMethodDialogPreview() {
-    PaymentMethodDialog(
-        amount = "100",
-        paymentMethods = listOf(
-            PaymentMethod(
-                "maybank",
-                "Maybank",
-                "ic_maybank",
-                "123",
-                productId = "111",
-                payMethodId = 1,
-                currency = "$",
-                payTypeMessage = "TODO()"
-            ), PaymentMethod(
-                "bsn",
-                "BSN",
-                "ic_bsn",
-                "123",
-                productId = "123",
-                payMethodId = 1,
-                currency = "$",
-                payTypeMessage = "TODO()"
-            )
-        ),
-        isLoading = false,
-        onDismiss = { /* Handle dismiss */ },
-        onPaymentSelected = { /* Handle payment selection */ })
+    VistaraTheme {
+        PaymentMethodDialog(
+            amount = "1 \n VIP Week",
+            paymentMethods = listOf(
+                PaymentMethod(
+                    "maybank",
+                    "Maybank",
+                    "ic_maybank",
+                    "123",
+                    productId = "111",
+                    payMethodId = 1,
+                    currency = "$",
+                    payTypeMessage = "TODO()"
+                ), PaymentMethod(
+                    "bsn",
+                    "BSN",
+                    "ic_bsn",
+                    "123",
+                    productId = "123",
+                    payMethodId = 1,
+                    currency = "$",
+                    payTypeMessage = "TODO()"
+                )
+            ),
+            isLoading = false,
+            onDismiss = { /* Handle dismiss */ },
+            onPaymentSelected = { /* Handle payment selection */ })
+    }
 }

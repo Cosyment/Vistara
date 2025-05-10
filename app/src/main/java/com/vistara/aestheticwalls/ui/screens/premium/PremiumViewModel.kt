@@ -20,6 +20,7 @@ import com.vistara.aestheticwalls.data.repository.DiamondRepository
 import com.vistara.aestheticwalls.data.repository.UserRepository
 import com.vistara.aestheticwalls.manager.ThemeManager
 import com.vistara.aestheticwalls.ui.screens.recharge.OrderCreationState
+import com.vistara.aestheticwalls.utils.ActivityProvider
 import com.vistara.aestheticwalls.utils.Constants.PRIVACY_POLICY_URL
 import com.vistara.aestheticwalls.utils.Constants.TERMS_OF_SERVICE_URL
 import com.vistara.aestheticwalls.utils.StringProvider
@@ -494,7 +495,9 @@ class PremiumViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val result = diamondRepository.createOrder(
-                    productId = paymentMethodId ?: productId, paymentMethodId = productId
+                    productId = paymentMethodId
+                        ?: subscriptionProducts.value.find { it.productId == productId }?.id ?: "",
+                    paymentMethodId = productId
                 )
 
                 result.onSuccess { orderResponse ->
@@ -507,7 +510,7 @@ class PremiumViewModel @Inject constructor(
                             // 隐藏对话框
                             hidePaymentDialog()
                             // 使用当前Activity实例
-                            val currentActivity = context as? Activity
+                            val currentActivity = ActivityProvider.getMainActivity()
                             if (currentActivity != null) {
                                 // 调用Google Play支付
                                 Log.d(
