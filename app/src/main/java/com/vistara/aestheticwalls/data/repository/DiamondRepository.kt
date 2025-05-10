@@ -105,4 +105,10 @@ interface DiamondRepository {
      * @return 检查结果的API结果
      */
     suspend fun checkOrder(outTradeNo: String): ApiResult<String>
+
+    /**
+     * 从API获取交易记录
+     * @return 交易记录列表的API结果
+     */
+    suspend fun getRemoteTransactions(): ApiResult<List<DiamondTransaction>>
 }

@@ -1,5 +1,6 @@
 package com.vistara.aestheticwalls.data.repository
 
+import android.text.format.DateUtils
 import android.util.Log
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.billing.BillingManager
@@ -103,7 +104,7 @@ class DiamondRepositoryImpl @Inject constructor(
             // 创建交易记录
             val transaction = DiamondTransaction(
                 userId = userId,
-                amount = amount,
+                amount = amount.toString(),
                 type = type,
                 description = description,
                 relatedItemId = relatedItemId,
@@ -211,8 +212,6 @@ class DiamondRepositoryImpl @Inject constructor(
                     // 检查productId是否与BillingManager中的SKU匹配
                     if (product.productId != null) {
                         val isInSkuList = BillingManager.DIAMOND_SKUS.contains(product.productId)
-                        Log.d(TAG, "Product ${product.id} with productId=${product.productId} " +
-                                "is ${if (isInSkuList) "in" else "NOT in"} BillingManager.DIAMOND_SKUS")
                     }
                 }
 
@@ -369,13 +368,13 @@ class DiamondRepositoryImpl @Inject constructor(
      * 创建订单
      */
     override suspend fun createOrder(
-        priceId: String,
+        productId: String,
         paymentMethodId: String
     ): ApiResult<CreateOrderResponse> {
         return try {
             // 创建订单请求
             val request = CreateOrderRequest(
-                priceId = priceId,
+                priceId = productId,
                 paymentMethodId = paymentMethodId
             )
 
@@ -424,6 +423,44 @@ class DiamondRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error checking order $outTradeNo: ${e.message}", e)
+            ApiResult.Error(
+                code = null,
+                message = e.message ?: "Unknown error",
+                source = ApiSource.BACKEND
+            )
+        }
+    }
+
+    /**
+     * 从API获取交易记录
+     */
+    override suspend fun getRemoteTransactions(): ApiResult<List<DiamondTransaction>> {
+        return try {
+            // 调用API获取交易记录
+            val response = apiService.getOrders()
+
+            if (response.isSuccess && response.rows != null) {
+                Log.d(TAG, "Transactions loaded successfully from API: ${response.rows.size} transactions")
+
+                // 将API返回的交易记录保存到本地数据库
+                val userId = getCurrentUserId()
+                response.rows.forEach { transaction ->
+                    // 确保交易记录的userId是当前用户的ID
+//                    val localTransaction = transaction.copy(userId = userId)
+//                    diamondDao.insertTransaction(localTransaction)
+                }
+
+                ApiResult.Success(response.rows)
+            } else {
+                Log.e(TAG, "Failed to load transactions from API: ${response.msg}")
+                ApiResult.Error(
+                    code = response.code,
+                    message = response.msg,
+                    source = ApiSource.BACKEND
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading transactions from API: ${e.message}", e)
             ApiResult.Error(
                 code = null,
                 message = e.message ?: "Unknown error",

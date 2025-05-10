@@ -34,9 +34,12 @@ enum class DiamondTransactionType {
 data class DiamondTransaction(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val userId: String,
-    val amount: Int,  // 正数表示充值，负数表示消费
+    val amount: String,  // 正数表示充值，负数表示消费
     val type: DiamondTransactionType,
     val description: String,
+    val remark: String? = null,
+    val diamondNum: Int = 0,
+    val createTime: String? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val relatedItemId: String? = null  // 关联的壁纸ID或其他项目ID
 )

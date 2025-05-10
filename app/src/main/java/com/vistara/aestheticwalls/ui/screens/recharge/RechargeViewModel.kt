@@ -10,6 +10,7 @@ import com.vistara.aestheticwalls.billing.BillingManager
 import com.vistara.aestheticwalls.billing.PurchaseState
 import com.vistara.aestheticwalls.data.model.DiamondProduct
 import com.vistara.aestheticwalls.data.model.DiamondTransaction
+import com.vistara.aestheticwalls.data.remote.ApiResult
 import com.vistara.aestheticwalls.data.remote.api.CreateOrderResponse
 import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.data.repository.DiamondRepository
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,6 +52,14 @@ class RechargeViewModel @Inject constructor(
     // 交易记录
     private val _transactions = MutableStateFlow<List<DiamondTransaction>>(emptyList())
     val transactions: StateFlow<List<DiamondTransaction>> = _transactions.asStateFlow()
+
+    // 交易记录加载状态
+    private val _transactionsLoading = MutableStateFlow(false)
+    val transactionsLoading: StateFlow<Boolean> = _transactionsLoading.asStateFlow()
+
+    // 交易记录加载错误
+    private val _transactionsError = MutableStateFlow<String?>(null)
+    val transactionsError: StateFlow<String?> = _transactionsError.asStateFlow()
 
     // 选中的商品
     private val _selectedProduct = MutableStateFlow<DiamondProduct?>(null)
@@ -138,12 +148,7 @@ class RechargeViewModel @Inject constructor(
             }
         }
 
-        // 获取交易记录
-        viewModelScope.launch {
-            diamondRepository.getTransactions().collectLatest { transactions ->
-                _transactions.value = transactions
-            }
-        }
+        // 交易记录在用户点击交易记录按钮时加载
     }
 
     /**
@@ -202,13 +207,10 @@ class RechargeViewModel @Inject constructor(
         BillingManager.DIAMOND_SKUS.forEach { productId ->
             val price = billingManager.getProductPrice(productId)
             priceMap[productId] = price
-            Log.d(TAG, "Google Play price for $productId: $price")
         }
 
         // 更新价格状态
         _productPrices.value = priceMap
-        Log.d(TAG, "Updated product prices from Google Play: ${priceMap.size} items")
-        Log.d(TAG, "All Google Play SKUs: ${BillingManager.DIAMOND_SKUS}")
 
         // 记录所有商品的ID和价格映射关系
         _diamondProducts.value.forEach { product ->
@@ -224,10 +226,6 @@ class RechargeViewModel @Inject constructor(
             // 检查productId是否在BillingManager.DIAMOND_SKUS中
             if (productId != null) {
                 val isInSkuList = BillingManager.DIAMOND_SKUS.contains(productId)
-                Log.d(
-                    TAG,
-                    "Product ${product.id} with productId=$productId " + "is ${if (isInSkuList) "in" else "NOT in"} BillingManager.DIAMOND_SKUS"
-                )
             }
         }
 
@@ -396,6 +394,59 @@ class RechargeViewModel @Inject constructor(
      */
     fun clearPaymentUrl() {
         _paymentUrl.value = null
+    }
+
+    /**
+     * 加载交易记录
+     * 在用户点击交易记录按钮时调用
+     */
+    fun loadTransactions() {
+        viewModelScope.launch {
+            try {
+                _transactionsLoading.value = true
+                _transactionsError.value = null
+
+                // 从API获取交易记录
+                val result = diamondRepository.getRemoteTransactions()
+
+                if (result is ApiResult.Success) {
+                    _transactions.value = result.data
+                    Log.d(TAG, "Transactions loaded from API: ${result.data.size}")
+                    // 确保设置加载状态为false
+                    _transactionsLoading.value = false
+                } else if (result is ApiResult.Error) {
+                    _transactionsError.value = result.message
+                    Log.e(TAG, "Failed to load transactions from API: ${result.message}")
+
+                    // 如果API获取失败，尝试从本地获取
+                    try {
+                        val localTransactions = diamondRepository.getTransactions().first()
+                        _transactions.value = localTransactions
+                        Log.d(TAG, "Transactions loaded from local DB: ${localTransactions.size}")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading local transactions: ${e.message}", e)
+                    } finally {
+                        // 确保设置加载状态为false
+                        _transactionsLoading.value = false
+                    }
+                }
+            } catch (e: Exception) {
+                _transactionsError.value = e.message
+                Log.e(TAG, "Error loading transactions: ${e.message}", e)
+
+                // 如果发生异常，尝试从本地获取
+                try {
+                    val localTransactions = diamondRepository.getTransactions().first()
+                    _transactions.value = localTransactions
+                    Log.d(TAG, "Transactions loaded from local DB after error: ${localTransactions.size}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading local transactions: ${e.message}", e)
+                } finally {
+                    // 确保设置加载状态为false
+                    _transactionsLoading.value = false
+                }
+            }
+        }
     }
 }
 

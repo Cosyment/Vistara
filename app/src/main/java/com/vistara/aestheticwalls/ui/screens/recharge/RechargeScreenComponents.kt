@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -338,7 +339,10 @@ fun DiamondProductCard(
  */
 @Composable
 fun TransactionHistoryContent(
-    transactions: List<DiamondTransaction>, diamondBalance: Int
+    transactions: List<DiamondTransaction>,
+    diamondBalance: Int,
+    isLoading: Boolean = false,
+    errorMessage: String? = null
 ) {
     Column(
         modifier = Modifier
@@ -346,19 +350,48 @@ fun TransactionHistoryContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-//        Card(
-//            modifier = Modifier.fillMaxWidth(),
-//            shape = RoundedCornerShape(16.dp),
-//            colors = CardDefaults.cardColors(
-//                containerColor = MaterialTheme.colorScheme.primaryContainer
-//            ),
-//            elevation = CardDefaults.cardElevation(4.dp)
-//        ) {
         DiamondBalanceCard(diamondBalance)
-//        }
 
+        // 加载状态
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "加载交易记录中...", style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+        // 错误提示
+        else if (errorMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "加载交易记录失败: $errorMessage",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
         // 交易记录列表
-        if (transactions.isEmpty()) {
+        else if (transactions.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -397,16 +430,16 @@ fun TransactionItem(transaction: DiamondTransaction) {
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
     val formattedDate = dateFormat.format(Date(transaction.timestamp))
 
-    val isPositive = transaction.amount > 0
+    val isPositive = transaction.amount.toFloat() > 0
     val amountColor = if (isPositive) Color(0xFF4CAF50) else Color(0xFFE91E63)
     val amountPrefix = if (isPositive) "+" else ""
 
-    val typeText = when (transaction.type) {
-        DiamondTransactionType.RECHARGE -> stringResource(R.string.recharge)
-        DiamondTransactionType.PURCHASE -> stringResource(R.string.purchase)
-        DiamondTransactionType.REWARD -> stringResource(R.string.reward)
-        DiamondTransactionType.REFUND -> stringResource(R.string.refund)
-    }
+//    val typeText = when (transaction.type) {
+//        DiamondTransactionType.RECHARGE -> stringResource(R.string.recharge)
+//        DiamondTransactionType.PURCHASE -> stringResource(R.string.purchase)
+//        DiamondTransactionType.REWARD -> stringResource(R.string.reward)
+//        DiamondTransactionType.REFUND -> stringResource(R.string.refund)
+//    }
 
     Row(
         modifier = Modifier
@@ -419,19 +452,19 @@ fun TransactionItem(transaction: DiamondTransaction) {
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = typeText,
+                text = stringResource(R.string.recharge),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = transaction.description,
+                text = transaction.remark ?: "",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
-                text = formattedDate,
+                text = transaction.createTime ?: "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
@@ -473,14 +506,14 @@ fun DiamondScreenComponentsPreview() {
                     DiamondTransaction(
                         id = "1",
                         userId = "1",
-                        amount = 100,
+                        amount = "100",
                         type = DiamondTransactionType.RECHARGE,
                         description = "Recharge",
                         timestamp = System.currentTimeMillis()
                     ), DiamondTransaction(
                         id = "2",
                         userId = "1",
-                        amount = -50,
+                        amount = "-50",
                         type = DiamondTransactionType.PURCHASE,
                         description = "Purchase Wallpaper",
                         timestamp = System.currentTimeMillis() - 1000000

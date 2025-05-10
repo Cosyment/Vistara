@@ -24,10 +24,18 @@ interface ApiService {
     suspend fun getPaymentMethods(@Path("itemName") itemName: String): ApiResponse<List<PaymentMethod>>
 
     @GET("/system/order/list")
-    suspend fun getOrders(): ApiResponse<List<DiamondTransaction>>
+    suspend fun getOrders(): ApiPageResponse<DiamondTransaction>
 
     @POST("/system/order/myCallback/{outTradeNo}")
     suspend fun checkOrder(@Path("outTradeNo") outTradeNo: String): ApiResponse<String>
+}
+
+data class ApiPageResponse<T>(
+    val code: Int, val msg: String, val rows: List<T>?
+) {
+
+    val isSuccess: Boolean
+        get() = code == 200
 }
 
 data class ApiResponse<T>(

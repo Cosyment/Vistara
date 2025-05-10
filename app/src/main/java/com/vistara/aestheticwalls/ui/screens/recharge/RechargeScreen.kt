@@ -67,6 +67,8 @@ fun RechargeScreen(
     val diamondBalance by viewModel.diamondBalance.collectAsState()
     val diamondProducts by viewModel.diamondProducts.collectAsState()
     val transactions by viewModel.transactions.collectAsState()
+    val transactionsLoading by viewModel.transactionsLoading.collectAsState()
+    val transactionsError by viewModel.transactionsError.collectAsState()
     val selectedProduct by viewModel.selectedProduct.collectAsState()
     val billingConnectionState by viewModel.billingConnectionState.collectAsState()
     val purchaseState by viewModel.purchaseState.collectAsState()
@@ -97,13 +99,11 @@ fun RechargeScreen(
                 if (navController == null) {
                     Log.e("RechargeScreen", "NavController is null, cannot navigate to WebView")
                 } else {
-                    Log.d("RechargeScreen", "NavController is available, navigating to: $route")
                     // 导航到WebView页面，使用正确的路由格式
                     navController.navigate(route) {
                         // 导航选项
                         launchSingleTop = true
                     }
-                    Log.d("RechargeScreen", "Navigation command executed for URL: $url")
                 }
             } catch (e: Exception) {
                 Log.e("RechargeScreen", "Error navigating to WebView: ${e.message}", e)
@@ -139,7 +139,13 @@ fun RechargeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showTransactions = !showTransactions }) {
+                    IconButton(onClick = {
+                        showTransactions = !showTransactions
+                        if (showTransactions) {
+                            // 当显示交易记录时，加载交易数据
+                            viewModel.loadTransactions()
+                        }
+                    }) {
                         Icon(
                             imageVector = AppIcons.History,
                             contentDescription = stringResource(R.string.transaction_history)
@@ -176,7 +182,10 @@ fun RechargeScreen(
                 exit = fadeOut(animationSpec = tween(300))
             ) {
                 TransactionHistoryContent(
-                    transactions = transactions, diamondBalance = diamondBalance
+                    transactions = transactions,
+                    diamondBalance = diamondBalance,
+                    isLoading = transactionsLoading,
+                    errorMessage = transactionsError
                 )
             }
         }
