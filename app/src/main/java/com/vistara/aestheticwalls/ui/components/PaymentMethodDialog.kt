@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.vistara.aestheticwalls.R
 import com.vistara.aestheticwalls.data.remote.api.PaymentMethod
 import com.vistara.aestheticwalls.ui.theme.VistaraTheme
@@ -383,7 +388,7 @@ private fun PaymentMethodList(
         )
     }
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         // 显示支付方式列表
         paymentMethods.forEachIndexed { index, paymentMethod ->
             if (index > 0) {
@@ -414,6 +419,8 @@ private fun PaymentMethodItem(
         else -> R.mipmap.ic_payermax // 默认图标
     }
 
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -432,11 +439,19 @@ private fun PaymentMethodItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 银行图标
-            Image(
-                painter = painterResource(id = iconRes),
-                contentDescription = paymentMethod.name,
-                modifier = Modifier.size(24.dp),
-                contentScale = ContentScale.Fit
+//            Image(
+//                painter = painterResource(id = iconRes),
+//                contentDescription = paymentMethod.name,
+//                modifier = Modifier.size(24.dp),
+//                contentScale = ContentScale.Fit
+//            )
+
+            AsyncImage(
+                model = ImageRequest.Builder(context).data(paymentMethod.imageUrl).crossfade(true)
+                    .build(),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(24.dp)
             )
 
             Spacer(modifier = Modifier.width(10.dp))

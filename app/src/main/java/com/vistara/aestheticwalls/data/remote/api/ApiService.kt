@@ -93,5 +93,6 @@ data class PaymentMethod(
     val currency: String,
     val productId: String,
     val payMethodId: Int,
-    val payTypeMessage: String
+    val payTypeMessage: String,
+    val imageUrl: String?=null
 )
